@@ -1,4 +1,4 @@
 mod_webex
 =========
 
-A webex module for Moodle
+An activity module for Moodle that is currently in work. Release branch contains stable version, master is in work and unstable.
