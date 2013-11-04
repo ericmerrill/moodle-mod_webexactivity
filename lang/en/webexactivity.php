@@ -15,18 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * An activity to interface with WebEx.
+ * Strings for component 'WebEx Activity', language 'en'
  *
- * @package   mod_webexactvity
- * @copyright Eric Merrill (merrill@oakland.edu)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_webexactivity
+ * @copyright  Eric Merrill (merrill@oakland.edu)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version   = 2013101004;
-$plugin->requires  = 2013051400; // See http://docs.moodle.org/dev/Moodle_Versions.
-$plugin->cron      = 0;
-$plugin->component = 'mod_webexactivity';
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.0.1 Alpha';
+$string['pluginname'] = 'WebEx Activity';
+$string['pluginnamepural'] = 'WebEx Activities';
+$string['modulename'] = 'WebEx Activity';
+$string['modulenameplural'] = 'WebEx Activities';
+$string['webexactivityname'] = 'Meeting name';
+$string['pluginadministration'] = 'WebEx Activity administration';

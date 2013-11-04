@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 /**
  * An activity to interface with WebEx.
  *
@@ -22,4 +22,34 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// Code to view the passed webex
+// Code to view the passed webex.
+
+require('../../config.php');
+
+$id = optional_param('id', 0, PARAM_INT); // Course module ID.
+
+
+$cm = get_coursemodule_from_id('webexactivity', $id, 0, false, MUST_EXIST);
+$webex = $DB->get_record('webexactivity', array('id' => $cm->instance), '*', MUST_EXIST);
+
+$course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+
+require_course_login($course, true, $cm);
+$context = context_module::instance($cm->id);
+require_capability('mod/webexactivity:view', $context);
+
+add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webex->id, $cm->id);
+
+$PAGE->set_url('/mod/webexactivity/view.php', array('id' => $cm->id));
+
+$PAGE->set_title($course->shortname.': '.$webex->name);
+$PAGE->set_heading($course->fullname);
+$PAGE->set_activity_record($webex);
+
+
+echo $OUTPUT->header();
+echo $OUTPUT->heading(format_string($webex->name), 2);
+
+$test = new \mod_webexactivity\service_connector();
+
+echo $OUTPUT->footer();

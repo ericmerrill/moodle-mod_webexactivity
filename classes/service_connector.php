@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,11 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'WebEx Activity', language 'en'
+ * An activity to interface with WebEx.
  *
- * @package    mod_webexactivity
- * @copyright  Eric Merrill (merrill@oakland.edu)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_webexactvity
+ * @copyright Eric Merrill (merrill@oakland.edu)
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'WebEx Activity';
+namespace mod_webexactivity;
+
+class service_connector {
+    public function __construct() {
+        print "a";
+    }
+}

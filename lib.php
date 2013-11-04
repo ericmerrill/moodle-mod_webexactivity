@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 /**
  * An activity to interface with WebEx.
  *
@@ -24,8 +24,47 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-function webexactvity_add_instance($data);
+function webexactivity_supports($feature) {
+    switch($feature) {
+        case FEATURE_MOD_ARCHETYPE:
+            return MOD_ARCHETYPE_RESOURCE;
+        case FEATURE_GROUPS:
+            return false;
+        case FEATURE_GROUPINGS:
+            return false;
+        case FEATURE_GROUPMEMBERSONLY:
+            return false;
+        case FEATURE_MOD_INTRO:
+            return false;
+        case FEATURE_COMPLETION_TRACKS_VIEWS:
+            return false;
+        case FEATURE_GRADE_HAS_GRADE:
+            return false;
+        case FEATURE_GRADE_OUTCOMES:
+            return false;
+        case FEATURE_BACKUP_MOODLE2:
+            return false;
+        case FEATURE_SHOW_DESCRIPTION:
+            return false;
 
-function webexactvity_update_instance($data);
+        default:
+            return null;
+    }
+}
 
-function webexactvity_delete_instance($id);
+function webexactivity_add_instance($data, $mform) {
+    global $CFG, $DB;
+
+    $data->timemodified = time();
+    $data->id = $DB->insert_record('webexactivity', $data);
+
+    return $data->id;
+}
+
+function webexactivity_update_instance($data) {
+
+}
+
+function webexactivity_delete_instance($id) {
+
+}
