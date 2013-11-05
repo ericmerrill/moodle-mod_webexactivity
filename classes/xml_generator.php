@@ -25,5 +25,37 @@
 namespace mod_webexactivity;
 
 class xml_generator {
+	public function __construct() {
+        //print "<pre>";
+        print p(self::standard_wrap(self::get_auth_header()));
+        //print "</pre>";
+    }
 
+    private static function standard_wrap($xml) {
+    	$outxml = '<?xml version="1.0" encoding="UTF-8"?>'.
+		    	  '<serv:message xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'.
+	    		  ' xmlns:serv="http://www.webex.com/schemas/2002/06/service">';
+	    $outxml .= $xml;
+	    $outxml .= '</serv:message>';
+
+	    return $outxml;
+    }
+
+    private static function get_auth_header($user = false) {
+        global $CFG;
+
+    	$outxml = '<header><securityContext>';
+
+	    if ($user == false) {
+		    $outxml .= '<webExID>'.$CFG->webexuser.'</webExID>'; // TODO Setting.
+            $outxml .= '<password>'.$CFG->webexpass.'</password>';
+	    } // TODO User support.
+
+        $outxml .= '<siteID>12355757</siteID>'; // TODO Setting.
+        $outxml .= '<partnerID>123oa!</partnerID>'; //TODO Setting.
+
+	    $outxml .= '</securityContext></header>';
+
+        return $outxml;	    
+    }
 }

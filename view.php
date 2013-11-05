@@ -50,6 +50,10 @@ $PAGE->set_activity_record($webex);
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($webex->name), 2);
 
-$test = new \mod_webexactivity\service_connector();
+echo $OUTPUT->box_start();
+
+$test = new \mod_webexactivity\xml_generator();
+
+echo $OUTPUT->box_end();
 
 echo $OUTPUT->footer();
