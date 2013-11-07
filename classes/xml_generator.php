@@ -27,8 +27,12 @@ namespace mod_webexactivity;
 class xml_generator {
 	public function __construct() {
         //print "<pre>";
-        print p(self::standard_wrap(self::get_auth_header()));
+        print p(self::get_user_info('adm_merrill'));
         //print "</pre>";
+    }
+
+    private static function auth_wrap($xml, $user = false) {
+        return self::standard_wrap(self::get_auth_header($user).$xml);
     }
 
     private static function standard_wrap($xml) {
@@ -58,4 +62,32 @@ class xml_generator {
 
         return $outxml;	    
     }
+
+    //---------------------------------------------------
+    // User Functions.
+    //---------------------------------------------------
+    public function get_user_info($username) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.GetUser">'.
+               '<webExId>'.$username.'</webExId>'.
+               '</bodyContent></body>';
+
+        return self::auth_wrap($xml);
+    }
+
+    public function create_user($data) {
+        
+    }
+
+    //---------------------------------------------------
+    // Meeting Functions.
+    //---------------------------------------------------
+    public function get_meeting_info($meetingid) {
+        
+    }
+
+    public function create_meeting($data) {
+        
+    }
+
+    
 }
