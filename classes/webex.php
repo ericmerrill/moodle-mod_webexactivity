@@ -117,6 +117,29 @@ class webex {
             return true;
         }
 
+        $xml = xml_generator::create_meeting($webexrecord);
+
+        $response = $this->get_response($xml);
+
+        if ($response) {
+            if (isset($response['meet:meetingkey']['0']['#'])) {
+                $webexrecord->meetingkey = $response['meet:meetingkey']['0']['#'];
+                $DB->update_record('webexactivity', $webexrecord);
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    public function create_or_update_training($webexrecord) {
+        global $DB;
+
+        if (isset($webexrecord->meetingkey) && $webexrecord->meetingkey) {
+            // Update.
+            return true;
+        }
+
         $xml = xml_generator::create_training_session($webexrecord);
 
         $response = $this->get_response($xml);

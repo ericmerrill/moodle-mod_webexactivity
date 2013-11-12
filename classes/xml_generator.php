@@ -110,8 +110,15 @@ class xml_generator {
 
     }
 
-    public function create_meeting($data) {
+    public static function create_meeting($data) {
+        $startstr = date('m/d/Y H:i:s', $data->starttime);
 
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.CreateMeeting">'.
+               '<schedule><startDate>'.$startstr.'</startDate><openTime>20</openTime></schedule>'.
+               '<metaData><confName>'.$data->name.'</confName><agenda>agenda 1</agenda></metaData>'.
+               '</bodyContent></body>';
+
+        return self::auth_wrap($xml);
     }
 
     // ---------------------------------------------------
@@ -131,7 +138,7 @@ class xml_generator {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.CreateTrainingSession">'.
                '<accessControl><listing>PUBLIC</listing></accessControl>'.
                '<schedule><startDate>'.$startstr.'</startDate><openTime>20</openTime></schedule>'.
-               '<metaData><confName>Conf Name</confName><agenda>agenda 1</agenda><description>description</description></metaData>'.
+               '<metaData><confName>'.$data->name.'</confName><agenda>agenda 1</agenda><description>description</description></metaData>'.
                '<repeat><repeatType>SINGLE</repeatType></repeat>'.
                '</bodyContent></body>';
 

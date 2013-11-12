@@ -67,6 +67,9 @@ function webexactivity_add_instance($data, $mform) {
     $meeting->type = WEBEXACTIVITY_TYPE_TRAINING;
     $meeting->id = $DB->insert_record('webexactivity', $meeting);
 
+    $webex = new \mod_webexactivity\webex();
+    $webex->create_or_update_meeting($meeting);
+
     return $meeting->id;
 }
 

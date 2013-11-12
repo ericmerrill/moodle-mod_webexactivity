@@ -54,6 +54,15 @@ echo $OUTPUT->box_start();
 
 echo userdate($webex->starttime);
 
+$urlbase = get_config('webexactivity', 'url').'/oakland-dev';
+$url = $urlbase.'/m.php?AT=JM&MK='.$webex->meetingkey;
+
+echo $url;
+
+$url = $urlbase.'/m.php?AT=HM&MK='.$webex->meetingkey;
+
+echo $url;
+
 /*
 $connector = new \mod_webexactivity\service_connector();
 $stat = $connector->retrieve(\mod_webexactivity\xml_generator::get_training_info('344204292-'));
