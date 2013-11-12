@@ -25,10 +25,7 @@
 namespace mod_webexactivity;
 
 class xml_generator {
-	public function __construct() {
-        //print "<pre>";
-        print p(self::get_user_info('adm_merrill'));
-        //print "</pre>";
+    public function __construct() {
     }
 
     private static function auth_wrap($xml, $user = false) {
@@ -36,37 +33,39 @@ class xml_generator {
     }
 
     private static function standard_wrap($xml) {
-    	$outxml = '<?xml version="1.0" encoding="UTF-8"?>'.
-		    	  '<serv:message xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'.
-	    		  ' xmlns:serv="http://www.webex.com/schemas/2002/06/service">';
-	    $outxml .= $xml;
-	    $outxml .= '</serv:message>';
+        $outxml = '<?xml version="1.0" encoding="UTF-8"?>'.
+                  '<serv:message xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'.
+                  ' xmlns:serv="http://www.webex.com/schemas/2002/06/service">';
+        $outxml .= $xml;
+        $outxml .= '</serv:message>';
 
-	    return $outxml;
+        return $outxml;
     }
 
     private static function get_auth_header($user = false) {
         global $CFG;
 
-    	$outxml = '<header><securityContext>';
+        $config = get_config('webexactivity');
 
-	    if ($user == false) {
-		    $outxml .= '<webExID>'.$CFG->webexuser.'</webExID>'; // TODO Setting.
-            $outxml .= '<password>'.$CFG->webexpass.'</password>';
-	    } // TODO User support.
+        $outxml = '<header><securityContext>';
 
-        $outxml .= '<siteID>12355757</siteID>'; // TODO Setting.
-        $outxml .= '<partnerID>123oa!</partnerID>'; //TODO Setting.
+        if ($user == false) {
+            $outxml .= '<webExID>'.$config->apiusername.'</webExID>';
+            $outxml .= '<password>'.$config->apipassword.'</password>';
+        } // TODO User support.
 
-	    $outxml .= '</securityContext></header>';
+        $outxml .= '<siteID>'.$config->siteid.'</siteID>';
+        $outxml .= '<partnerID>'.$config->partnerid.'</partnerID>';
 
-        return $outxml;	    
+        $outxml .= '</securityContext></header>';
+
+        return $outxml;
     }
 
-    //---------------------------------------------------
+    // ---------------------------------------------------
     // User Functions.
-    //---------------------------------------------------
-    public function get_user_info($username) {
+    // ---------------------------------------------------
+    public static function get_user_info($username) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.GetUser">'.
                '<webExId>'.$username.'</webExId>'.
                '</bodyContent></body>';
@@ -74,20 +73,46 @@ class xml_generator {
         return self::auth_wrap($xml);
     }
 
-    public function create_user($data) {
-        
+    public static function create_user($data) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.CreateUser">'.
+               '<firstName>'.$data->firstname.'</firstName>'.
+               '<lastName>'.$data->lastname.'</lastName>'.
+               '<webExId>'.$data->webexid.'</webExId>'.
+               '<email>'.$data->email.'</email>'.
+               '<password>'.$data->password.'</password>'.
+               '<privilege><host>true</host></privilege>'.
+               '<active>ACTIVATED</active>'.
+               '</bodyContent></body>';
+
+        return self::auth_wrap($xml);
     }
 
-    //---------------------------------------------------
+    public function update_user($data) {
+
+    }
+
+    public function test_user($data) {
+
+    }
+
+    public static function encrypt_password($password) {
+        // BOOOOOO Weak!!
+        return base64_encode($password);
+    }
+
+    public static function decrypt_password($encrypted) {
+        // BOOOOOO Weak!!
+        return base64_decode($encrypted);
+    }
+
+    // ---------------------------------------------------
     // Meeting Functions.
-    //---------------------------------------------------
+    // ---------------------------------------------------
     public function get_meeting_info($meetingid) {
-        
+
     }
 
     public function create_meeting($data) {
-        
-    }
 
-    
+    }
 }

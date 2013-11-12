@@ -24,3 +24,20 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+if ($ADMIN->fulltree) {
+    $settings->add(new admin_setting_configtext('webexactivity/url', get_string('url', 'webexactivity'),
+            get_string('url_help', 'webexactivity'), ''));
+
+    $settings->add(new admin_setting_configtext('webexactivity/siteid', get_string('siteid', 'webexactivity'),
+            get_string('siteid_help', 'webexactivity'), ''));
+
+    $settings->add(new admin_setting_configtext('webexactivity/partnerid', get_string('partnerid', 'webexactivity'),
+            get_string('partnerid_help', 'webexactivity'), ''));
+
+    $settings->add(new admin_setting_configtext('webexactivity/apiusername', get_string('apiusername', 'webexactivity'),
+            get_string('apiusername_help', 'webexactivity'), ''));
+
+    $settings->add(new admin_setting_configpasswordunmask('webexactivity/apipassword', get_string('apipassword', 'webexactivity'),
+            get_string('apipassword_help', 'webexactivity'), ''));
+
+}

@@ -28,3 +28,14 @@ $string['modulename'] = 'WebEx Activity';
 $string['modulenameplural'] = 'WebEx Activities';
 $string['webexactivityname'] = 'Meeting name';
 $string['pluginadministration'] = 'WebEx Activity administration';
+
+$string['apipassword'] = 'Webex Admin username';
+$string['apipassword_help'] = '';
+$string['apiusername'] = 'Webex Admin password';
+$string['apiusername_help'] = '';
+$string['partnerid'] = 'Partner ID';
+$string['partnerid_help'] = '';
+$string['siteid'] = 'Site ID';
+$string['siteid_help'] = '';
+$string['url'] = 'Site URL';
+$string['url_help'] = '';

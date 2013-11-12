@@ -52,7 +52,28 @@ echo $OUTPUT->heading(format_string($webex->name), 2);
 
 echo $OUTPUT->box_start();
 
-$test = new \mod_webexactivity\xml_generator();
+$connector = new \mod_webexactivity\service_connector();
+$stat = $connector->retrieve(\mod_webexactivity\xml_generator::get_user_info('adm_merrill'));
+if ($stat) {
+    print "<pre>";
+    print_r($connector->get_response_array());
+    print "</pre>";
+} else {
+    print "<pre>";
+    print_r($connector->get_errors());
+    print "</pre>";
+}
+
+$stat = $connector->retrieve(\mod_webexactivity\xml_generator::get_user_info('adm_merrill2'));
+if ($stat) {
+    print "<pre>";
+    print_r($connector->get_response_array());
+    print "</pre>";
+} else {
+    print "<pre>";
+    print_r($connector->get_errors());
+    print "</pre>";
+}
 
 echo $OUTPUT->box_end();
 
