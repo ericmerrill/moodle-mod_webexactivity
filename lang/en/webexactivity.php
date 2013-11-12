@@ -37,5 +37,6 @@ $string['partnerid'] = 'Partner ID';
 $string['partnerid_help'] = '';
 $string['siteid'] = 'Site ID';
 $string['siteid_help'] = '';
+$string['starttime'] = 'Meeting start time';
 $string['url'] = 'Site URL';
 $string['url_help'] = '';

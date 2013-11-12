@@ -67,7 +67,15 @@ class xml_generator {
     // ---------------------------------------------------
     public static function get_user_info($username) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.GetUser">'.
-               '<webExId>'.$username.'</webExId>'.
+               '<webExID>'.$username.'</webExID>'.
+               '</bodyContent></body>';
+
+        return self::auth_wrap($xml);
+    }
+
+    public static function get_user_login_url($username) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.GetloginurlUser">'.
+               '<webExID>'.$username.'</webExID>'.
                '</bodyContent></body>';
 
         return self::auth_wrap($xml);
@@ -95,16 +103,6 @@ class xml_generator {
 
     }
 
-    public static function encrypt_password($password) {
-        // BOOOOOO Weak!!
-        return base64_encode($password);
-    }
-
-    public static function decrypt_password($encrypted) {
-        // BOOOOOO Weak!!
-        return base64_decode($encrypted);
-    }
-
     // ---------------------------------------------------
     // Meeting Functions.
     // ---------------------------------------------------
@@ -114,5 +112,29 @@ class xml_generator {
 
     public function create_meeting($data) {
 
+    }
+
+    // ---------------------------------------------------
+    // Meeting Functions.
+    // ---------------------------------------------------
+    public static function get_training_info($meetingid) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.GetTrainingSession">'.
+               '<sessionKey>'.$meetingid.'</sessionKey>'.
+               '</bodyContent></body>';
+
+        return self::auth_wrap($xml);
+    }
+
+    public static function create_training_session($data) {
+        $startstr = date('m/d/Y H:i:s', $data->starttime);
+
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.CreateTrainingSession">'.
+               '<accessControl><listing>PUBLIC</listing></accessControl>'.
+               '<schedule><startDate>'.$startstr.'</startDate><openTime>20</openTime></schedule>'.
+               '<metaData><confName>Conf Name</confName><agenda>agenda 1</agenda><description>description</description></metaData>'.
+               '<repeat><repeatType>SINGLE</repeatType></repeat>'.
+               '</bodyContent></body>';
+
+        return self::auth_wrap($xml);
     }
 }

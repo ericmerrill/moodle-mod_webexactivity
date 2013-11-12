@@ -52,7 +52,22 @@ echo $OUTPUT->heading(format_string($webex->name), 2);
 
 echo $OUTPUT->box_start();
 
+echo userdate($webex->starttime);
+
+/*
 $connector = new \mod_webexactivity\service_connector();
+$stat = $connector->retrieve(\mod_webexactivity\xml_generator::get_training_info('344204292-'));
+if ($stat) {
+    print "<pre>";
+    print_r($connector->get_response_array());
+    print "</pre>";
+} else {
+    print "<pre>";
+    print_r($connector->get_errors());
+    print "</pre>";
+}
+*/
+/*$connector = new \mod_webexactivity\service_connector();
 $stat = $connector->retrieve(\mod_webexactivity\xml_generator::get_user_info('adm_merrill'));
 if ($stat) {
     print "<pre>";
@@ -62,18 +77,14 @@ if ($stat) {
     print "<pre>";
     print_r($connector->get_errors());
     print "</pre>";
-}
+}*/
 
-$stat = $connector->retrieve(\mod_webexactivity\xml_generator::get_user_info('adm_merrill2'));
-if ($stat) {
-    print "<pre>";
-    print_r($connector->get_response_array());
-    print "</pre>";
-} else {
-    print "<pre>";
-    print_r($connector->get_errors());
-    print "</pre>";
-}
+
+/*
+$webex = new \mod_webexactivity\webex();
+$meeting = $DB->get_record('webexactivity', array('id' => 3));
+$webex->create_user($USER);
+*/
 
 echo $OUTPUT->box_end();
 

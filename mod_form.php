@@ -38,6 +38,8 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
 
+        $mform->addElement('date_time_selector', 'starttime', get_string('starttime', 'webexactivityname'));
+
         $this->standard_coursemodule_elements();
 
         $this->add_action_buttons();

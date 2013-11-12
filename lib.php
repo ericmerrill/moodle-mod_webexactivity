@@ -24,6 +24,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+define('WEBEXACTIVITY_TYPE_MEETING', 1);
+define('WEBEXACTIVITY_TYPE_TRAINING', 2);
+define('WEBEXACTIVITY_TYPE_SUPPORT', 3);
+
 function webexactivity_supports($feature) {
     switch($feature) {
         case FEATURE_MOD_ARCHETYPE:
@@ -55,10 +59,15 @@ function webexactivity_supports($feature) {
 function webexactivity_add_instance($data, $mform) {
     global $CFG, $DB;
 
-    $data->timemodified = time();
-    $data->id = $DB->insert_record('webexactivity', $data);
+    $meeting = new \stdClass();
+    $meeting->timemodified = time();
+    $meeting->starttime = $data->starttime;
+    $meeting->name = $data->name;
+    $meeting->course = $data->course;
+    $meeting->type = WEBEXACTIVITY_TYPE_TRAINING;
+    $meeting->id = $DB->insert_record('webexactivity', $meeting);
 
-    return $data->id;
+    return $meeting->id;
 }
 
 function webexactivity_update_instance($data) {

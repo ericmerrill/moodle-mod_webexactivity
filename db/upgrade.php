@@ -32,7 +32,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
 
     // Moodle v2.6.0 release upgrade line.
     // Put any upgrade step following this.
-    if ($oldversion < 20131111100) {
+    if ($oldversion < 2013111100) {
         // Define table webexactivity_users to be created.
         $table = new xmldb_table('webexactivity_users');
 
@@ -91,8 +91,37 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Certificate savepoint reached.
-        upgrade_mod_savepoint(true, 20131111100, 'webexactivity');
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2013111100, 'webexactivity');
+    }
+
+    if ($oldversion < 2013111200) {
+
+        // Define field type to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('type', XMLDB_TYPE_INTEGER, '2', null, null, null, null, 'introformat');
+
+        // Conditionally launch add field type.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2013111200, 'webexactivity');
+    }
+
+    if ($oldversion < 2013111202) {
+        // Define field webexid to be added to webexactivity_users.
+        $table = new xmldb_table('webexactivity_users');
+        $field = new xmldb_field('webexid', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null, 'moodleuserid');
+
+        // Conditionally launch add field webexid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2013111202, 'webexactivity');
     }
 
     return true;
