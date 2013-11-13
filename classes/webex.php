@@ -26,17 +26,42 @@ namespace mod_webexactivity;
 
 class webex {
 
+    private $latesterrors = false;
+
     public function __construct() {
     }
 
     // ---------------------------------------------------
     // User Functions.
     // ---------------------------------------------------
+    public function setup_webex_user($moodleuser) {
+        $webexuser = $this->get_webex_user($moodleuser);
+
+        // User not in table, make.
+        if ($webexuser === false) {
+            $webexuser = $this->create_user($moodleuser);
+            if ($webexuser === false) {
+                return false;
+            }
+
+            return $webexuser;
+        }
+
+        $status = $this->check_user_auth($webexuser);
+        if ($status) {
+            return $webexuser;
+        } else {
+            $webexuser = $this->update_user_password($webexuser);
+        }
+
+        return $webexuser;
+    }
+
     public function create_user($moodleuser) {
         global $DB;
 
-        if (self::get_webex_user($moodleuser)) {
-            return true;
+        if ($webexuser = self::get_webex_user($moodleuser)) {
+            return $webexuser;
         }
 
         $data = new \stdClass();
@@ -54,24 +79,85 @@ class webex {
             if (isset($response['use:userId']['0']['#'])) {
                 $webexuser = new \stdClass();
                 $webexuser->moodleuserid = $moodleuser->id;
-                $webexuser->webexid = $response['use:userId']['0']['#'];
-                $webexuser->username = $data->webexid;
+                $webexuser->webexuserid = $response['use:userId']['0']['#'];
+                $webexuser->webexid = $data->webexid;
                 $webexuser->password = self::encrypt_password($data->password);
-                if ($DB->insert_record('webexactivity_users', $webexuser)) {
-                    return true;
+                if ($webexuser->id = $DB->insert_record('webexactivity_users', $webexuser)) {
+                    return $webexuser;
                 } else {
                     return false;
                 }
             }
         } else {
-            return false;
+            // Failure creating user. Check to see if exists.
+            if (!isset($this->latesterrors['exception'])) {
+                // No info, just end here.
+                return false;
+            }
+            $exception = $this->latesterrors['exception'];
+            // User already exists with this username or email.
+            if ((stripos($exception, '030004') !== false) || (stripos($exception, '030005') === false)) {
+                $xml = xml_generator::get_user_info($data->webexid);
+
+                if (!($response = $this->get_response($xml))) {
+                    return false;
+                }
+
+                if (strcasecmp($data->email, $response['use:email']['0']['#']) === 0) {
+                    $newwebexuser = new \stdClass();
+                    $newwebexuser->moodleuserid = $moodleuser->id;
+                    $newwebexuser->webexid = $data->webexid;
+                    $newwebexuser->webexuserid = $response['use:userId']['0']['#'];
+                    $newwebexuser->password = '';
+                    if ($newwebexuser->id = $DB->insert_record('webexactivity_users', $newwebexuser)) {
+                        $newwebexuser = $this->update_user_password($newwebexuser);
+
+                        return $newwebexuser;
+                    } else {
+                        return false;
+                    }
+                }
+            }
         }
 
         return false;
     }
 
-    public function test_user($webexuser) {
+    public function check_user_auth($webexuser) {
+        $xml = xml_generator::check_user_auth($webexuser);
 
+        $response = $this->get_response($xml);
+
+        if ($response) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function update_user_password($webexuser) {
+        global $DB;
+
+        $webexuser->password = self::generate_password();
+
+        $xml = xml_generator::update_user_password($webexuser);
+
+        $response = $this->get_response($xml);
+print_r($response);
+        if ($response !== false) {
+print "passed";
+            $newwebexuser = new \stdClass();
+            $newwebexuser->id = $webexuser->id;
+            $newwebexuser->password = self::encrypt_password($webexuser->password);
+            if ($DB->update_record('webexactivity_users', $newwebexuser)) {
+                $newwebexuser->password = $webexuser->password;
+                return $newwebexuser;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     public static function get_webex_user($moodleuser) {
@@ -81,7 +167,14 @@ class webex {
             return false;
         }
 
-        return $DB->get_record('webexactivity_users', array('moodleuserid' => $moodleuser->id));
+        $webexuser = $DB->get_record('webexactivity_users', array('moodleuserid' => $moodleuser->id));
+
+        if ($webexuser === false) {
+            return false;
+        }
+        $webexuser->password = self::decrypt_password($webexuser->password);
+
+        return $webexuser;
     }
 
     private static function generate_password() {
@@ -171,13 +264,18 @@ class webex {
         $stat = $connector->retrieve($xml);
 
         if ($stat) {
+            $this->latesterrors = false;
             $response = $connector->get_response_array();
+
             if (isset($response['serv:message']['#']['serv:body']['0']['#']['serv:bodyContent']['0']['#'])) {
                 return $response['serv:message']['#']['serv:body']['0']['#']['serv:bodyContent']['0']['#'];
+            } else if (isset($response['serv:message']['#']['serv:body']['0']['#']['serv:bodyContent'])) {
+                return true;
             } else {
                 return false;
             }
         } else {
+            $this->latesterrors = $connector->get_errors();
             print "<pre>"; // TODO Temp.
             print_r($connector->get_errors());
             print "</pre>";

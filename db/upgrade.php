@@ -124,6 +124,25 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2013111202, 'webexactivity');
     }
 
+    if ($oldversion < 2013111203) {
+
+        // Rename field webexid on table webexactivity_users to NEWNAMEGOESHERE.
+        $table = new xmldb_table('webexactivity_users');
+        $field = new xmldb_field('webexid', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null, 'username');
+
+        // Launch rename field webexid.
+        $dbman->rename_field($table, $field, 'webexuserid');
+
+        // Rename field webexuserid on table webexactivity_users to NEWNAMEGOESHERE.
+        $field = new xmldb_field('username', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null, 'password');
+
+        // Launch rename field webexuserid.
+        $dbman->rename_field($table, $field, 'webexid');
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2013111203, 'webexactivity');
+    }
+
     return true;
 }
 

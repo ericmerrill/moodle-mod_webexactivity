@@ -52,7 +52,10 @@ class xml_generator {
         if ($user == false) {
             $outxml .= '<webExID>'.$config->apiusername.'</webExID>';
             $outxml .= '<password>'.$config->apipassword.'</password>';
-        } // TODO User support.
+        } else {
+            $outxml .= '<webExID>'.$user->webexid.'</webExID>';
+            $outxml .= '<password>'.$user->password.'</password>';
+        }
 
         $outxml .= '<siteID>'.$config->siteid.'</siteID>';
         $outxml .= '<partnerID>'.$config->partnerid.'</partnerID>';
@@ -67,7 +70,7 @@ class xml_generator {
     // ---------------------------------------------------
     public static function get_user_info($username) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.GetUser">'.
-               '<webExID>'.$username.'</webExID>'.
+               '<webExId>'.$username.'</webExId>'.
                '</bodyContent></body>';
 
         return self::auth_wrap($xml);
@@ -95,12 +98,22 @@ class xml_generator {
         return self::auth_wrap($xml);
     }
 
-    public function update_user($data) {
+    public static function update_user_password($webexuser) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.SetUser">'.
+               '<webExId>'.$webexuser->webexid.'</webExId>'.
+               '<password>'.$webexuser->password.'</password>'.
+               '<active>ACTIVATED</active>'.
+               '</bodyContent></body>';
 
+        return self::auth_wrap($xml);
     }
 
-    public function test_user($data) {
+    public static function check_user_auth($webexuser) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.GetUser">'.
+               '<webExId>'.$webexuser->webexid.'</webExId>'.
+               '</bodyContent></body>';
 
+        return self::auth_wrap($xml, $webexuser);
     }
 
     // ---------------------------------------------------

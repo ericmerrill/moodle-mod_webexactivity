@@ -89,11 +89,10 @@ if ($stat) {
 }*/
 
 
-/*
+
 $webex = new \mod_webexactivity\webex();
-$meeting = $DB->get_record('webexactivity', array('id' => 3));
-$webex->create_user($USER);
-*/
+$webex->setup_webex_user($USER);
+
 
 echo $OUTPUT->box_end();
 
