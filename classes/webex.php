@@ -143,9 +143,8 @@ class webex {
         $xml = xml_generator::update_user_password($webexuser);
 
         $response = $this->get_response($xml);
-print_r($response);
+
         if ($response !== false) {
-print "passed";
             $newwebexuser = new \stdClass();
             $newwebexuser->id = $webexuser->id;
             $newwebexuser->password = self::encrypt_password($webexuser->password);
