@@ -71,6 +71,8 @@ class service_connector {
         if ($url === false) {
             return false;
         }
+        $url = 'https://'.$url.'.webex.com';
+
         $handle = curl_init($url.'/WBXService/XMLService');
         curl_setopt($handle, CURLOPT_TIMEOUT, 120);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);

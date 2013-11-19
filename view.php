@@ -27,6 +27,7 @@
 require('../../config.php');
 
 $id = optional_param('id', 0, PARAM_INT); // Course module ID.
+$action = optional_param('action', false, PARAM_ALPHA);
 
 
 $cm = get_coursemodule_from_id('webexactivity', $id, 0, false, MUST_EXIST);
@@ -37,6 +38,22 @@ $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST)
 require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/webexactivity:view', $context);
+
+// Do redirect actions here.
+switch ($action) {
+    case 'hostmeeting':
+        $webexobj = new \mod_webexactivity\webex();
+        $webexuser = $webexobj->get_webex_user($USER);
+        $hosturl = \mod_webexactivity\webex::get_meeting_host_url($webex);
+        $authurl = $webexobj->get_login_url($webex, $webexuser, false, $hosturl);
+        break;
+    case 'joinmeeting':
+        
+        break;
+}
+
+
+
 
 add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webex->id, $cm->id);
 
@@ -52,16 +69,18 @@ echo $OUTPUT->heading(format_string($webex->name), 2);
 
 echo $OUTPUT->box_start();
 
-echo userdate($webex->starttime);
+//echo userdate($webex->starttime);
+
 
 $urlbase = get_config('webexactivity', 'url').'/oakland-dev';
 $url = $urlbase.'/m.php?AT=JM&MK='.$webex->meetingkey;
 
-echo $url;
+//echo $url;
 
 $url = $urlbase.'/m.php?AT=HM&MK='.$webex->meetingkey;
 
-echo $url;
+//echo $url;
+
 
 /*
 $connector = new \mod_webexactivity\service_connector();
@@ -89,9 +108,16 @@ if ($stat) {
 }*/
 
 
-
-$webex = new \mod_webexactivity\webex();
-$webex->setup_webex_user($USER);
+/*$webexobj = new \mod_webexactivity\webex();
+$webexuser = $webexobj->get_webex_user($USER);
+$hosturl = \mod_webexactivity\webex::get_meeting_host_url($webex);
+echo $hosturl;*/
+$webexobj = new \mod_webexactivity\webex();
+print_r($webexobj->get_meeting_info($webex));
+//$authurl = $webexobj->get_login_url($webex, $webexuser, false, $hosturl);
+//echo $authurl;
+//$webex = new \mod_webexactivity\webex();
+//$webex->get_webex_user($USER, false);
 
 
 echo $OUTPUT->box_end();

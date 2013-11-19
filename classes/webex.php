@@ -34,33 +34,38 @@ class webex {
     // ---------------------------------------------------
     // User Functions.
     // ---------------------------------------------------
-    public function setup_webex_user($moodleuser) {
-        $webexuser = $this->get_webex_user($moodleuser);
+    public function get_webex_user($moodleuser, $checkauth = false) {
+        $webexuser = $this->get_webex_user_record($moodleuser);
 
         // User not in table, make.
         if ($webexuser === false) {
-            $webexuser = $this->create_user($moodleuser);
-            if ($webexuser === false) {
-                return false;
+            return false;
+        }
+
+        if ($checkauth) {
+            $status = $this->check_user_auth($webexuser);
+            if ($status) {
+                return $webexuser;
+            } else {
+                $webexuser = $this->update_user_password($webexuser);
+                return $webexuser;
             }
-
-            return $webexuser;
-        }
-
-        $status = $this->check_user_auth($webexuser);
-        if ($status) {
-            return $webexuser;
         } else {
-            $webexuser = $this->update_user_password($webexuser);
+            return $webexuser;
         }
-
-        return $webexuser;
     }
 
-    public function create_user($moodleuser) {
+    public function get_webex_user_record($moodleuser) {
         global $DB;
 
-        if ($webexuser = self::get_webex_user($moodleuser)) {
+        if (!is_object($moodleuser) || !isset($moodleuser->id)) {
+            return false;
+        }
+
+        $webexuser = $DB->get_record('webexactivity_users', array('moodleuserid' => $moodleuser->id));
+
+        if ($webexuser !== false) {
+            $webexuser->password = self::decrypt_password($webexuser->password);
             return $webexuser;
         }
 
@@ -125,6 +130,11 @@ class webex {
 
     public function check_user_auth($webexuser) {
         $xml = xml_generator::check_user_auth($webexuser);
+        //$xml = xml_generator::auth_wrap($xml, $webexuser);
+
+        if (!($response = $this->get_response($xml))) {
+            return false;
+        }
 
         $response = $this->get_response($xml);
 
@@ -159,21 +169,44 @@ class webex {
         }
     }
 
-    public static function get_webex_user($moodleuser) {
-        global $DB;
+    public function get_login_url($webex, $webexuser, $backurl = false, $forwardurl = false) {
+        $xml = xml_generator::get_user_login_url($webexuser->webexid);
+        $xml = xml_generator::auth_wrap($xml, $webexuser);
 
-        if (!is_object($moodleuser) || !isset($moodleuser->id)) {
+        if (!($response = $this->get_response($xml))) {
             return false;
         }
 
-        $webexuser = $DB->get_record('webexactivity_users', array('moodleuserid' => $moodleuser->id));
+        $response = $this->get_response($xml);
 
-        if ($webexuser === false) {
+        $returnurl = $response['use:userLoginURL']['0']['#'];
+
+        if ($backurl) {
+            $encoded = urlencode($backurl);
+            $returnurl = str_replace('&BU=', '&BU='.$encoded, $returnurl);
+        }
+
+        if ($forwardurl) {
+            $encoded = urlencode($forwardurl);
+            $returnurl = str_replace('&MU=GoBack', '&MU='.$encoded, $returnurl);
+        }
+
+        return $returnurl;
+    }
+
+
+    // ---------------------------------------------------
+    // Support Functions.
+    // ---------------------------------------------------
+    public static function get_base_url() {
+        $host = get_config('webexactivity', 'url');
+
+        if ($host === false) {
             return false;
         }
-        $webexuser->password = self::decrypt_password($webexuser->password);
+        $url = 'https://'.$host.'.webex.com/'.$host;
 
-        return $webexuser;
+        return $url;
     }
 
     private static function generate_password() {
@@ -247,12 +280,31 @@ class webex {
         }
     }
 
+    public function get_meeting_info($webex) {
+        $xml = xml_generator::get_meeting_info($webex->meetingkey);
+
+        if (!($response = $this->get_response($xml))) {
+            return false;
+        }
+
+        $response = $this->get_response($xml);
+
+        return $response;
+    }
+
     public function create_meeting($data) {
 
     }
 
     public function update_meeting($data) {
 
+    }
+
+    public static function get_meeting_host_url($webex) {
+        $baseurl = self::get_base_url();
+        $url = $baseurl.'/m.php?AT=HM&MK='.$webex->meetingkey;
+
+        return $url;
     }
 
     // ---------------------------------------------------

@@ -69,7 +69,7 @@ function webexactivity_add_instance($data, $mform) {
 
     $webex = new \mod_webexactivity\webex();
     $webex->create_or_update_meeting($meeting);
-
+//    $webex->create_or_update_training($meeting);
     return $meeting->id;
 }
 

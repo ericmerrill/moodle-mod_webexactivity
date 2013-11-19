@@ -28,7 +28,7 @@ class xml_generator {
     public function __construct() {
     }
 
-    private static function auth_wrap($xml, $user = false) {
+    public static function auth_wrap($xml, $user = false) {
         return self::standard_wrap(self::get_auth_header($user).$xml);
     }
 
@@ -78,10 +78,10 @@ class xml_generator {
 
     public static function get_user_login_url($username) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.GetloginurlUser">'.
-               '<webExID>'.$username.'</webExID>'.
-               '</bodyContent></body>';
+               '<webExID>'.$username.'</webExID>';
+        $xml .= '</bodyContent></body>';
 
-        return self::auth_wrap($xml);
+        return $xml;
     }
 
     public static function create_user($data) {
@@ -119,8 +119,12 @@ class xml_generator {
     // ---------------------------------------------------
     // Meeting Functions.
     // ---------------------------------------------------
-    public function get_meeting_info($meetingid) {
+    public static function get_meeting_info($meetingid) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.GetMeeting">'.
+               '<meetingKey>'.$meetingid.'</meetingKey>'.
+               '</bodyContent></body>';
 
+       return self::auth_wrap($xml);
     }
 
     public static function create_meeting($data) {
