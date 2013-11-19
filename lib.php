@@ -57,7 +57,7 @@ function webexactivity_supports($feature) {
 }
 
 function webexactivity_add_instance($data, $mform) {
-    global $CFG, $DB;
+    global $CFG, $DB, $USER;
 
     $meeting = new \stdClass();
     $meeting->timemodified = time();
@@ -68,8 +68,8 @@ function webexactivity_add_instance($data, $mform) {
     $meeting->id = $DB->insert_record('webexactivity', $meeting);
 
     $webex = new \mod_webexactivity\webex();
-    $webex->create_or_update_meeting($meeting);
-//    $webex->create_or_update_training($meeting);
+//    $webex->create_or_update_meeting($meeting, $USER);
+    $webex->create_or_update_training($meeting, $USER);
     return $meeting->id;
 }
 

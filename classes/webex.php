@@ -234,7 +234,7 @@ class webex {
     // ---------------------------------------------------
     // Meeting Functions.
     // ---------------------------------------------------
-    public function create_or_update_meeting($webexrecord) {
+    public function create_or_update_meeting($webexrecord, $user) {
         global $DB;
 
         if (isset($webexrecord->meetingkey) && $webexrecord->meetingkey) {
@@ -242,7 +242,10 @@ class webex {
             return true;
         }
 
+        $webexuser = $this->get_webex_user($user);
+
         $xml = xml_generator::create_meeting($webexrecord);
+        $xml = xml_generator::auth_wrap($xml, $webexuser);
 
         $response = $this->get_response($xml);
 
@@ -257,7 +260,7 @@ class webex {
         }
     }
 
-    public function create_or_update_training($webexrecord) {
+    public function create_or_update_training($webexrecord, $user) {
         global $DB;
 
         if (isset($webexrecord->meetingkey) && $webexrecord->meetingkey) {
@@ -265,7 +268,10 @@ class webex {
             return true;
         }
 
+        $webexuser = $this->get_webex_user($user);
+
         $xml = xml_generator::create_training_session($webexrecord);
+        $xml = xml_generator::auth_wrap($xml, $webexuser);
 
         $response = $this->get_response($xml);
 
@@ -292,6 +298,20 @@ class webex {
         return $response;
     }
 
+    public function get_training_info($webex, $user) {
+        $webexuser = $this->get_webex_user($user);
+        $xml = xml_generator::get_training_info($webex->meetingkey);
+        $xml = xml_generator::auth_wrap($xml, $webexuser);
+
+        if (!($response = $this->get_response($xml))) {
+            return false;
+        }
+
+        $response = $this->get_response($xml);
+
+        return $response;
+    }
+
     public function create_meeting($data) {
 
     }
@@ -303,6 +323,13 @@ class webex {
     public static function get_meeting_host_url($webex) {
         $baseurl = self::get_base_url();
         $url = $baseurl.'/m.php?AT=HM&MK='.$webex->meetingkey;
+
+        return $url;
+    }
+
+    public static function get_meeting_join_url($webex) {
+        $baseurl = self::get_base_url();
+        $url = $baseurl.'/m.php?AT=JM&MK='.$webex->meetingkey;
 
         return $url;
     }

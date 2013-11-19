@@ -135,18 +135,18 @@ class xml_generator {
                '<metaData><confName>'.$data->name.'</confName><agenda>agenda 1</agenda></metaData>'.
                '</bodyContent></body>';
 
-        return self::auth_wrap($xml);
+        return $xml;
     }
 
     // ---------------------------------------------------
-    // Meeting Functions.
+    // Training Center Functions.
     // ---------------------------------------------------
     public static function get_training_info($meetingid) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.GetTrainingSession">'.
                '<sessionKey>'.$meetingid.'</sessionKey>'.
                '</bodyContent></body>';
 
-        return self::auth_wrap($xml);
+        return $xml;
     }
 
     public static function create_training_session($data) {
@@ -159,6 +159,6 @@ class xml_generator {
                '<repeat><repeatType>SINGLE</repeatType></repeat>'.
                '</bodyContent></body>';
 
-        return self::auth_wrap($xml);
+        return $xml;
     }
 }

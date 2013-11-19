@@ -46,9 +46,11 @@ switch ($action) {
         $webexuser = $webexobj->get_webex_user($USER);
         $hosturl = \mod_webexactivity\webex::get_meeting_host_url($webex);
         $authurl = $webexobj->get_login_url($webex, $webexuser, false, $hosturl);
+        redirect($authurl);
         break;
     case 'joinmeeting':
-        
+        $joinurl = \mod_webexactivity\webex::get_meeting_join_url($webex);
+        redirect($joinurl);
         break;
 }
 
@@ -69,17 +71,20 @@ echo $OUTPUT->heading(format_string($webex->name), 2);
 
 echo $OUTPUT->box_start();
 
+echo '<a href="?id='.$id.'&action=hostmeeting" target="_blank">Host</a><br>';
+echo '<a href="?id='.$id.'&action=joinmeeting" target="_blank">Join</a><br>';
+
 //echo userdate($webex->starttime);
 
 
-$urlbase = get_config('webexactivity', 'url').'/oakland-dev';
-$url = $urlbase.'/m.php?AT=JM&MK='.$webex->meetingkey;
+//$urlbase = get_config('webexactivity', 'url').'.webex.com/oakland-dev';
+//$url = $urlbase.'/m.php?AT=JM&MK='.$webex->meetingkey;
 
 //echo $url;
 
-$url = $urlbase.'/m.php?AT=HM&MK='.$webex->meetingkey;
-
-//echo $url;
+//$url = $urlbase.'/m.php?AT=HM&MK='.$webex->meetingkey;
+$url = \mod_webexactivity\webex::get_meeting_host_url($webex);
+echo $url;
 
 
 /*
@@ -107,15 +112,18 @@ if ($stat) {
     print "</pre>";
 }*/
 
-
-/*$webexobj = new \mod_webexactivity\webex();
+$webexobj = new \mod_webexactivity\webex();
+print_r($webexobj->get_training_info($webex, $USER));
+/*
 $webexuser = $webexobj->get_webex_user($USER);
 $hosturl = \mod_webexactivity\webex::get_meeting_host_url($webex);
 echo $hosturl;*/
-$webexobj = new \mod_webexactivity\webex();
-print_r($webexobj->get_meeting_info($webex));
-//$authurl = $webexobj->get_login_url($webex, $webexuser, false, $hosturl);
-//echo $authurl;
+/*$webexobj = new \mod_webexactivity\webex();
+$webexuser = $webexobj->get_webex_user($USER);
+$hosturl = \mod_webexactivity\webex::get_meeting_host_url($webex);
+
+$authurl = $webexobj->get_login_url($webex, $webexuser, false, $hosturl);
+echo '<a href="'.$authurl.'" target="_blank">Host</a>';*/
 //$webex = new \mod_webexactivity\webex();
 //$webex->get_webex_user($USER, false);
 
