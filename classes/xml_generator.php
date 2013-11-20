@@ -73,7 +73,7 @@ class xml_generator {
                '<webExId>'.$username.'</webExId>'.
                '</bodyContent></body>';
 
-        return self::auth_wrap($xml);
+        return $xml;
     }
 
     public static function get_user_login_url($username) {
@@ -95,7 +95,7 @@ class xml_generator {
                '<active>ACTIVATED</active>'.
                '</bodyContent></body>';
 
-        return self::auth_wrap($xml);
+        return $xml;
     }
 
     public static function update_user_password($webexuser) {
@@ -105,7 +105,7 @@ class xml_generator {
                '<active>ACTIVATED</active>'.
                '</bodyContent></body>';
 
-        return self::auth_wrap($xml);
+        return $xml;
     }
 
     public static function check_user_auth($webexuser) {
@@ -113,7 +113,7 @@ class xml_generator {
                '<webExId>'.$webexuser->webexid.'</webExId>'.
                '</bodyContent></body>';
 
-        return self::auth_wrap($xml, $webexuser);
+        return $xml;
     }
 
     // ---------------------------------------------------
@@ -124,7 +124,7 @@ class xml_generator {
                '<meetingKey>'.$meetingid.'</meetingKey>'.
                '</bodyContent></body>';
 
-       return self::auth_wrap($xml);
+        return $xml;
     }
 
     public static function create_meeting($data) {
@@ -152,10 +152,13 @@ class xml_generator {
     public static function create_training_session($data) {
         $startstr = date('m/d/Y H:i:s', $data->starttime);
 
+        // TODO Expand.
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.CreateTrainingSession">'.
                '<accessControl><listing>PUBLIC</listing></accessControl>'.
                '<schedule><startDate>'.$startstr.'</startDate><openTime>20</openTime></schedule>'.
-               '<metaData><confName>'.$data->name.'</confName><agenda>agenda 1</agenda><description>description</description></metaData>'.
+               '<metaData><confName>'.$data->name.'</confName>'.
+               '<agenda>agenda 1</agenda>'.
+               '<description>description</description></metaData>'.
                '<repeat><repeatType>SINGLE</repeatType></repeat>'.
                '</bodyContent></body>';
 

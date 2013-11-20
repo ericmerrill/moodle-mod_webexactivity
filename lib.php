@@ -31,7 +31,7 @@ define('WEBEXACTIVITY_TYPE_SUPPORT', 3);
 function webexactivity_supports($feature) {
     switch($feature) {
         case FEATURE_MOD_ARCHETYPE:
-            return MOD_ARCHETYPE_RESOURCE;
+            return MOD_ARCHETYPE_ASSIGNMENT;
         case FEATURE_GROUPS:
             return false;
         case FEATURE_GROUPINGS:
@@ -39,7 +39,7 @@ function webexactivity_supports($feature) {
         case FEATURE_GROUPMEMBERSONLY:
             return false;
         case FEATURE_MOD_INTRO:
-            return false;
+            return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS:
             return false;
         case FEATURE_GRADE_HAS_GRADE:
@@ -62,6 +62,8 @@ function webexactivity_add_instance($data, $mform) {
     $meeting = new \stdClass();
     $meeting->timemodified = time();
     $meeting->starttime = $data->starttime;
+    $meeting->length = $data->duration;
+    $meeting->intro = $data->intro;
     $meeting->name = $data->name;
     $meeting->course = $data->course;
     $meeting->type = WEBEXACTIVITY_TYPE_TRAINING;
@@ -69,7 +71,10 @@ function webexactivity_add_instance($data, $mform) {
 
     $webex = new \mod_webexactivity\webex();
 //    $webex->create_or_update_meeting($meeting, $USER);
-    $webex->create_or_update_training($meeting, $USER);
+    if (!$webex->create_or_update_training($meeting, $USER)) {
+        return false;
+    }
+
     return $meeting->id;
 }
 

@@ -26,8 +26,6 @@ namespace mod_webexactivity;
 
 class webex {
 
-    private $latesterrors = false;
-
     public function __construct() {
     }
 
@@ -130,7 +128,6 @@ class webex {
 
     public function check_user_auth($webexuser) {
         $xml = xml_generator::check_user_auth($webexuser);
-        //$xml = xml_generator::auth_wrap($xml, $webexuser);
 
         if (!($response = $this->get_response($xml))) {
             return false;
@@ -159,8 +156,7 @@ class webex {
             $newwebexuser->id = $webexuser->id;
             $newwebexuser->password = self::encrypt_password($webexuser->password);
             if ($DB->update_record('webexactivity_users', $newwebexuser)) {
-                $newwebexuser->password = $webexuser->password;
-                return $newwebexuser;
+                return $webexuser;
             } else {
                 return false;
             }
@@ -171,13 +167,12 @@ class webex {
 
     public function get_login_url($webex, $webexuser, $backurl = false, $forwardurl = false) {
         $xml = xml_generator::get_user_login_url($webexuser->webexid);
-        $xml = xml_generator::auth_wrap($xml, $webexuser);
 
         if (!($response = $this->get_response($xml))) {
             return false;
         }
 
-        $response = $this->get_response($xml);
+        $response = $this->get_response($xml, $webexuser);
 
         $returnurl = $response['use:userLoginURL']['0']['#'];
 
@@ -245,9 +240,8 @@ class webex {
         $webexuser = $this->get_webex_user($user);
 
         $xml = xml_generator::create_meeting($webexrecord);
-        $xml = xml_generator::auth_wrap($xml, $webexuser);
 
-        $response = $this->get_response($xml);
+        $response = $this->get_response($xml, $webexuser);
 
         if ($response) {
             if (isset($response['meet:meetingkey']['0']['#'])) {
@@ -271,9 +265,8 @@ class webex {
         $webexuser = $this->get_webex_user($user);
 
         $xml = xml_generator::create_training_session($webexrecord);
-        $xml = xml_generator::auth_wrap($xml, $webexuser);
 
-        $response = $this->get_response($xml);
+        $response = $this->get_response($xml, $webexuser);
 
         if ($response) {
             if (isset($response['train:sessionkey']['0']['#'])) {
@@ -301,13 +294,10 @@ class webex {
     public function get_training_info($webex, $user) {
         $webexuser = $this->get_webex_user($user);
         $xml = xml_generator::get_training_info($webex->meetingkey);
-        $xml = xml_generator::auth_wrap($xml, $webexuser);
 
-        if (!($response = $this->get_response($xml))) {
+        if (!($response = $this->get_response($xml, $webexuser))) {
             return false;
         }
-
-        $response = $this->get_response($xml);
 
         return $response;
     }
@@ -337,27 +327,50 @@ class webex {
     // ---------------------------------------------------
     // Connection Functions.
     // ---------------------------------------------------
-    private function get_response($xml) {
-        $connector = new service_connector();
-        $stat = $connector->retrieve($xml);
+    private function get_response($basexml, $webexuser = false) {
+        global $USER;
 
-        if ($stat) {
-            $this->latesterrors = false;
-            $response = $connector->get_response_array();
+        $xml = xml_generator::auth_wrap($basexml, $webexuser);
 
-            if (isset($response['serv:message']['#']['serv:body']['0']['#']['serv:bodyContent']['0']['#'])) {
-                return $response['serv:message']['#']['serv:body']['0']['#']['serv:bodyContent']['0']['#'];
-            } else if (isset($response['serv:message']['#']['serv:body']['0']['#']['serv:bodyContent'])) {
-                return true;
-            } else {
-                return false;
-            }
+        list($status, $response, $errors) = $this->fetch_response($xml);
+
+        if ($status) {
+            return $response;
         } else {
-            $this->latesterrors = $connector->get_errors();
+            // Bad user password, reset it and try again.
+            if ($webexuser && (isset($errors['exception'])) && ($errors['exception'] === '030002')) {
+                $webexuser = $this->update_user_password($webexuser);
+                $xml = xml_generator::auth_wrap($basexml, $webexuser);
+                list($status, $response, $errors) = $this->fetch_response($xml);
+                if ($status) {
+                    return $response;
+                }
+            }
+
             print "<pre>"; // TODO Temp.
-            print_r($connector->get_errors());
+            print_r($errors);
             print "</pre>";
             return false;
         }
+    }
+
+    private function fetch_response($xml) {
+        $connector = new service_connector();
+        $status = $connector->retrieve($xml);
+
+        if ($status) {
+            $response = $connector->get_response_array();
+            if (isset($response['serv:message']['#']['serv:body']['0']['#']['serv:bodyContent']['0']['#'])) {
+                $response = $response['serv:message']['#']['serv:body']['0']['#']['serv:bodyContent']['0']['#'];
+            } else {
+                $response = false;
+                $status = false;
+            }
+        } else {
+            $response = false;
+        }
+        $errors = $connector->get_errors();
+
+        return array($status, $response, $errors);
     }
 }
