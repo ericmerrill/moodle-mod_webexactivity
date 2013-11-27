@@ -83,8 +83,8 @@ echo '<a href="?id='.$id.'&action=joinmeeting" target="_blank">Join</a><br>';
 //echo $url;
 
 //$url = $urlbase.'/m.php?AT=HM&MK='.$webex->meetingkey;
-$url = \mod_webexactivity\webex::get_meeting_host_url($webex);
-echo $url;
+//$url = \mod_webexactivity\webex::get_meeting_host_url($webex);
+//echo $url;
 
 
 /*

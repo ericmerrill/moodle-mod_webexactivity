@@ -67,10 +67,12 @@ class webex {
             return $webexuser;
         }
 
+        $prefix = get_config('webexactivity', 'prefix');
+
         $data = new \stdClass();
         $data->firstname = $moodleuser->firstname;
         $data->lastname = $moodleuser->lastname;
-        $data->webexid = $moodleuser->username;
+        $data->webexid = $prefix.$moodleuser->username;
         $data->email = $moodleuser->email;
         $data->password = self::generate_password();
 
@@ -168,11 +170,9 @@ class webex {
     public function get_login_url($webex, $webexuser, $backurl = false, $forwardurl = false) {
         $xml = xml_generator::get_user_login_url($webexuser->webexid);
 
-        if (!($response = $this->get_response($xml))) {
+        if (!($response = $this->get_response($xml, $webexuser))) {
             return false;
         }
-
-        $response = $this->get_response($xml, $webexuser);
 
         $returnurl = $response['use:userLoginURL']['0']['#'];
 
@@ -212,7 +212,7 @@ class webex {
             $n = rand(0, $length);
             $pass[] = $alphabet[$n];
         }
-        return implode($pass).'!2D';
+        return implode($pass).'!2Da';
     }
 
     public static function encrypt_password($password) {

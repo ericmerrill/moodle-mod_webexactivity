@@ -40,4 +40,7 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configpasswordunmask('webexactivity/apipassword', get_string('apipassword', 'webexactivity'),
             get_string('apipassword_help', 'webexactivity'), ''));
 
+    $settings->add(new admin_setting_configtext('webexactivity/prefix', get_string('prefix', 'webexactivity'),
+            get_string('prefix_help', 'webexactivity'), ''));
+
 }
