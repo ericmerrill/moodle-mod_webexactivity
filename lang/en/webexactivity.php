@@ -33,6 +33,7 @@ $string['apipassword'] = 'Webex Admin username';
 $string['apipassword_help'] = '';
 $string['apiusername'] = 'Webex Admin password';
 $string['apiusername_help'] = '';
+$string['description'] = 'Description';
 $string['duration'] = 'Duration';
 $string['partnerid'] = 'Partner ID';
 $string['partnerid_help'] = '';

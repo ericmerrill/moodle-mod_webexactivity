@@ -152,14 +152,66 @@ class xml_generator {
     public static function create_training_session($data) {
         $startstr = date('m/d/Y H:i:s', $data->starttime);
 
+        $hostusers = '';
+        if (isset($data->hostusers)) {
+            $hostusers .= '<presenters><participants>';
+            foreach ($data->hostusers as $huser) {
+                $hostusers .= '<participant><person><name>'.$huser->firstname.' '.$huser->lastname.'</name>'.
+                              '<email>'.$huser->email.'</email><type>MEMBER</type></person>'.
+                              '<role>HOST</role></participant>';
+            }
+            $hostusers .= '</participants></presenters>';
+        }
+
         // TODO Expand.
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.CreateTrainingSession">'.
-               '<accessControl><listing>PUBLIC</listing></accessControl>'.
+               '<accessControl><listing>UNLISTED</listing></accessControl>'.
                '<schedule><startDate>'.$startstr.'</startDate><openTime>20</openTime></schedule>'.
                '<metaData><confName>'.$data->name.'</confName>'.
-               '<agenda>agenda 1</agenda>'.
-               '<description>description</description></metaData>'.
+//               '<agenda>agenda 1</agenda>'.
+               '<description>'.htmlentities($data->intro).'</description></metaData>'.
                '<repeat><repeatType>SINGLE</repeatType></repeat>'.
+               $hostusers.
+//               '<attendeeOptions><request>true</request><auto>true</auto><registrationPWD>pass</registrationPWD></attendeeOptions>'.
+               '</bodyContent></body>';
+
+        return $xml;
+    }
+
+    public static function update_training_session($data) {
+        $startstr = date('m/d/Y H:i:s', $data->starttime);
+
+        $hostusers = '';
+        if (isset($data->hostusers)) {
+            $hostusers .= '<presenters><participants>';
+            foreach ($data->hostusers as $huser) {
+                $hostusers .= '<participant><person><name>'.$huser->firstname.' '.$huser->lastname.'</name>'.
+                              '<email>'.$huser->email.'</email><type>MEMBER</type></person>'.
+                              '<role>HOST</role></participant>';
+            }
+            $hostusers .= '</participants></presenters>';
+        }
+
+
+        // TODO Expand.
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.SetTrainingSession">'.
+               '<sessionKey>'.$data->meetingkey.'</sessionKey>'.
+               '<accessControl><listing>UNLISTED</listing></accessControl>'.
+               '<schedule><startDate>'.$startstr.'</startDate><openTime>20</openTime></schedule>'.
+               '<metaData><confName>'.$data->name.'</confName>'.
+//               '<agenda>agenda 1</agenda>'.
+               '<description>'.htmlentities($data->intro).'</description></metaData>'.
+               '<repeat><repeatType>SINGLE</repeatType></repeat>'.
+               $hostusers.
+//               '<attendeeOptions><request>true</request><auto>true</auto><registrationPWD>pass</registrationPWD></attendeeOptions>'.
+               '</bodyContent></body>';
+
+        return $xml;
+    }
+
+    public static function delete_training_session($data) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.DelTrainingSession">'.
+               '<sessionKey>'.$data->meetingkey.'</sessionKey>'.
                '</bodyContent></body>';
 
         return $xml;

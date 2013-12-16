@@ -78,10 +78,39 @@ function webexactivity_add_instance($data, $mform) {
     return $meeting->id;
 }
 
-function webexactivity_update_instance($data) {
+function webexactivity_update_instance($data, $mform) {
+    global $DB, $USER;
 
+    $cmid = $data->coursemodule;
+    $cm = get_coursemodule_from_id('webexactivity', $cmid, 0, false, MUST_EXIST);
+    $meeting = $DB->get_record('webexactivity', array('id' => $cm->instance), '*', MUST_EXIST);
+
+    $meeting->timemodified = time();
+    $meeting->starttime = $data->starttime;
+    $meeting->length = $data->duration;
+    $meeting->intro = $data->intro;
+    $meeting->name = $data->name;
+    $meeting->course = $data->course;
+    $meeting->type = WEBEXACTIVITY_TYPE_TRAINING;
+    if (!$DB->update_record('webexactivity', $meeting)) {
+        return false;
+    }
+
+    $webex = new \mod_webexactivity\webex();
+    if (!$webex->create_or_update_training($meeting, $USER)) {
+        return false;
+    }
+
+    return true;
 }
 
 function webexactivity_delete_instance($id) {
+    global $DB, $USER;
 
+    $meeting = $DB->get_record('webexactivity', array('id' => $id), '*', MUST_EXIST);
+
+    $webex = new \mod_webexactivity\webex();
+    $webex->delete_training($meeting, $USER);
+
+    return true;
 }

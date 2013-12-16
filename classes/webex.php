@@ -257,12 +257,17 @@ class webex {
     public function create_or_update_training($webexrecord, $user) {
         global $DB;
 
+        $webexuser = $this->get_webex_user($user);
+
         if (isset($webexrecord->meetingkey) && $webexrecord->meetingkey) {
-            // Update.
+            $xml = xml_generator::update_training_session($webexrecord);
+            $response = $this->get_response($xml, $webexuser);
+
+            if ($response === false) {
+                return false;
+            }
             return true;
         }
-
-        $webexuser = $this->get_webex_user($user);
 
         $xml = xml_generator::create_training_session($webexrecord);
 
@@ -277,6 +282,22 @@ class webex {
         } else {
             return false;
         }
+    }
+
+    public function delete_training($webexrecord, $user) {
+        $webexuser = $this->get_webex_user($user);
+
+        if (isset($webexrecord->meetingkey) && $webexrecord->meetingkey) {
+            $xml = xml_generator::delete_training_session($webexrecord);
+            $response = $this->get_response($xml, $webexuser);
+
+            if ($response === false) {
+                return false;
+            }
+            return true;
+        }
+
+        return false;
     }
 
     public function get_meeting_info($webex) {
@@ -302,14 +323,6 @@ class webex {
         return $response;
     }
 
-    public function create_meeting($data) {
-
-    }
-
-    public function update_meeting($data) {
-
-    }
-
     public static function get_meeting_host_url($webex) {
         $baseurl = self::get_base_url();
         $url = $baseurl.'/m.php?AT=HM&MK='.$webex->meetingkey;
@@ -317,9 +330,13 @@ class webex {
         return $url;
     }
 
-    public static function get_meeting_join_url($webex) {
+    public static function get_meeting_join_url($webex, $user = false) {
         $baseurl = self::get_base_url();
         $url = $baseurl.'/m.php?AT=JM&MK='.$webex->meetingkey;
+
+        if ($user) {
+            $url .= '&AE='.$user->email.'&AN='.$user->firstname.'%20'.$user->lastname;
+        }
 
         return $url;
     }
