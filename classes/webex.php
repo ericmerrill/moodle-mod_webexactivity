@@ -26,9 +26,12 @@ namespace mod_webexactivity;
 
 class webex {
     private $latesterrors = null;
+    private $meetingrecord = null;
 
-    public function __construct() {
+    public function __construct($meeting = null) {
+        $this->meetingrecord = $meeting;
     }
+
 
     // ---------------------------------------------------
     // User Functions.
@@ -261,7 +264,8 @@ class webex {
 
         if (isset($webexrecord->course)) {
             $context = \context_course::instance($webexrecord->course);
-            $users = get_users_by_capability($context, 'mod/webexactivity:hostmeeting', '', '', '', '', '', array($user->id));
+            $users = get_enrolled_users($context, 'mod/webexactivity:hostmeeting');
+            unset($users[$user->id]);
             if ($users && (count($users) > 0)) {
                 $webexrecord->hostusers = $users;
             }

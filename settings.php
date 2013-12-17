@@ -43,4 +43,7 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('webexactivity/prefix', get_string('prefix', 'webexactivity'),
             get_string('prefix_help', 'webexactivity'), ''));
 
+    $settings->add(new admin_setting_configtext('webexactivity/meetingclosegrace', get_string('meetingclosegrace', 'webexactivity'),
+            get_string('meetingclosegrace_help', 'webexactivity'), ''));
+
 }

@@ -28,6 +28,7 @@ require('../../config.php');
 
 $id = optional_param('id', 0, PARAM_INT); // Course module ID.
 $action = optional_param('action', false, PARAM_ALPHA);
+$view = optional_param('view', false, PARAM_ALPHA);
 
 
 $cm = get_coursemodule_from_id('webexactivity', $id, 0, false, MUST_EXIST);
@@ -39,9 +40,9 @@ require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/webexactivity:view', $context);
 
-$canhost    = has_capability('mod/webexactivity:hostmeeting', $context);
+$canhost = has_capability('mod/webexactivity:hostmeeting', $context);
 
-$returnurl = $CFG->wwwroot.'/mod/webexactivity/view.php?id='.$id;
+$returnurl = new moodle_url('/mod/webexactivity/view.php', array('id' => $id));
 
 // Do redirect actions here.
 switch ($action) {
@@ -77,86 +78,54 @@ echo $OUTPUT->heading(format_string($webex->name), 2);
 
 echo $OUTPUT->box_start();
 
-//echo '<a href="?id='.$id.'&action=hostmeeting" target="_blank">Host</a><br>';
-//echo '<a href="?id='.$id.'&action=joinmeeting" target="_blank">Join</a><br>';
 
+if (!$view) {
+    echo '<table align="center" cellpadding="5">' . "\n";
+    
+    $formelements = array(
+        get_string('description','webexactivity')  => $webex->intro,
+        get_string('starttime', 'webexactivity')      => userdate($webex->starttime),
+        get_string('duration', 'webexactivity')        => $webex->length
+    );
+    
+    foreach ($formelements as $key => $val) {
+       echo '<tr valign="top">' . "\n";
+       echo '<td align="right"><b>' . $key . ':</b></td><td align="left">' . $val . '</td>' . "\n";
+       echo '</tr>' . "\n";
+    }
+    
+    if ($canhost) {
+        // Host link.
+        echo '<tr><td colspan=2 align="center">';
+        $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'action' => 'hostmeeting'));
+        $params = array('url' => $urlobj->out());
+        echo get_string('hostmeetinglink', 'webexactivity', $params);
+        echo '</td></tr>';
+    }
+    // Join Link
+    echo '<tr><td colspan=2 align="center">';
+    $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'action' => 'joinmeeting'));
+    $params = array('url' => $urlobj->out());
+    echo get_string('joinmeetinglink', 'webexactivity', $params);
+    echo '</td></tr>';
+    
+    if ($canhost) {
+        echo '<tr><td colspan=2 align="center">';
+        $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'view' => 'guest'));
+        $params = array('url' => $urlobj->out());
+        echo get_string('getexternallink', 'webexactivity', $params);
+        echo '</td></tr>';
+    }
 
-echo '<table align="center" cellpadding="5">' . "\n";
+    echo '</table>';
 
-$formelements = array(
-    get_string('description','webexactivity')  => $webex->intro,
-    get_string('starttime', 'webexactivity')      => userdate($webex->starttime),
-    get_string('duration', 'webexactivity')        => $webex->length
-);
-
-foreach ($formelements as $key => $val) {
-   echo '<tr valign="top">' . "\n";
-   echo '<td align="right"><b>' . $key . ':</b></td><td align="left">' . $val . '</td>' . "\n";
-   echo '</tr>' . "\n";
+} else if ($view === 'guest') {
+    echo get_string('externallinktext', 'webexactivity');
+    echo \mod_webexactivity\webex::get_meeting_join_url($webex);
+    
 }
 
-if ($canhost) {
-    echo '<tr><td colspan=2 align="center"><a href="?id='.$id.'&action=hostmeeting">Host meeting</a></td></tr>';
-}
-echo '<tr><td colspan=2 align="center"><a href="?id='.$id.'&action=joinmeeting">Join as participant</a></td></tr>';
 
-echo '</table>';
-
-//echo userdate($webex->starttime);
-
-
-//$urlbase = get_config('webexactivity', 'url').'.webex.com/oakland-dev';
-//$url = $urlbase.'/m.php?AT=JM&MK='.$webex->meetingkey;
-
-//echo $url;
-
-//$url = $urlbase.'/m.php?AT=HM&MK='.$webex->meetingkey;
-//$url = \mod_webexactivity\webex::get_meeting_host_url($webex);
-//echo $url;
-
-
-/*
-$connector = new \mod_webexactivity\service_connector();
-$stat = $connector->retrieve(\mod_webexactivity\xml_generator::get_training_info('344204292-'));
-if ($stat) {
-    print "<pre>";
-    print_r($connector->get_response_array());
-    print "</pre>";
-} else {
-    print "<pre>";
-    print_r($connector->get_errors());
-    print "</pre>";
-}
-*/
-/*$connector = new \mod_webexactivity\service_connector();
-$stat = $connector->retrieve(\mod_webexactivity\xml_generator::get_user_info('adm_merrill'));
-if ($stat) {
-    print "<pre>";
-    print_r($connector->get_response_array());
-    print "</pre>";
-} else {
-    print "<pre>";
-    print_r($connector->get_errors());
-    print "</pre>";
-}*/
-
-//$webexobj = new \mod_webexactivity\webex();
-//print_r($webexobj->get_training_info($webex, $USER));
-/*
-$webexuser = $webexobj->get_webex_user($USER);
-$hosturl = \mod_webexactivity\webex::get_meeting_host_url($webex);
-echo $hosturl;*/
-/*$webexobj = new \mod_webexactivity\webex();
-$webexuser = $webexobj->get_webex_user($USER);
-$hosturl = \mod_webexactivity\webex::get_meeting_host_url($webex);
-
-$authurl = $webexobj->get_login_url($webex, $webexuser, false, $hosturl);
-echo '<a href="'.$authurl.'" target="_blank">Host</a>';*/
-//$webex = new \mod_webexactivity\webex();
-//$webex->get_webex_user($USER, false);
-echo \mod_webexactivity\webex::get_meeting_join_url($webex);
-//echo \mod_webexactivity\webex::get_meeting_host_url($webex);
-//echo \mod_webexactivity\webex::get_meeting_join_url($webex, $USER);
 
 echo $OUTPUT->box_end();
 
