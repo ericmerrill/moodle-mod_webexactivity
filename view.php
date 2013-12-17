@@ -41,6 +41,8 @@ require_capability('mod/webexactivity:view', $context);
 
 $canhost    = has_capability('mod/webexactivity:hostmeeting', $context);
 
+$returnurl = $CFG->wwwroot.'/mod/webexactivity/view.php?id='.$id;
+
 // Do redirect actions here.
 switch ($action) {
     case 'hostmeeting':
@@ -50,17 +52,15 @@ switch ($action) {
         }
         $webexobj = new \mod_webexactivity\webex();
         $webexuser = $webexobj->get_webex_user($USER);
-        $hosturl = \mod_webexactivity\webex::get_meeting_host_url($webex);
+        $hosturl = \mod_webexactivity\webex::get_meeting_host_url($webex, $returnurl);
         $authurl = $webexobj->get_login_url($webex, $webexuser, false, $hosturl);
         redirect($authurl);
         break;
     case 'joinmeeting':
-        $joinurl = \mod_webexactivity\webex::get_meeting_join_url($webex, $USER);
+        $joinurl = \mod_webexactivity\webex::get_meeting_join_url($webex, $returnurl, $USER);
         redirect($joinurl);
         break;
 }
-
-
 
 
 add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webex->id, $cm->id);
@@ -96,9 +96,9 @@ foreach ($formelements as $key => $val) {
 }
 
 if ($canhost) {
-    echo '<tr><td colspan=2 align="center"><a href="?id='.$id.'&action=hostmeeting" target="_blank">Host meeting</a></td></tr>';
+    echo '<tr><td colspan=2 align="center"><a href="?id='.$id.'&action=hostmeeting">Host meeting</a></td></tr>';
 }
-echo '<tr><td colspan=2 align="center"><a href="?id='.$id.'&action=joinmeeting" target="_blank">Join as participant</a></td></tr>';
+echo '<tr><td colspan=2 align="center"><a href="?id='.$id.'&action=joinmeeting">Join as participant</a></td></tr>';
 
 echo '</table>';
 
@@ -155,6 +155,8 @@ echo '<a href="'.$authurl.'" target="_blank">Host</a>';*/
 //$webex = new \mod_webexactivity\webex();
 //$webex->get_webex_user($USER, false);
 echo \mod_webexactivity\webex::get_meeting_join_url($webex);
+//echo \mod_webexactivity\webex::get_meeting_host_url($webex);
+//echo \mod_webexactivity\webex::get_meeting_join_url($webex, $USER);
 
 echo $OUTPUT->box_end();
 

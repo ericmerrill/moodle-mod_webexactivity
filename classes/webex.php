@@ -25,6 +25,7 @@
 namespace mod_webexactivity;
 
 class webex {
+    private $latesterrors = null;
 
     public function __construct() {
     }
@@ -101,6 +102,7 @@ class webex {
             }
             $exception = $this->latesterrors['exception'];
             // User already exists with this username or email.
+
             if ((stripos($exception, '030004') !== false) || (stripos($exception, '030005') === false)) {
                 $xml = xml_generator::get_user_info($data->webexid);
 
@@ -257,6 +259,14 @@ class webex {
     public function create_or_update_training($webexrecord, $user) {
         global $DB;
 
+        if (isset($webexrecord->course)) {
+            $context = \context_course::instance($webexrecord->course);
+            $users = get_users_by_capability($context, 'mod/webexactivity:hostmeeting', '', '', '', '', '', array($user->id));
+            if ($users && (count($users) > 0)) {
+                $webexrecord->hostusers = $users;
+            }
+        }
+
         $webexuser = $this->get_webex_user($user);
 
         if (isset($webexrecord->meetingkey) && $webexrecord->meetingkey) {
@@ -323,19 +333,26 @@ class webex {
         return $response;
     }
 
-    public static function get_meeting_host_url($webex) {
+    public static function get_meeting_host_url($webex, $returnurl = false) {
         $baseurl = self::get_base_url();
         $url = $baseurl.'/m.php?AT=HM&MK='.$webex->meetingkey;
+        if ($returnurl) {
+            $url .= '&BU='.urlencode($returnurl);
+        }
 
         return $url;
     }
 
-    public static function get_meeting_join_url($webex, $user = false) {
+    public static function get_meeting_join_url($webex, $returnurl = false, $user = false) {
         $baseurl = self::get_base_url();
         $url = $baseurl.'/m.php?AT=JM&MK='.$webex->meetingkey;
 
         if ($user) {
             $url .= '&AE='.$user->email.'&AN='.$user->firstname.'%20'.$user->lastname;
+        }
+
+        if ($returnurl) {
+            $url .= '&BU='.urlencode($returnurl);
         }
 
         return $url;
@@ -384,9 +401,11 @@ class webex {
                 $status = false;
             }
         } else {
+//            print $xml;
             $response = false;
         }
         $errors = $connector->get_errors();
+        $this->latesterrors = $errors;
 
         return array($status, $response, $errors);
     }
