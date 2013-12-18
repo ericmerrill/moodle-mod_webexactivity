@@ -143,6 +143,52 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2013111203, 'webexactivity');
     }
 
+    if ($oldversion < 2013121700) {
+        // Define field guesttoken to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('guesttoken', XMLDB_TYPE_CHAR, '128', null, null, null, null, 'meetingkey');
+
+        // Conditionally launch add field guesttoken.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field hosts to be added to webexactivity.
+        $field = new xmldb_field('hosts', XMLDB_TYPE_TEXT, null, null, null, null, null, 'length');
+
+        // Conditionally launch add field hosts.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field xml to be added to webexactivity.
+        $field = new xmldb_field('xml', XMLDB_TYPE_TEXT, null, null, null, null, null, 'hosts');
+
+        // Conditionally launch add field xml.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field hostlink to be dropped from webexactivity.
+        $field = new xmldb_field('hostlink');
+
+        // Conditionally launch drop field hostlink.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Define field attendeelink to be dropped from webexactivity.
+        $field = new xmldb_field('attendeelink');
+
+        // Conditionally launch drop field attendeelink.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2013121700, 'webexactivity');
+    }
+
     return true;
 }
 

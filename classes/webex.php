@@ -262,6 +262,10 @@ class webex {
     public function create_or_update_training($webexrecord, $user) {
         global $DB;
 
+        if ($webexrecord->starttime < time()) {
+            $webexrecord->starttime = time() + 60;
+        }
+
         if (isset($webexrecord->course)) {
             $context = \context_course::instance($webexrecord->course);
             $users = get_enrolled_users($context, 'mod/webexactivity:hostmeeting');
@@ -269,33 +273,41 @@ class webex {
             if ($users && (count($users) > 0)) {
                 $webexrecord->hostusers = $users;
             }
+            $users[$user->id] = $user;
+            $webexrecord->hosts = serialize($users);
         }
 
         $webexuser = $this->get_webex_user($user);
 
         if (isset($webexrecord->meetingkey) && $webexrecord->meetingkey) {
             $xml = xml_generator::update_training_session($webexrecord);
+            $webexrecord->xml = $xml;
             $response = $this->get_response($xml, $webexuser);
 
             if ($response === false) {
                 return false;
             }
+
+            $DB->update_record('webexactivity', $webexrecord);
             return true;
         }
 
         $xml = xml_generator::create_training_session($webexrecord);
+        $webexrecord->xml = $xml;
 
         $response = $this->get_response($xml, $webexuser);
 
         if ($response) {
             if (isset($response['train:sessionkey']['0']['#'])) {
+
                 $webexrecord->meetingkey = $response['train:sessionkey']['0']['#'];
+                $webexrecord->guesttoken = $response['train:additionalInfo']['0']['#']['train:guestToken']['0']['#'];
                 $DB->update_record('webexactivity', $webexrecord);
                 return true;
             }
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     public function delete_training($webexrecord, $user) {
@@ -360,6 +372,18 @@ class webex {
         }
 
         return $url;
+    }
+
+    public function meeting_is_available() {
+        $grace = get_config('webexactivity', 'meetingclosegrace');
+
+        $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->length * 60) + ($grace * 60);
+
+        if (time() > $endtime) {
+            return false;
+        }
+
+        return true;
     }
 
     // ---------------------------------------------------
