@@ -86,7 +86,7 @@ echo $OUTPUT->heading(format_string($webex->name), 2);
 
 echo $OUTPUT->box_start();
 
-
+//$webexobj->retrieve_recordings();
 
 if (!$view) {
     echo '<table align="center" cellpadding="5">' . "\n";
@@ -94,7 +94,7 @@ if (!$view) {
     $formelements = array(
         get_string('description','webexactivity')  => $webex->intro,
         get_string('starttime', 'webexactivity')   => userdate($webex->starttime),
-        get_string('duration', 'webexactivity')    => $webex->length
+        get_string('duration', 'webexactivity')    => $webex->duration
     );
     
     foreach ($formelements as $key => $val) {
@@ -130,6 +130,35 @@ if (!$view) {
     }
 
     echo '</table>';
+
+    $params = array('webexid' => $webex->id);
+    if (!$canhost) {
+        $params['visible'] = 1;
+    }
+
+    if ($recordings = $DB->get_records('webexactivity_recording', $params)) {
+        echo '<hr>';
+        echo '<table align="center" cellpadding="5">';
+        echo '<tr><td align="center">';
+        echo get_string('recordings', 'webexactivity');
+        echo '</td></tr>';
+        //echo '</b></td></td>';
+
+        foreach ($recordings as $recording) {
+            /*echo '<tr><td>';
+            echo userdate($recording->timecreated);
+            echo '</td><td>';
+            echo '<a target="_blank" href="'.$recording->fileurl.'">'.get_string('recordingfileurl', 'webexactivity').'</a> ';
+            echo '<a target="_blank" href="'.$recording->streamurl.'">'.get_string('recordingstreamurl', 'webexactivity').'</a>';
+            echo '</td></tr>';*/
+            echo '<tr><td align="center">';
+            echo '<a target="_blank" href="'.$recording->streamurl.'">'.get_string('recordingstreamurl', 'webexactivity').'</a>';
+            echo ' - '.$recording->name;
+            echo ' - '.userdate($recording->timecreated);
+            echo '</td></tr>';
+        }
+        echo '</table>';
+    }
 
 } else if ($view === 'guest') {
     echo get_string('externallinktext', 'webexactivity');

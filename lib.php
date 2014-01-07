@@ -62,7 +62,7 @@ function webexactivity_add_instance($data, $mform) {
     $meeting = new \stdClass();
     $meeting->timemodified = time();
     $meeting->starttime = $data->starttime;
-    $meeting->length = $data->duration;
+    $meeting->duration = $data->duration;
     $meeting->intro = $data->intro;
     $meeting->name = $data->name;
     $meeting->course = $data->course;
@@ -87,7 +87,7 @@ function webexactivity_update_instance($data, $mform) {
 
     $meeting->timemodified = time();
     $meeting->starttime = $data->starttime;
-    $meeting->length = $data->duration;
+    $meeting->duration = $data->duration;
     $meeting->intro = $data->intro;
     $meeting->name = $data->name;
     $meeting->course = $data->course;
@@ -111,6 +111,24 @@ function webexactivity_delete_instance($id) {
 
     $webex = new \mod_webexactivity\webex();
     $webex->delete_training($meeting, $USER);
+
+    return true;
+}
+
+function webexactivity_cron() {
+    global $DB;
+
+    $webexs = $DB->get_records('webexactivity', null, 'laststatuscheck ASC', '*', 0, 20);
+
+    if (!$webexs) {
+        return true;
+    }
+
+    foreach ($webexs as $webex) {
+print $webex->id;
+        $webexobj = new \mod_webexactivity\webex($webex);
+        $webexobj->retrieve_recordings();
+    }
 
     return true;
 }

@@ -189,6 +189,78 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2013121700, 'webexactivity');
     }
 
+    if ($oldversion < 2014010601) {
+
+        // Define table webexactivity_recording to be created.
+        $table = new xmldb_table('webexactivity_recording');
+
+        // Adding fields to table webexactivity_recording.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('webexid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('meetingkey', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('recordingid', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('hostid', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('streamurl', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('fileurl', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('duration', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table webexactivity_recording.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for webexactivity_recording.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014010601, 'webexactivity');
+    }
+
+    if ($oldversion < 2014010602) {
+
+        // Define field id to be added to webexactivity_recording.
+        $table = new xmldb_table('webexactivity_recording');
+        $field = new xmldb_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
+
+        // Conditionally launch add field id.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014010602, 'webexactivity');
+    }
+
+    if ($oldversion < 2014010603) {
+
+        // Rename field duration on table webexactivity to NEWNAMEGOESHERE.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('length', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'starttime');
+
+        // Launch rename field duration.
+        $dbman->rename_field($table, $field, 'duration');
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014010603, 'webexactivity');
+    }
+
+    if ($oldversion < 2014010605) {
+
+        // Define field id to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('laststatuscheck', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'timemodified');
+
+        // Conditionally launch add field id.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014010605, 'webexactivity');
+    }
+
     return true;
 }
 

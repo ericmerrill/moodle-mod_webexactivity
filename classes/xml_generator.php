@@ -216,4 +216,15 @@ class xml_generator {
 
         return $xml;
     }
+
+    // ---------------------------------------------------
+    // Recording Functions.
+    // ---------------------------------------------------
+    public static function list_recordings($meetingid) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.LstRecording">'.
+               '<sessionKey>'.$meetingid.'</sessionKey>'.
+               '</bodyContent></body>';
+
+        return $xml;
+    }
 }

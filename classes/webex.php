@@ -271,10 +271,10 @@ class webex {
             $users = get_enrolled_users($context, 'mod/webexactivity:hostmeeting');
             unset($users[$user->id]);
             if ($users && (count($users) > 0)) {
-                $webexrecord->hostusers = $users;
+//                $webexrecord->hostusers = $users;
             }
             $users[$user->id] = $user;
-            $webexrecord->hosts = serialize($users);
+//            $webexrecord->hosts = serialize($users);
         }
 
         $webexuser = $this->get_webex_user($user);
@@ -377,7 +377,7 @@ class webex {
     public function meeting_is_available() {
         $grace = get_config('webexactivity', 'meetingclosegrace');
 
-        $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->length * 60) + ($grace * 60);
+        $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->duration * 60) + ($grace * 60);
 
         if (time() > $endtime) {
             return false;
@@ -385,6 +385,51 @@ class webex {
 
         return true;
     }
+
+    // ---------------------------------------------------
+    // Recording Functions.
+    // ---------------------------------------------------
+    public function retrieve_recordings() {
+        global $DB;
+
+        $this->meetingrecord->laststatuscheck = time();
+        $DB->update_record('webexactivity', $this->meetingrecord);
+
+        if (!$this->meetingrecord->meetingkey) {
+            return;
+        }
+
+        $xml = xml_generator::list_recordings($this->meetingrecord->meetingkey);
+
+        if (!($response = $this->get_response($xml))) {
+            return false;
+        }
+
+        $response = $this->get_response($xml);
+        $recordings = $response['ep:recording'];
+
+        foreach ($recordings as $recording) {
+            $recording = $recording['#'];
+
+            $rec = new \stdClass();
+            $rec->webexid = $this->meetingrecord->id;
+            $rec->meetingkey = $this->meetingrecord->meetingkey;
+            $rec->recordingid = $recording['ep:recordingID'][0]['#'];
+            $rec->hostid = $recording['ep:hostWebExID'][0]['#'];
+            $rec->name = $recording['ep:name'][0]['#'];
+            $rec->timecreated = strtotime($recording['ep:createTime'][0]['#']);
+            $rec->streamurl = $recording['ep:streamURL'][0]['#'];
+            $rec->fileurl = $recording['ep:fileURL'][0]['#'];
+            $rec->duration = $recording['ep:duration'][0]['#'];
+
+            if (!$DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
+                $DB->insert_record('webexactivity_recording', $rec);
+            }
+        }
+
+    }
+
+
 
     // ---------------------------------------------------
     // Connection Functions.
