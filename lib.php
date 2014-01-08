@@ -69,9 +69,10 @@ function webexactivity_add_instance($data, $mform) {
     $meeting->type = WEBEXACTIVITY_TYPE_TRAINING;
     $meeting->id = $DB->insert_record('webexactivity', $meeting);
 
-    $webex = new \mod_webexactivity\webex();
-//    $webex->create_or_update_meeting($meeting, $USER);
-    if (!$webex->create_or_update_training($meeting, $USER)) {
+    $webex = new \mod_webexactivity\webex_meeting($meeting);
+    if (!$webex->create_or_update($USER)) {
+        $DB->delete_records('webexactivity', array('id' => $meeting->id));
+
         return false;
     }
 
@@ -96,8 +97,8 @@ function webexactivity_update_instance($data, $mform) {
         return false;
     }
 
-    $webex = new \mod_webexactivity\webex();
-    if (!$webex->create_or_update_training($meeting, $USER)) {
+    $webex = new \mod_webexactivity\webex_meeting($meeting);
+    if (!$webex->create_or_update($USER)) {
         return false;
     }
 
@@ -107,28 +108,19 @@ function webexactivity_update_instance($data, $mform) {
 function webexactivity_delete_instance($id) {
     global $DB, $USER;
 
-    $meeting = $DB->get_record('webexactivity', array('id' => $id), '*', MUST_EXIST);
-
-    $webex = new \mod_webexactivity\webex();
-    $webex->delete_training($meeting, $USER);
+    $webex = new \mod_webexactivity\webex($id);
+    $webex->delete_training($USER);
 
     return true;
 }
 
 function webexactivity_cron() {
-    global $DB;
-
-    $webexs = $DB->get_records('webexactivity', null, 'laststatuscheck ASC', '*', 0, 20);
-
-    if (!$webexs) {
-        return true;
-    }
-
-    foreach ($webexs as $webex) {
-print $webex->id;
-        $webexobj = new \mod_webexactivity\webex($webex);
-        $webexobj->retrieve_recordings();
-    }
+    $webex = new \mod_webexactivity\webex();
+    $webex->get_recordings();
 
     return true;
+}
+
+function webexactivity_get_recordings() {
+
 }

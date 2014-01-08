@@ -150,7 +150,7 @@ class xml_generator {
     }
 
     public static function create_training_session($data) {
-        $startstr = date('m/d/Y H:i:s', $data->starttime);
+        $startstr = self::time_to_date_string($data->starttime);
 
         $hostusers = '';
         if (isset($data->hostusers)) {
@@ -179,7 +179,7 @@ class xml_generator {
     }
 
     public static function update_training_session($data) {
-        $startstr = date('m/d/Y H:i:s', $data->starttime);
+        $startstr = self::time_to_date_string($data->starttime);
 
         $hostusers = '';
         if (isset($data->hostusers)) {
@@ -220,11 +220,36 @@ class xml_generator {
     // ---------------------------------------------------
     // Recording Functions.
     // ---------------------------------------------------
-    public static function list_recordings($meetingid) {
-        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.LstRecording">'.
-               '<sessionKey>'.$meetingid.'</sessionKey>'.
-               '</bodyContent></body>';
+    public static function list_recordings($data) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.LstRecording">';
+
+        if (isset($data->meetingkey)) {
+            $xml .= '<sessionKey>'.$data->meetingkey.'</sessionKey>';
+        }
+        if (isset($data->startdate) && isset($data->enddate)) {
+            $xml .= '<createTimeScope>';
+            $xml .= '<createTimeStart>'.self::time_to_date_string($data->startdate).'</createTimeStart>';
+            $xml .= '<createTimeEnd>'.self::time_to_date_string($data->enddate).'</createTimeEnd>';
+            $xml .= '</createTimeScope>';
+        }
+        $xml .= '<returnSessionDetails>true</returnSessionDetails>';
+        $xml .= '</bodyContent></body>';
 
         return $xml;
+    }
+
+    public static function recording_detail($recordingid) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.GetRecordingInfo">';
+        $xml .= '<recordingID>'.$recordingid.'</recordingID>';
+        $xml .= '</bodyContent></body>';
+
+        return $xml;
+    }
+
+    // ---------------------------------------------------
+    // Support Functions.
+    // ---------------------------------------------------
+    public static function time_to_date_string($time) {
+        return date('m/d/Y H:i:s', $time);
     }
 }

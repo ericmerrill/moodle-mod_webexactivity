@@ -26,10 +26,8 @@ namespace mod_webexactivity;
 
 class webex {
     private $latesterrors = null;
-    private $meetingrecord = null;
 
-    public function __construct($meeting = null) {
-        $this->meetingrecord = $meeting;
+    public function __construct() {
     }
 
 
@@ -172,7 +170,7 @@ class webex {
         }
     }
 
-    public function get_login_url($webex, $webexuser, $backurl = false, $forwardurl = false) {
+    public function get_login_url($webexuser, $backurl = false, $forwardurl = false) {
         $xml = xml_generator::get_user_login_url($webexuser->webexid);
 
         if (!($response = $this->get_response($xml, $webexuser))) {
@@ -230,166 +228,59 @@ class webex {
         return base64_decode($encrypted);
     }
 
-
     // ---------------------------------------------------
-    // Meeting Functions.
+    // Recording Functions.
     // ---------------------------------------------------
-    public function create_or_update_meeting($webexrecord, $user) {
-        global $DB;
+    public function get_recordings() {
+        $params = new \stdClass();
+        $params->startdate = time() - (2 * 24 * 3600);
+        $params->enddate = time() + (12 * 3600);
 
-        if (isset($webexrecord->meetingkey) && $webexrecord->meetingkey) {
-            // Update.
-            return true;
-        }
-
-        $webexuser = $this->get_webex_user($user);
-
-        $xml = xml_generator::create_meeting($webexrecord);
-
-        $response = $this->get_response($xml, $webexuser);
-
-        if ($response) {
-            if (isset($response['meet:meetingkey']['0']['#'])) {
-                $webexrecord->meetingkey = $response['meet:meetingkey']['0']['#'];
-                $DB->update_record('webexactivity', $webexrecord);
-                return true;
-            }
-        } else {
-            return false;
-        }
-    }
-
-    public function create_or_update_training($webexrecord, $user) {
-        global $DB;
-
-        if ($webexrecord->starttime < time()) {
-            $webexrecord->starttime = time() + 60;
-        }
-
-        if (isset($webexrecord->course)) {
-            $context = \context_course::instance($webexrecord->course);
-            $users = get_enrolled_users($context, 'mod/webexactivity:hostmeeting');
-            unset($users[$user->id]);
-            if ($users && (count($users) > 0)) {
-//                $webexrecord->hostusers = $users;
-            }
-            $users[$user->id] = $user;
-//            $webexrecord->hosts = serialize($users);
-        }
-
-        $webexuser = $this->get_webex_user($user);
-
-        if (isset($webexrecord->meetingkey) && $webexrecord->meetingkey) {
-            $xml = xml_generator::update_training_session($webexrecord);
-            $webexrecord->xml = $xml;
-            $response = $this->get_response($xml, $webexuser);
-
-            if ($response === false) {
-                return false;
-            }
-
-            $DB->update_record('webexactivity', $webexrecord);
-            return true;
-        }
-
-        $xml = xml_generator::create_training_session($webexrecord);
-        $webexrecord->xml = $xml;
-
-        $response = $this->get_response($xml, $webexuser);
-
-        if ($response) {
-            if (isset($response['train:sessionkey']['0']['#'])) {
-
-                $webexrecord->meetingkey = $response['train:sessionkey']['0']['#'];
-                $webexrecord->guesttoken = $response['train:additionalInfo']['0']['#']['train:guestToken']['0']['#'];
-                $DB->update_record('webexactivity', $webexrecord);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function delete_training($webexrecord, $user) {
-        $webexuser = $this->get_webex_user($user);
-
-        if (isset($webexrecord->meetingkey) && $webexrecord->meetingkey) {
-            $xml = xml_generator::delete_training_session($webexrecord);
-            $response = $this->get_response($xml, $webexuser);
-
-            if ($response === false) {
-                return false;
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    public function get_meeting_info($webex) {
-        $xml = xml_generator::get_meeting_info($webex->meetingkey);
+        $xml = xml_generator::list_recordings($params);
 
         if (!($response = $this->get_response($xml))) {
             return false;
         }
 
-        $response = $this->get_response($xml);
-
-        return $response;
+        return $this->proccess_recording_response($response);
     }
 
-    public function get_training_info($webex, $user) {
-        $webexuser = $this->get_webex_user($user);
-        $xml = xml_generator::get_training_info($webex->meetingkey);
+    public function proccess_recording_response($response) {
+        global $DB;
 
-        if (!($response = $this->get_response($xml, $webexuser))) {
-            return false;
+        $recordings = $response['ep:recording'];
+
+        foreach ($recordings as $recording) {
+            $recording = $recording['#'];
+
+            if (!isset($recording['ep:sessionKey'][0]['#'])) {
+                continue;
+            }
+
+            $key = $recording['ep:sessionKey'][0]['#'];
+            $meeting = $DB->get_record('webexactivity', array('meetingkey' => $key));
+            if (!$meeting) {
+                continue;
+            }
+
+            $rec = new \stdClass();
+            $rec->webexid = $meeting->id;
+            $rec->meetingkey = $key;
+            $rec->recordingid = $recording['ep:recordingID'][0]['#'];
+            $rec->hostid = $recording['ep:hostWebExID'][0]['#'];
+            $rec->name = $recording['ep:name'][0]['#'];
+            $rec->timecreated = strtotime($recording['ep:createTime'][0]['#']);
+            $rec->streamurl = $recording['ep:streamURL'][0]['#'];
+            $rec->fileurl = $recording['ep:fileURL'][0]['#'];
+            $rec->duration = $recording['ep:duration'][0]['#'];
+
+            if (!$DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
+                $DB->insert_record('webexactivity_recording', $rec);
+            }
         }
-
-        return $response;
     }
 
-    public static function get_meeting_host_url($webex, $returnurl = false) {
-        $baseurl = self::get_base_url();
-        $url = $baseurl.'/m.php?AT=HM&MK='.$webex->meetingkey;
-        if ($returnurl) {
-            $url .= '&BU='.urlencode($returnurl);
-        }
-
-        return $url;
-    }
-
-    public static function get_meeting_join_url($webex, $returnurl = false, $user = false) {
-        $baseurl = self::get_base_url();
-        $url = $baseurl.'/m.php?AT=JM&MK='.$webex->meetingkey;
-
-        if ($user) {
-            $url .= '&AE='.$user->email.'&AN='.$user->firstname.'%20'.$user->lastname;
-        }
-
-        if ($returnurl) {
-            $url .= '&BU='.urlencode($returnurl);
-        }
-
-        return $url;
-    }
-
-    public function meeting_is_available() {
-        $grace = get_config('webexactivity', 'meetingclosegrace');
-
-        $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->duration * 60) + ($grace * 60);
-
-        if (time() > $endtime) {
-            return false;
-        }
-
-        return true;
-    }
-
-    // ---------------------------------------------------
-    // Recording Functions.
-    // ---------------------------------------------------
-    public function retrieve_recordings() {
+/*    public function retrieve_recordings() {
         global $DB;
 
         $this->meetingrecord->laststatuscheck = time();
@@ -427,14 +318,14 @@ class webex {
             }
         }
 
-    }
+    }*/
 
 
 
     // ---------------------------------------------------
     // Connection Functions.
     // ---------------------------------------------------
-    private function get_response($basexml, $webexuser = false) {
+    public function get_response($basexml, $webexuser = false) {
         global $USER;
 
         $xml = xml_generator::auth_wrap($basexml, $webexuser);

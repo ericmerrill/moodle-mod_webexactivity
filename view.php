@@ -32,9 +32,12 @@ $view = optional_param('view', false, PARAM_ALPHA);
 
 
 $cm = get_coursemodule_from_id('webexactivity', $id, 0, false, MUST_EXIST);
-$webex = $DB->get_record('webexactivity', array('id' => $cm->instance), '*', MUST_EXIST);
-$webexobj = new \mod_webexactivity\webex($webex);
-$meetingavail = $webexobj->meeting_is_available();
+$webexrecord = $DB->get_record('webexactivity', array('id' => $cm->instance), '*', MUST_EXIST);
+$webexmeeting = new \mod_webexactivity\webex_meeting($webexrecord);
+$webex = new \mod_webexactivity\webex();
+$meetingavail = $webexmeeting->meeting_is_available();
+
+//$webexmeeting->retrieve_recordings();
 
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
@@ -57,44 +60,42 @@ switch ($action) {
             return;
         }
 
-        $webexuser = $webexobj->get_webex_user($USER);
-        $hosturl = \mod_webexactivity\webex::get_meeting_host_url($webex, $returnurl);
-        $authurl = $webexobj->get_login_url($webex, $webexuser, false, $hosturl);
+        $webexuser = $webex->get_webex_user($USER);
+        $hosturl = $webexmeeting->get_meeting_host_url($returnurl);
+        $authurl = $webex->get_login_url($webexuser, false, $hosturl);
         redirect($authurl);
         break;
     case 'joinmeeting':
         if (!$meetingavail) {
             break;
         }
-        $joinurl = \mod_webexactivity\webex::get_meeting_join_url($webex, $returnurl, $USER);
+        $joinurl = $webexmeeting->get_meeting_join_url($returnurl, $USER);
         redirect($joinurl);
         break;
 }
 
 
-add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webex->id, $cm->id);
+add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webexrecord->id, $cm->id);
 
 $PAGE->set_url('/mod/webexactivity/view.php', array('id' => $cm->id));
 
-$PAGE->set_title($course->shortname.': '.$webex->name);
+$PAGE->set_title($course->shortname.': '.$webexrecord->name);
 $PAGE->set_heading($course->fullname);
-$PAGE->set_activity_record($webex);
+$PAGE->set_activity_record($webexrecord);
 
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string($webex->name), 2);
+echo $OUTPUT->heading(format_string($webexrecord->name), 2);
 
 echo $OUTPUT->box_start();
-
-//$webexobj->retrieve_recordings();
 
 if (!$view) {
     echo '<table align="center" cellpadding="5">' . "\n";
     
     $formelements = array(
-        get_string('description','webexactivity')  => $webex->intro,
-        get_string('starttime', 'webexactivity')   => userdate($webex->starttime),
-        get_string('duration', 'webexactivity')    => $webex->duration
+        get_string('description','webexactivity')  => $webexrecord->intro,
+        get_string('starttime', 'webexactivity')   => userdate($webexrecord->starttime),
+        get_string('duration', 'webexactivity')    => $webexrecord->duration
     );
     
     foreach ($formelements as $key => $val) {
@@ -131,7 +132,7 @@ if (!$view) {
 
     echo '</table>';
 
-    $params = array('webexid' => $webex->id);
+    $params = array('webexid' => $webexrecord->id);
     if (!$canhost) {
         $params['visible'] = 1;
     }
@@ -155,6 +156,7 @@ if (!$view) {
             echo '<a target="_blank" href="'.$recording->streamurl.'">'.get_string('recordingstreamurl', 'webexactivity').'</a>';
             echo ' - '.$recording->name;
             echo ' - '.userdate($recording->timecreated);
+            echo ' '.get_string('recordinglength', 'webexactivity', round($recording->duration/60));
             echo '</td></tr>';
         }
         echo '</table>';
@@ -162,7 +164,7 @@ if (!$view) {
 
 } else if ($view === 'guest') {
     echo get_string('externallinktext', 'webexactivity');
-    echo \mod_webexactivity\webex::get_meeting_join_url($webex);
+    echo $webexmeeting->get_meeting_join_url();
     
 }
 

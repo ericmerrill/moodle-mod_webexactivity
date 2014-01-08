@@ -261,6 +261,21 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014010605, 'webexactivity');
     }
 
+    if ($oldversion < 2014010701) {
+
+        // Define field status to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('status', XMLDB_TYPE_INTEGER, '5', null, XMLDB_NOTNULL, null, '0', 'laststatuscheck');
+
+        // Conditionally launch add field status.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014010701, 'webexactivity');
+    }
+
     return true;
 }
 
