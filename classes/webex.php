@@ -280,48 +280,6 @@ class webex {
         }
     }
 
-/*    public function retrieve_recordings() {
-        global $DB;
-
-        $this->meetingrecord->laststatuscheck = time();
-        $DB->update_record('webexactivity', $this->meetingrecord);
-
-        if (!$this->meetingrecord->meetingkey) {
-            return;
-        }
-
-        $xml = xml_generator::list_recordings($this->meetingrecord->meetingkey);
-
-        if (!($response = $this->get_response($xml))) {
-            return false;
-        }
-
-        $response = $this->get_response($xml);
-        $recordings = $response['ep:recording'];
-
-        foreach ($recordings as $recording) {
-            $recording = $recording['#'];
-
-            $rec = new \stdClass();
-            $rec->webexid = $this->meetingrecord->id;
-            $rec->meetingkey = $this->meetingrecord->meetingkey;
-            $rec->recordingid = $recording['ep:recordingID'][0]['#'];
-            $rec->hostid = $recording['ep:hostWebExID'][0]['#'];
-            $rec->name = $recording['ep:name'][0]['#'];
-            $rec->timecreated = strtotime($recording['ep:createTime'][0]['#']);
-            $rec->streamurl = $recording['ep:streamURL'][0]['#'];
-            $rec->fileurl = $recording['ep:fileURL'][0]['#'];
-            $rec->duration = $recording['ep:duration'][0]['#'];
-
-            if (!$DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
-                $DB->insert_record('webexactivity_recording', $rec);
-            }
-        }
-
-    }*/
-
-
-
     // ---------------------------------------------------
     // Connection Functions.
     // ---------------------------------------------------
@@ -345,9 +303,10 @@ class webex {
                 }
             }
 
-            print "<pre>"; // TODO Temp.
-            print_r($errors);
-            print "</pre>";
+            if (debugging('Error when processing XML', DEBUG_DEVELOPER)) {
+                var_dump($errors);
+            }
+
             return false;
         }
     }
@@ -365,7 +324,6 @@ class webex {
                 $status = false;
             }
         } else {
-//            print $xml;
             $response = false;
         }
         $errors = $connector->get_errors();

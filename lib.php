@@ -28,6 +28,9 @@ define('WEBEXACTIVITY_TYPE_MEETING', 1);
 define('WEBEXACTIVITY_TYPE_TRAINING', 2);
 define('WEBEXACTIVITY_TYPE_SUPPORT', 3);
 
+define('WEBEXACTIVITY_STATUS_STOPPED', 0);
+define('WEBEXACTIVITY_STATUS_IN_PROGRESS', 1);
+
 function webexactivity_supports($feature) {
     switch($feature) {
         case FEATURE_MOD_ARCHETYPE:
@@ -108,8 +111,10 @@ function webexactivity_update_instance($data, $mform) {
 function webexactivity_delete_instance($id) {
     global $DB, $USER;
 
-    $webex = new \mod_webexactivity\webex($id);
+    $webex = new \mod_webexactivity\webex_meeting($id);
     $webex->delete_training($USER);
+
+    $DB->delete_records('webexactivity', array('id' => $id));
 
     return true;
 }

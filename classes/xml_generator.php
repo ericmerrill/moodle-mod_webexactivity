@@ -168,43 +168,64 @@ class xml_generator {
                '<accessControl><listing>UNLISTED</listing></accessControl>'.
                '<schedule><startDate>'.$startstr.'</startDate><openTime>20</openTime></schedule>'.
                '<metaData><confName>'.$data->name.'</confName>'.
-//               '<agenda>agenda 1</agenda>'.
                '<description>'.htmlentities($data->intro).'</description></metaData>'.
                '<repeat><repeatType>SINGLE</repeatType></repeat>'.
                $hostusers.
-//               '<attendeeOptions><request>true</request><auto>true</auto><registrationPWD>pass</registrationPWD></attendeeOptions>'.
                '</bodyContent></body>';
 
         return $xml;
     }
 
     public static function update_training_session($data) {
-        $startstr = self::time_to_date_string($data->starttime);
-
-        $hostusers = '';
-        if (isset($data->hostusers)) {
-            $hostusers .= '<presenters><participants>';
-            foreach ($data->hostusers as $huser) {
-                $hostusers .= '<participant><person><name>'.$huser->firstname.' '.$huser->lastname.'</name>'.
-                              '<email>'.$huser->email.'</email><type>MEMBER</type></person>'.
-                              '<role>HOST</role></participant>';
-            }
-            $hostusers .= '</participants></presenters>';
-        }
-
-
-        // TODO Expand.
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.SetTrainingSession">'.
                '<sessionKey>'.$data->meetingkey.'</sessionKey>'.
-               '<accessControl><listing>UNLISTED</listing></accessControl>'.
-               '<schedule><startDate>'.$startstr.'</startDate><openTime>20</openTime></schedule>'.
-               '<metaData><confName>'.$data->name.'</confName>'.
-//               '<agenda>agenda 1</agenda>'.
-               '<description>'.htmlentities($data->intro).'</description></metaData>'.
-               '<repeat><repeatType>SINGLE</repeatType></repeat>'.
-               $hostusers.
-//               '<attendeeOptions><request>true</request><auto>true</auto><registrationPWD>pass</registrationPWD></attendeeOptions>'.
-               '</bodyContent></body>';
+               '<accessControl><listing>UNLISTED</listing></accessControl>';
+
+        if (isset($data->starttime)) {
+            $startstr = self::time_to_date_string($data->starttime);
+
+            $xml .= '<schedule>';
+            $xml .= '<startDate>'.$startstr.'</startDate>';
+            $xml .= '<openTime>20</openTime>';
+            if (isset($data->duration)) {
+                $xml .= '<duration>'.$data->duration.'</duration>';
+            }
+            $xml .= '</schedule>';
+        }
+
+        if (isset($data->name)) {
+            $xml .= '<metaData>';
+            $xml .= '<confName>'.$data->name.'</confName>';
+            if (isset($data->intro)) {
+                $xml .= '<description>'.htmlentities($data->intro).'</description>';
+            }
+            $xml .= '</metaData>';
+        }
+
+        if (isset($data->hostusers)) {
+            $xml .= '<presenters><participants>';
+            foreach ($data->hostusers as $huser) {
+                $xml .= '<participant><person>';
+
+                if (isset($huser->firstname) && isset($huser->lastname)) {
+                    $xml .= '<name>'.$huser->firstname.' '.$huser->lastname.'</name>';
+                }
+                if (isset($huser->email)) {
+                    $xml .= '<email>'.$huser->email.'</email>';
+                }
+                if (isset($huser->webexid)) {
+                    $xml .= '<webExId>'.$huser->webexid.'</webExId>';
+                }
+                $xml .= '<type>MEMBER</type></person>'.
+                        '<role>HOST</role></participant>';
+            }
+            $xml .= '</participants></presenters>';
+        }
+
+        // TODO Expand.
+
+        $xml .= '<repeat><repeatType>SINGLE</repeatType></repeat>';
+        $xml .= '</bodyContent></body>';
 
         return $xml;
     }
@@ -212,6 +233,13 @@ class xml_generator {
     public static function delete_training_session($data) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.DelTrainingSession">'.
                '<sessionKey>'.$data->meetingkey.'</sessionKey>'.
+               '</bodyContent></body>';
+
+        return $xml;
+    }
+
+    public static function list_open_sessions() {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.LstOpenSession">'.
                '</bodyContent></body>';
 
         return $xml;

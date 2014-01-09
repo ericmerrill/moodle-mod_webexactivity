@@ -229,6 +229,15 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
+        // Define field visible to be added to webexactivity_recording.
+        $table = new xmldb_table('webexactivity_recording');
+        $field = new xmldb_field('visible', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'duration');
+
+        // Conditionally launch add field visible.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
         // Webex Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014010602, 'webexactivity');
     }
@@ -274,6 +283,21 @@ function xmldb_webexactivity_upgrade($oldversion) {
 
         // Webex Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014010701, 'webexactivity');
+    }
+
+    if ($oldversion < 2014010800) {
+
+        // Define field creatorwebexuser to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('creatorwebexuser', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'introformat');
+
+        // Conditionally launch add field creatorwebexuser.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014010800, 'webexactivity');
     }
 
     return true;

@@ -31,6 +31,8 @@ class webex_meeting {
     private $webex;
 
     public function __construct($meeting) {
+        global $DB;
+
         $this->webex = new webex();
 
         if (is_numeric($meeting)) {
@@ -61,50 +63,26 @@ class webex_meeting {
         return $url;
     }
 
+    public function get_meeting_webex_user() {
+        global $DB, $USER;
+
+        if (isset($this->meetingrecord->creatorwebexuser) && $this->meetingrecord->creatorwebexuser) {
+            $webexuser = $DB->get_record('webexactivity_users', array('id' => $this->meetingrecord->creatorwebexuser));
+        } else {
+            $webexuser = $this->webex->get_webex_user($USER);
+        }
+
+        return $webexuser;
+    }
+
     // ---------------------------------------------------
     // Meeting Functions.
     // ---------------------------------------------------
-/*    public function create_or_update_meeting($user) {
-        global $DB;
-
-        if (isset($this->meetingrecord->meetingkey) && $this->meetingrecord->meetingkey) {
-            // Update.
-            return true;
-        }
-
-        $webexuser = $this->webex->get_webex_user($user);
-
-        $xml = xml_generator::create_meeting($this->meetingrecord);
-
-        $response = $this->get_response($xml, $webexuser);
-
-        if ($response) {
-            if (isset($response['meet:meetingkey']['0']['#'])) {
-                $this->meetingrecord->meetingkey = $response['meet:meetingkey']['0']['#'];
-                $DB->update_record('webexactivity', $this->meetingrecord);
-                return true;
-            }
-        } else {
-            return false;
-        }
-    }*/
-
     public function create_or_update($user) {
         global $DB;
 
         if ($this->meetingrecord->starttime < time()) {
             $this->meetingrecord->starttime = time() + 60;
-        }
-
-        if (isset($this->meetingrecord->course)) {
-            $context = \context_course::instance($this->meetingrecord->course);
-            $users = get_enrolled_users($context, 'mod/webexactivity:hostmeeting');
-            unset($users[$user->id]);
-            if ($users && (count($users) > 0)) {
-//                $this->meetingrecord->hostusers = $users;
-            }
-            $users[$user->id] = $user;
-//            $this->meetingrecord->hosts = serialize($users);
         }
 
         $webexuser = $this->webex->get_webex_user($user);
@@ -124,6 +102,7 @@ class webex_meeting {
 
         $xml = xml_generator::create_training_session($this->meetingrecord);
         $this->meetingrecord->xml = $xml;
+        $this->meetingrecord->creatorwebexuser = $webexuser->id;
 
         $response = $this->webex->get_response($xml, $webexuser);
 
@@ -168,8 +147,11 @@ class webex_meeting {
         return $response;
     }
 
-    public function get_training_info($user) {
-        $webexuser = $this->webex->get_webex_user($user);
+    public function get_training_info() {
+        global $DB, $USER;
+
+        $webexuser = $this->get_meeting_webex_user();
+
         $xml = xml_generator::get_training_info($this->meetingrecord->meetingkey);
 
         if (!($response = $this->webex->get_response($xml, $webexuser))) {
@@ -214,6 +196,50 @@ class webex_meeting {
         }
 
         return true;
+    }
+
+    public function add_webexuser_host($webexuser) {
+        global $DB;
+
+        $creator = $this->get_meeting_webex_user();
+        if ($webexuser->webexid === $creator->webexid) {
+            return true;
+        }
+
+        $moodleuser = $DB->get_record('user', array('id' => $webexuser->moodleuserid));
+        $user = new \stdClass();
+        $user->webexid = $webexuser->webexid;
+        $user->email = $moodleuser->email;
+        $user->firstname = $moodleuser->firstname;
+        $user->lastname = $moodleuser->lastname;
+
+        $data = new \stdClass();
+        $data->meetingkey = $this->meetingrecord->meetingkey;
+        $data->hostusers = array($user);
+
+        $xml = xml_generator::update_training_session($data);
+
+        if (!($response = $this->webex->get_response($xml, $creator))) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function add_hosts($users) {
+        $webexuser = $this->get_meeting_webex_user();
+
+        $meeting = clone $this->meetingrecord;
+        $meeting->hostusers = $users;
+
+        $xml = xml_generator::update_training_session($meeting);
+
+        $this->meetingrecord->xml = $xml;
+        $response = $this->webex->get_response($xml, $webexuser);
+
+        if ($response === false) {
+            return false;
+        }
     }
 
     // ---------------------------------------------------

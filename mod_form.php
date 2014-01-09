@@ -40,11 +40,6 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
 
         $this->add_intro_editor(false);
 
-        //$mform->addElement('editor', 'agenda', get_string('agenda', 'webexactivity'),
-        //        array('rows' => 10), array('context' => $this->context, 'subdirs' => true));
-
-        //$mform->setType('agenda', PARAM_RAW); // no XSS prevention here, users must be trusted
-
         $mform->addElement('date_time_selector', 'starttime', get_string('starttime', 'webexactivity'));
         $mform->addRule('starttime', null, 'required', null, 'client');
 
