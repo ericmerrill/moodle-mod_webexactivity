@@ -186,16 +186,42 @@ class webex_meeting {
         return $url;
     }
 
-    public function meeting_is_available() {
-        $grace = get_config('webexactivity', 'meetingclosegrace');
+    public function meeting_is_available($host = false) {
+        if ($host) {
+            if ($this->meetingrecord->status == WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+                return true;
+            }
 
-        $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->duration * 60) + ($grace * 60);
+            $grace = get_config('webexactivity', 'meetingclosegrace');
+            $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->duration * 60) + ($grace * 60);
 
-        if (time() > $endtime) {
-            return false;
+            if (time() > $endtime) {
+                return false;
+            }
+
+            return true;
+        } else {
+            if ($this->meetingrecord->status == WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+                return true;
+            } else {
+                $grace = get_config('webexactivity', 'meetingclosegrace');
+
+                $starttime = $this->meetingrecord->starttime - (20 * 60);
+                if (time() < $starttime) {
+                    return false;
+                }
+
+                $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->duration * 60) + ($grace * 60);
+                if (time() > $endtime) {
+                    return false;
+                }
+
+                return true;
+            }
         }
 
-        return true;
+        // Should never get here.
+        return false;
     }
 
     public function add_webexuser_host($webexuser) {

@@ -35,7 +35,6 @@ $cm = get_coursemodule_from_id('webexactivity', $id, 0, false, MUST_EXIST);
 $webexrecord = $DB->get_record('webexactivity', array('id' => $cm->instance), '*', MUST_EXIST);
 $webexmeeting = new \mod_webexactivity\webex_meeting($webexrecord);
 $webex = new \mod_webexactivity\webex();
-$meetingavail = $webexmeeting->meeting_is_available();
 
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
@@ -50,7 +49,7 @@ $returnurl = new moodle_url('/mod/webexactivity/view.php', array('id' => $id));
 // Do redirect actions here.
 switch ($action) {
     case 'hostmeeting':
-        if (!$meetingavail) {
+        if (!$webexmeeting->meeting_is_available(true)) {
             break;
         }
         if (!$canhost) {
@@ -62,10 +61,17 @@ switch ($action) {
         $webexmeeting->add_webexuser_host($webexuser);
         $hosturl = $webexmeeting->get_meeting_host_url($returnurl);
         $authurl = $webex->get_login_url($webexuser, false, $hosturl);
+
+        $new = new \stdClass();
+        $new->id = $webexrecord->id;
+        $new->status = WEBEXACTIVITY_STATUS_IN_PROGRESS;
+        $new->laststatustime = time();
+        $DB->update_record('webexactivity', $new);
+
         redirect($authurl);
         break;
     case 'joinmeeting':
-        if (!$meetingavail) {
+        if (!$webexmeeting->meeting_is_available()) {
             break;
         }
         $joinurl = $webexmeeting->get_meeting_join_url($returnurl, $USER);
@@ -102,30 +108,34 @@ if (!$view) {
         echo '</tr>' . "\n";
     }
 
-    if ($meetingavail) {
-        // Output links.
-        if ($canhost) {
-            // Host link.
-            echo '<tr><td colspan=2 align="center">';
-            $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'action' => 'hostmeeting'));
-            $params = array('url' => $urlobj->out());
-            echo get_string('hostmeetinglink', 'webexactivity', $params);
-            echo '</td></tr>';
-        }
-        // Join Link.
+    // Output links.
+    if ($canhost && $webexmeeting->meeting_is_available(true)) {
+        // Host link.
+        echo '<tr><td colspan=2 align="center">';
+        $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'action' => 'hostmeeting'));
+        $params = array('url' => $urlobj->out());
+        echo get_string('hostmeetinglink', 'webexactivity', $params);
+        echo '</td></tr>';
+    }
+    // Join Link.
+    if ($webexmeeting->meeting_is_available()) {
         echo '<tr><td colspan=2 align="center">';
         $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'action' => 'joinmeeting'));
         $params = array('url' => $urlobj->out());
         echo get_string('joinmeetinglink', 'webexactivity', $params);
         echo '</td></tr>';
+    } else {
+        echo '<tr><td colspan=2 align="center">';
+        echo get_string('notavailable', 'webexactivity');
+        echo '</td></tr>';
+    }
 
-        if ($canhost) {
-            echo '<tr><td colspan=2 align="center">';
-            $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'view' => 'guest'));
-            $params = array('url' => $urlobj->out());
-            echo get_string('getexternallink', 'webexactivity', $params);
-            echo '</td></tr>';
-        }
+    if ($canhost && $webexmeeting->meeting_is_available(true)) {
+        echo '<tr><td colspan=2 align="center">';
+        $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'view' => 'guest'));
+        $params = array('url' => $urlobj->out());
+        echo get_string('getexternallink', 'webexactivity', $params);
+        echo '</td></tr>';
     }
 
     echo '</table>';

@@ -228,6 +228,54 @@ class webex {
         return base64_decode($encrypted);
     }
 
+    public function get_open_sessions() {
+        global $DB;
+
+        $xml = xml_generator::list_open_sessions();
+
+        if (!($response = $this->get_response($xml))) {
+            return false;
+        }
+
+        if (!is_array($response) && isset($response['ep:services'])) {
+            return true;
+        }
+
+        $processtime = time();
+        $cleartime = $processtime - 60;
+
+        foreach ($response['ep:services'] as $service) {
+            foreach ($service['#']['ep:sessions'] as $session) {
+                $session = $session['#'];
+
+                $meetingkey = $session['ep:sessionKey'][0]['#'];
+                if ($meeting = $DB->get_record('webexactivity', array('meetingkey' => $meetingkey))) {
+                    $new = new \stdClass();
+                    $new->id = $meeting->id;
+                    $new->status = WEBEXACTIVITY_STATUS_IN_PROGRESS;
+                    $new->laststatuscheck = $processtime;
+
+                    $DB->update_record('webexactivity', $new);
+                }
+            }
+        }
+
+        $select = 'laststatuscheck < ? AND status = ?';
+        $params = array('lasttime' => $cleartime, 'status' => WEBEXACTIVITY_STATUS_IN_PROGRESS);
+
+        if ($meetings = $DB->get_records_select('webexactivity', $select, $params)) {
+            foreach ($meetings as $meeting) {
+                $new = new \stdClass();
+                $new->id = $meeting->id;
+                $new->status = WEBEXACTIVITY_STATUS_STOPPED;
+                $new->laststatuscheck = $processtime;
+
+                $DB->update_record('webexactivity', $new);
+            }
+        }
+
+    }
+
     // ---------------------------------------------------
     // Recording Functions.
     // ---------------------------------------------------
@@ -247,6 +295,10 @@ class webex {
 
     public function proccess_recording_response($response) {
         global $DB;
+
+        if (!is_array($response)) {
+            return true;
+        }
 
         $recordings = $response['ep:recording'];
 
@@ -301,6 +353,9 @@ class webex {
                 if ($status) {
                     return $response;
                 }
+            }
+            if ((isset($errors['exception'])) && ($errors['exception'] === '000015')) {
+                return $response;
             }
 
             if (debugging('Error when processing XML', DEBUG_DEVELOPER)) {

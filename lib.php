@@ -28,8 +28,9 @@ define('WEBEXACTIVITY_TYPE_MEETING', 1);
 define('WEBEXACTIVITY_TYPE_TRAINING', 2);
 define('WEBEXACTIVITY_TYPE_SUPPORT', 3);
 
-define('WEBEXACTIVITY_STATUS_STOPPED', 0);
-define('WEBEXACTIVITY_STATUS_IN_PROGRESS', 1);
+define('WEBEXACTIVITY_STATUS_NEVER_STARTED', 0);
+define('WEBEXACTIVITY_STATUS_STOPPED', 1);
+define('WEBEXACTIVITY_STATUS_IN_PROGRESS', 2);
 
 function webexactivity_supports($feature) {
     switch($feature) {
@@ -70,6 +71,7 @@ function webexactivity_add_instance($data, $mform) {
     $meeting->name = $data->name;
     $meeting->course = $data->course;
     $meeting->type = WEBEXACTIVITY_TYPE_TRAINING;
+    $meeting->status = WEBEXACTIVITY_STATUS_NEVER_STARTED;
     $meeting->id = $DB->insert_record('webexactivity', $meeting);
 
     $webex = new \mod_webexactivity\webex_meeting($meeting);
@@ -122,6 +124,7 @@ function webexactivity_delete_instance($id) {
 function webexactivity_cron() {
     $webex = new \mod_webexactivity\webex();
     $webex->get_recordings();
+    $webex->get_open_sessions();
 
     return true;
 }
