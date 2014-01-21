@@ -300,6 +300,28 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014010800, 'webexactivity');
     }
 
+    if ($oldversion < 2014012100) {
+
+        // Define field eventid to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('eventid', XMLDB_TYPE_CHAR, '128', null, null, null, null, 'guestkey');
+
+        // Conditionally launch add field eventid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('guestuserid', XMLDB_TYPE_CHAR, '128', null, null, null, null, 'eventid');
+
+        // Conditionally launch add field guestuserid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014012100, 'webexactivity');
+    }
+
     return true;
 }
 
