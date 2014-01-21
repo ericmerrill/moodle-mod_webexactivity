@@ -70,6 +70,16 @@ function webexactivity_add_instance($data, $mform) {
     $meeting->intro = $data->intro;
     $meeting->name = $data->name;
     $meeting->course = $data->course;
+    if (isset($data->allchat) && $data->allchat) {
+        $meeting->allchat = 1;
+    } else {
+        $meeting->allchat = 0;
+    }
+    if (isset($data->studentdownload) && $data->studentdownload) {
+        $meeting->studentdownload = 1;
+    } else {
+        $meeting->studentdownload = 0;
+    }
     $meeting->type = WEBEXACTIVITY_TYPE_TRAINING;
     $meeting->status = WEBEXACTIVITY_STATUS_NEVER_STARTED;
     $meeting->id = $DB->insert_record('webexactivity', $meeting);
@@ -97,6 +107,16 @@ function webexactivity_update_instance($data, $mform) {
     $meeting->intro = $data->intro;
     $meeting->name = $data->name;
     $meeting->course = $data->course;
+    if (isset($data->allchat) && $data->allchat) {
+        $meeting->allchat = 1;
+    } else {
+        $meeting->allchat = 0;
+    }
+    if (isset($data->studentdownload) && $data->studentdownload) {
+        $meeting->studentdownload = 1;
+    } else {
+        $meeting->studentdownload = 0;
+    }
     $meeting->type = WEBEXACTIVITY_TYPE_TRAINING;
     if (!$DB->update_record('webexactivity', $meeting)) {
         return false;

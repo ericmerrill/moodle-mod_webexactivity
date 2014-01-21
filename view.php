@@ -168,7 +168,7 @@ if (!$view) {
     echo $webexmeeting->get_meeting_join_url();
 }
 
-print "<pre>"; print_r($webexmeeting->get_training_info());print "</pre>";
+//print "<pre>"; print_r($webexmeeting->get_training_info());print "</pre>";
 
 echo $OUTPUT->box_end();
 

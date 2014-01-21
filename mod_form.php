@@ -34,6 +34,8 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
 
         $mform =& $this->_form;
 
+        $mform->addElement('header', 'general', get_string('general', 'form'));
+
         $mform->addElement('text', 'name', get_string('webexactivityname', 'webexactivity'), array('size' => '64'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
@@ -47,6 +49,14 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
         $mform->setType('duration', PARAM_INT);
         $mform->addRule('duration', null, 'required', null, 'client');
         $mform->setDefault('duration', 20);
+
+        $mform->addElement('header', 'additionalsettings', get_string('additionalsettings', 'webexactivity'));
+
+        //$mform->addElement('checkbox', 'allchat', get_string('allchat', 'webexactivity'));
+        //$mform->setDefault('allchat', 1);
+
+        $mform->addElement('checkbox', 'studentdownload', get_string('studentdownload', 'webexactivity'));
+        $mform->setDefault('studentdownload', 1);
 
         $this->standard_coursemodule_elements();
 

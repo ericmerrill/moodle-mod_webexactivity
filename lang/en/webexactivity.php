@@ -29,6 +29,8 @@ $string['modulenameplural'] = 'WebEx Activities';
 $string['webexactivityname'] = 'Meeting name';
 $string['pluginadministration'] = 'WebEx Activity administration';
 
+$string['additionalsettings'] = 'Additional meeting settings';
+$string['allchat'] = 'Participants can chat with other participants';
 $string['apipassword'] = 'Webex Admin password';
 $string['apipassword_help'] = '';
 $string['apiusername'] = 'Webex Admin username';
@@ -53,5 +55,6 @@ $string['recordingstreamurl'] = 'Play';
 $string['siteid'] = 'Site ID';
 $string['siteid_help'] = '';
 $string['starttime'] = 'Meeting start time';
+$string['studentdownload'] = 'Allow students to download recordings';
 $string['url'] = 'Site URL';
 $string['url_help'] = '';

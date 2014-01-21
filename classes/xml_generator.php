@@ -202,6 +202,18 @@ class xml_generator {
             $xml .= '</metaData>';
         }
 
+        $xml .= '<enableOptions>';
+
+        /*if (isset($data->allchat)) {
+            if ($data->allchat) {
+                $xml .= '<chatAllAttendees>true</chatAllAttendees>';
+            } else {
+                $xml .= '<chatAllAttendees>false</chatAllAttendees>';
+            }
+        }*/
+
+        $xml .= '</enableOptions>';
+
         if (isset($data->hostusers)) {
             $xml .= '<presenters><participants>';
             foreach ($data->hostusers as $huser) {
@@ -222,10 +234,13 @@ class xml_generator {
             $xml .= '</participants></presenters>';
         }
 
+        if (isset($data->dummyparticipant)) {
+            $xml .= '<attendees><participants><participant>'.
+                    '<person><email>moodle_dummy@example.com</email></person>'.
+                    '</participant></participants></attendees>';
+        }
+
         // TODO Expand.
-//'<attendees><participants><participant>'.
-//'<person><email>dummy@example.com</email></person>'.
-//'</participant></participants></attendees>'.
 
         $xml .= '<repeat><repeatType>SINGLE</repeatType></repeat>';
 

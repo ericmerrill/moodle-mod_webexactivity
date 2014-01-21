@@ -79,7 +79,6 @@ class webex_meeting {
     // Meeting Functions.
     // ---------------------------------------------------
     public function create_or_update($user) {
-        global $DB;
 
         if ($this->meetingrecord->starttime < time()) {
             $this->meetingrecord->starttime = time() + 60;
@@ -89,31 +88,57 @@ class webex_meeting {
 
         if (isset($this->meetingrecord->meetingkey) && $this->meetingrecord->meetingkey) {
             $xml = xml_generator::update_training_session($this->meetingrecord);
-            $this->meetingrecord->xml = $xml;
-            $response = $this->webex->get_response($xml, $webexuser);
+        } else {
+            $xml = xml_generator::create_training_session($this->meetingrecord);
+            $this->meetingrecord->creatorwebexuser = $webexuser->id;
+        }
+        $this->meetingrecord->xml = $xml;
+        $response = $this->webex->get_response($xml, $webexuser);
 
-            if ($response === false) {
-                return false;
-            }
+        return $this->process_training_response($response);
+    }
 
-            $DB->update_record('webexactivity', $this->meetingrecord);
+    private function process_training_response($response) {
+        global $DB;
+
+        if ($response === false) {
+            return false;
+        }
+
+        if (empty($response)) {
             return true;
         }
 
-        $xml = xml_generator::create_training_session($this->meetingrecord);
-        $this->meetingrecord->xml = $xml;
-        $this->meetingrecord->creatorwebexuser = $webexuser->id;
+        if (isset($response['train:sessionkey']['0']['#'])) {
+            $this->meetingrecord->meetingkey = $response['train:sessionkey']['0']['#'];
+        }
 
-        $response = $this->webex->get_response($xml, $webexuser);
+        if (isset($response['train:additionalInfo']['0']['#']['train:guestToken']['0']['#'])) {
+            $this->meetingrecord->guesttoken = $response['train:additionalInfo']['0']['#']['train:guestToken']['0']['#'];
+        }
 
-        if ($response) {
-            if (isset($response['train:sessionkey']['0']['#'])) {
+        if (isset($response['train:eventID']['0']['#'])) {
+            $this->meetingrecord->eventid = $response['train:eventID']['0']['#'];
+        }
 
-                $this->meetingrecord->meetingkey = $response['train:sessionkey']['0']['#'];
-                $this->meetingrecord->guesttoken = $response['train:additionalInfo']['0']['#']['train:guestToken']['0']['#'];
-                $DB->update_record('webexactivity', $this->meetingrecord);
-                return true;
+        if (isset($response['train:hostKey']['0']['#'])) {
+            $this->meetingrecord->hostkey = $response['train:hostKey']['0']['#'];
+        }
+
+        if (isset($response['train:attendees']['0']['#'])) {
+            $participants = $response['train:attendees']['0']['#']['sess:participants'];
+            foreach ($participants as $participant) {
+                $participant = $participant['#']['sess:participant']['0']['#'];
+                $email = $participant['sess:person']['0']['#']['com:email']['0']['#'];
+                if (strcmp($email, 'moodle_dummy@example.com') === 0) {
+                    $this->meetingrecord->guestuserid = $participant['sess:contactID']['0']['#'];
+                    break;
+                }
             }
+        }
+
+        if ($DB->update_record('webexactivity', $this->meetingrecord)) {
+            return true;
         }
 
         return false;
@@ -144,6 +169,7 @@ class webex_meeting {
 
         $response = $this->webex->get_response($xml);
 
+
         return $response;
     }
 
@@ -157,6 +183,8 @@ class webex_meeting {
         if (!($response = $this->webex->get_response($xml, $webexuser))) {
             return false;
         }
+
+        $this->process_training_response($response);
 
         return $response;
     }
@@ -173,15 +201,26 @@ class webex_meeting {
 
     public function get_meeting_join_url($returnurl = false, $user = false) {
         $baseurl = self::get_base_url();
-        $url = $baseurl.'/m.php?AT=JM&MK='.$this->meetingrecord->meetingkey;
 
+        // Known user link.
         if ($user) {
+            $url = $baseurl.'/m.php?AT=JM&MK='.$this->meetingrecord->meetingkey;
             $url .= '&AE='.$user->email.'&AN='.$user->firstname.'%20'.$user->lastname;
+            if ($returnurl) {
+                $url .= '&BU='.urlencode($returnurl);
+            }
+
+            return $url;
         }
 
-        if ($returnurl) {
-            $url .= '&BU='.urlencode($returnurl);
+        // External Link.
+        if ((!isset($this->meetingrecord->eventid) || $this->meetingrecord->eventid === null) ||
+                (!isset($this->meetingrecord->guestuserid) || $this->meetingrecord->guestuserid === null)) {
+            $this->add_dummy_participant();
+            $this->get_training_info();
         }
+
+        $url = $baseurl.'/k2/j.php?ED='.$this->meetingrecord->eventid.'&UID='.$this->meetingrecord->guestuserid;
 
         return $url;
     }
@@ -252,6 +291,7 @@ class webex_meeting {
         return true;
     }
 
+    // Unused.
     public function add_hosts($users) {
         $webexuser = $this->get_meeting_webex_user();
 
@@ -266,6 +306,22 @@ class webex_meeting {
         if ($response === false) {
             return false;
         }
+    }
+
+    public function add_dummy_participant() {
+        $creator = $this->get_meeting_webex_user();
+
+        $data = new \stdClass();
+        $data->meetingkey = $this->meetingrecord->meetingkey;
+        $data->dummyparticipant = true;
+
+        $xml = xml_generator::update_training_session($data);
+
+        if (!($response = $this->webex->get_response($xml, $creator))) {
+            return false;
+        }
+
+        return true;
     }
 
     // ---------------------------------------------------

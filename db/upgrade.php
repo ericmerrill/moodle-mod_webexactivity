@@ -311,6 +311,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
+        // Define field eventid to be added to guestuserid.
         $field = new xmldb_field('guestuserid', XMLDB_TYPE_CHAR, '128', null, null, null, null, 'eventid');
 
         // Conditionally launch add field guestuserid.
@@ -322,6 +323,40 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014012100, 'webexactivity');
     }
 
+    if ($oldversion < 2014012101) {
+
+        // Define field hostkey to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('hostkey', XMLDB_TYPE_CHAR, '128', null, null, null, null, 'guestuserid');
+
+        // Conditionally launch add field hostkey.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014012101, 'webexactivity');
+    }
+
+    if ($oldversion < 2014012102) {
+        // Define field allchat to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('allchat', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'hosts');
+
+        // Conditionally launch add field allchat.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field studentdownload to be added to webexactivity.
+        $field = new xmldb_field('studentdownload', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'allchat');
+
+        // Conditionally launch add field studentdownload.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+    }
     return true;
 }
 
