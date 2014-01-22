@@ -234,12 +234,6 @@ class xml_generator {
             $xml .= '</participants></presenters>';
         }
 
-        if (isset($data->dummyparticipant)) {
-            $xml .= '<attendees><participants><participant>'.
-                    '<person><email>moodle_dummy@example.com</email></person>'.
-                    '</participant></participants></attendees>';
-        }
-
         // TODO Expand.
 
         $xml .= '<repeat><repeatType>SINGLE</repeatType></repeat>';

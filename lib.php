@@ -61,7 +61,7 @@ function webexactivity_supports($feature) {
 }
 
 function webexactivity_add_instance($data, $mform) {
-    global $CFG, $DB, $USER;
+    global $CFG, $DB;
 
     $meeting = new \stdClass();
     $meeting->timemodified = time();
@@ -85,7 +85,7 @@ function webexactivity_add_instance($data, $mform) {
     $meeting->id = $DB->insert_record('webexactivity', $meeting);
 
     $webex = new \mod_webexactivity\webex_meeting($meeting);
-    if (!$webex->create_or_update($USER)) {
+    if (!$webex->create_or_update()) {
         $DB->delete_records('webexactivity', array('id' => $meeting->id));
 
         return false;
@@ -95,7 +95,7 @@ function webexactivity_add_instance($data, $mform) {
 }
 
 function webexactivity_update_instance($data, $mform) {
-    global $DB, $USER;
+    global $DB;
 
     $cmid = $data->coursemodule;
     $cm = get_coursemodule_from_id('webexactivity', $cmid, 0, false, MUST_EXIST);
@@ -123,7 +123,7 @@ function webexactivity_update_instance($data, $mform) {
     }
 
     $webex = new \mod_webexactivity\webex_meeting($meeting);
-    if (!$webex->create_or_update($USER)) {
+    if (!$webex->create_or_update()) {
         return false;
     }
 
