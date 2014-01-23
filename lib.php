@@ -61,84 +61,53 @@ function webexactivity_supports($feature) {
 }
 
 function webexactivity_add_instance($data, $mform) {
-    global $CFG, $DB;
 
-    $meeting = new \stdClass();
-    $meeting->timemodified = time();
-    $meeting->starttime = $data->starttime;
-    $meeting->duration = $data->duration;
-    $meeting->intro = $data->intro;
-    $meeting->name = $data->name;
-    $meeting->course = $data->course;
-    if (isset($data->allchat) && $data->allchat) {
-        $meeting->allchat = 1;
-    } else {
-        $meeting->allchat = 0;
-    }
+    $meeting = \mod_webexactivity\webex::new_meeting(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING);
+    $meeting->set_value('starttime', $data->starttime);
+    $meeting->set_value('duration', $data->duration);
+    $meeting->set_value('intro', $data->intro);
+    $meeting->set_value('introformat', $data->introformat);
+    $meeting->set_value('name', $data->name);
+    $meeting->set_value('course', $data->course);
+    $meeting->set_value('status', \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_NEVER_STARTED);
     if (isset($data->studentdownload) && $data->studentdownload) {
-        $meeting->studentdownload = 1;
+        $meeting->set_value('studentdownload', 1);
     } else {
-        $meeting->studentdownload = 0;
-    }
-    $meeting->type = WEBEXACTIVITY_TYPE_TRAINING;
-    $meeting->status = WEBEXACTIVITY_STATUS_NEVER_STARTED;
-    $meeting->id = $DB->insert_record('webexactivity', $meeting);
-
-    $webex = new \mod_webexactivity\webex_meeting($meeting);
-    if (!$webex->create_or_update()) {
-        $DB->delete_records('webexactivity', array('id' => $meeting->id));
-
-        return false;
+        $meeting->set_value('studentdownload', 0);
     }
 
-    return $meeting->id;
+    if ($meeting->save()) {
+        return $meeting->get_value('id');
+    }
+
+    return false;
 }
 
 function webexactivity_update_instance($data, $mform) {
-    global $DB;
-
+    
     $cmid = $data->coursemodule;
     $cm = get_coursemodule_from_id('webexactivity', $cmid, 0, false, MUST_EXIST);
-    $meeting = $DB->get_record('webexactivity', array('id' => $cm->instance), '*', MUST_EXIST);
+    $meeting = \mod_webexactivity\webex::load_meeting($cm->instance);
 
-    $meeting->timemodified = time();
-    $meeting->starttime = $data->starttime;
-    $meeting->duration = $data->duration;
-    $meeting->intro = $data->intro;
-    $meeting->name = $data->name;
-    $meeting->course = $data->course;
-    if (isset($data->allchat) && $data->allchat) {
-        $meeting->allchat = 1;
-    } else {
-        $meeting->allchat = 0;
-    }
+    $meeting->set_value('starttime', $data->starttime);
+    $meeting->set_value('duration', $data->duration);
+    $meeting->set_value('intro', $data->intro);
+    $meeting->set_value('introformat', $data->introformat);
+    $meeting->set_value('name', $data->name);
+    $meeting->set_value('course', $data->course);
+
     if (isset($data->studentdownload) && $data->studentdownload) {
-        $meeting->studentdownload = 1;
+        $meeting->set_value('studentdownload', 1);
     } else {
-        $meeting->studentdownload = 0;
-    }
-    $meeting->type = WEBEXACTIVITY_TYPE_TRAINING;
-    if (!$DB->update_record('webexactivity', $meeting)) {
-        return false;
+        $meeting->set_value('studentdownload', 0);
     }
 
-    $webex = new \mod_webexactivity\webex_meeting($meeting);
-    if (!$webex->create_or_update()) {
-        return false;
-    }
-
-    return true;
+    return $meeting->save();
 }
 
 function webexactivity_delete_instance($id) {
-    global $DB, $USER;
-
-    $webex = new \mod_webexactivity\webex_meeting($id);
-    $webex->delete_training($USER);
-
-    $DB->delete_records('webexactivity', array('id' => $id));
-
-    return true;
+    $meeting = \mod_webexactivity\webex::load_meeting($id);
+    return $meeting->delete();
 }
 
 function webexactivity_cron() {

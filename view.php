@@ -33,7 +33,8 @@ $view = optional_param('view', false, PARAM_ALPHA);
 
 $cm = get_coursemodule_from_id('webexactivity', $id, 0, false, MUST_EXIST);
 $webexrecord = $DB->get_record('webexactivity', array('id' => $cm->instance), '*', MUST_EXIST);
-$webexmeeting = new \mod_webexactivity\webex_meeting($webexrecord);
+//$webexmeeting = new \mod_webexactivity\webex_meeting($webexrecord);
+$webexmeeting = \mod_webexactivity\webex::load_meeting($webexrecord);
 $webex = new \mod_webexactivity\webex();
 
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
@@ -49,7 +50,7 @@ $returnurl = new moodle_url('/mod/webexactivity/view.php', array('id' => $id));
 // Do redirect actions here.
 switch ($action) {
     case 'hostmeeting':
-        if (!$webexmeeting->meeting_is_available(true)) {
+        if (!$webexmeeting->is_available(true)) {
             break;
         }
         if (!$canhost) {
@@ -59,37 +60,37 @@ switch ($action) {
 
         $webexuser = $webex->get_webex_user($USER);
         $webexmeeting->add_webexuser_host($webexuser);
-        $hosturl = $webexmeeting->get_meeting_host_url($returnurl);
+        $hosturl = $webexmeeting->get_host_url($returnurl);
         $authurl = $webex->get_login_url($webexuser, false, $hosturl);
 
         $new = new \stdClass();
-        $new->id = $webexrecord->id;
-        $new->status = WEBEXACTIVITY_STATUS_IN_PROGRESS;
+        $new->id = $webexmeeting->get_value('id');
+        $new->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS;
         $new->laststatustime = time();
         $DB->update_record('webexactivity', $new);
 
         redirect($authurl);
         break;
     case 'joinmeeting':
-        if (!$webexmeeting->meeting_is_available()) {
+        if (!$webexmeeting->is_available()) {
             break;
         }
-        $joinurl = $webexmeeting->get_meeting_join_url($returnurl, $USER);
+        $joinurl = $webexmeeting->get_moodle_join_url($USER, $returnurl);
         redirect($joinurl);
         break;
 }
 
-add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webexrecord->id, $cm->id);
+add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webexmeeting->get_value('id'), $cm->id);
 
 $PAGE->set_url('/mod/webexactivity/view.php', array('id' => $cm->id));
 
-$PAGE->set_title($course->shortname.': '.$webexrecord->name);
+$PAGE->set_title($course->shortname.': '.$webexmeeting->get_value('name'));
 $PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($webexrecord);
 
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string($webexrecord->name), 2);
+echo $OUTPUT->heading(format_string($webexmeeting->get_value('name')), 2);
 
 echo $OUTPUT->box_start();
 
@@ -97,9 +98,9 @@ if (!$view) {
     echo '<table align="center" cellpadding="5">' . "\n";
 
     $formelements = array(
-        get_string('description', 'webexactivity')  => $webexrecord->intro,
-        get_string('starttime', 'webexactivity')   => userdate($webexrecord->starttime),
-        get_string('duration', 'webexactivity')    => $webexrecord->duration
+        get_string('description', 'webexactivity')  => $webexmeeting->get_value('intro'),
+        get_string('starttime', 'webexactivity')   => userdate($webexmeeting->get_value('starttime')),
+        get_string('duration', 'webexactivity')    => $webexmeeting->get_value('duration')
     );
 
     foreach ($formelements as $key => $val) {
@@ -109,7 +110,7 @@ if (!$view) {
     }
 
     // Output links.
-    if ($canhost && $webexmeeting->meeting_is_available(true)) {
+    if ($canhost && $webexmeeting->is_available(true)) {
         // Host link.
         echo '<tr><td colspan=2 align="center">';
         $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'action' => 'hostmeeting'));
@@ -118,7 +119,7 @@ if (!$view) {
         echo '</td></tr>';
     }
     // Join Link.
-    if ($webexmeeting->meeting_is_available()) {
+    if ($webexmeeting->is_available()) {
         echo '<tr><td colspan=2 align="center">';
         $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'action' => 'joinmeeting'));
         $params = array('url' => $urlobj->out());
@@ -130,7 +131,7 @@ if (!$view) {
         echo '</td></tr>';
     }
 
-    if ($canhost && $webexmeeting->meeting_is_available(true)) {
+    if ($canhost && $webexmeeting->is_available(true)) {
         echo '<tr><td colspan=2 align="center">';
         $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'view' => 'guest'));
         $params = array('url' => $urlobj->out());
@@ -140,13 +141,40 @@ if (!$view) {
 
     echo '</table>';
 
-    $params = array('webexid' => $webexrecord->id);
+    $params = array('webexid' => $webexmeeting->get_value('id'));
     if (!$canhost) {
         $params['visible'] = 1;
     }
 
     if ($recordings = $DB->get_records('webexactivity_recording', $params)) {
         echo '<hr>';
+
+        echo '<div id="recordings">';
+        foreach ($recordings as $recording) {
+            echo '<div class="recording">';
+
+            echo '<div class="buttons">';
+            echo '<div class="play">';
+            
+            echo '<a target="_blank" href="'.$recording->streamurl.'">'.get_string('recordingstreamurl', 'webexactivity').'</a>';
+            echo '</div>';
+            echo '<div class="download">';
+            $icon = new \pix_icon('i/import', 'Download');
+            
+            echo '<a target="_blank" href="'.$recording->fileurl.'">'.get_string('recordingfileurl', 'webexactivity').'</a>';
+            echo '</div>';
+            echo '</div>';
+
+            echo '<div class="details">';
+            echo '<div class="name">'.$recording->name.'</div>';
+            echo '<div class="date">'.userdate($recording->timecreated).'</div>';
+            echo '<div class="length">'.get_string('recordinglength', 'webexactivity', round($recording->duration / 60)).'</div>';
+            echo '</div>';
+
+            echo '</div>';
+        }
+        echo '</div>';
+
         echo '<table align="center" cellpadding="5">';
         echo '<tr><td align="center">';
         echo get_string('recordings', 'webexactivity');
@@ -165,10 +193,11 @@ if (!$view) {
 
 } else if ($view === 'guest') {
     echo get_string('externallinktext', 'webexactivity');
-    echo $webexmeeting->get_meeting_join_url();
+    echo $webexmeeting->get_external_join_url();
 }
 
-//print "<pre>"; print_r($webexmeeting->get_training_info());print "</pre>";
+//print "<pre>"; print_r($webextrain->get_info());print "</pre>";
+
 
 echo $OUTPUT->box_end();
 

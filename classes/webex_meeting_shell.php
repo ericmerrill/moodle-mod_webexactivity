@@ -47,15 +47,21 @@ class webex_meeting_shell {
             'studentdownload' => 1,
             'xml' => null, // Temp.
             'laststatuscheck' => 0,
-            'status' => WEBEXACTIVITY_STATUS_NEVER_STARTED,
+            'status' => webex::WEBEXACTIVITY_STATUS_NEVER_STARTED,
             'timemodified' => 0);
 
     protected $webex;
+
+    protected $gen = '\mod_webexactivity\xml_gen';
 
     public function __construct($meeting = false) {
         global $DB;
 
         $this->webex = new webex();
+
+        if ($meeting === false) {
+            return;
+        }
 
         if (is_numeric($meeting)) {
             $this->meetingrecord = $DB->get_record('webexactivity', array('id' => $meeting));
@@ -63,7 +69,223 @@ class webex_meeting_shell {
         if (is_object($meeting)) {
             $this->meetingrecord = $meeting;
         }
+        
+        $this->load_webex_record($meeting);
+    }
 
+    // ---------------------------------------------------
+    // Accessor Functions.
+    // ---------------------------------------------------
+    public function set_value($name, $val) {
+        if ($name === 'starttime') {
+            $curr = $this->get_value('starttime');
+            // If the current time is not set, new meeting.
+            if ($curr === null) {
+                // If the time is past, or near past, set it to the near future.
+                if ($val < (time() + 60)) {
+                    $val = time() + 60;
+                }
+
+            // If the current time is already set, and the time is past or near past.
+            } else if ($val < (time() + 60)) {
+                if ($curr > time()) {
+                    // If the current time is in the future, assume they want to start it now.
+                    $val = time() + 60;
+                } else {
+                    // If they are both in the past, leave it as the old setting. Can't change it.
+                    $val = $curr;
+                }
+            }
+        }
+
+        $this->values[$name] = $val;
+        if (!array_key_exists($name, $this->values)) {
+            debugging('Unknown meeting value set '.$name, DEBUG_DEVELOPER);
+            return false;
+        }
+        return true;
+    }
+
+    public function get_value($name) {
+        if (!array_key_exists($name, $this->values)) {
+            debugging('Unknown meeting value requested '.$name, DEBUG_DEVELOPER);
+            return false;
+        }
+
+        return $this->values[$name];
+    }
+
+
+    // ---------------------------------------------------
+    // Meeting Functions.
+    // ---------------------------------------------------
+    public function save_to_webex() {
+        $data = self::array_to_object($this->values);
+        $gen = $this->gen;
+        $webexuser = $this->get_meeting_webex_user();
+
+        if (isset($this->values['meetingkey'])) {
+            // Updating meeting.
+            $xml = $gen::update_meeting($data);
+        } else {
+            // Creating meeting.
+            $xml = $gen::create_meeting($data);
+            $this->values['creatorwebexuser'] = $webexuser->id;
+        }
+
+        $this->values['xml'] = $xml;
+        $response = $this->webex->get_response($xml, $webexuser);
+
+        return $this->process_response($response);
+    }
+
+    public function delete_from_webex() {
+        $gen = $this->gen;
+        $webexuser = $this->get_meeting_webex_user();
+
+        $xml = $gen::delete_meeting($this->values['meetingkey']);
+
+        $response = $this->webex->get_response($xml, $webexuser); 
+
+        if (empty($response)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function get_info($save = false) {
+        if (!isset($this->values['meetingkey'])) {
+            return false;
+        }
+
+        $gen = $this->gen;
+        $webexuser = $this->get_meeting_webex_user();
+
+        $xml = $gen::get_meeting_info($this->values['meetingkey']);
+
+        if (!$response = $this->webex->get_response($xml, $webexuser)) {
+            return false;
+        }
+
+        if (!$this->process_response($response)) {
+            return false;
+        }
+
+        if ($save) {
+            $this->save_to_db();
+        }
+
+        return $response;
+    }
+
+    public function is_available($host = false) {
+        if ($host) {
+            if ($this->meetingrecord->status == webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+                return true;
+            }
+
+            $grace = get_config('webexactivity', 'meetingclosegrace');
+            $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->duration * 60) + ($grace * 60);
+
+            if (time() > $endtime) {
+                return false;
+            }
+
+            return true;
+        } else {
+            if ($this->meetingrecord->status == webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+                return true;
+            } else {
+                $grace = get_config('webexactivity', 'meetingclosegrace');
+
+                $starttime = $this->meetingrecord->starttime - (20 * 60);
+                if (time() < $starttime) {
+                    return false;
+                }
+
+                $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->duration * 60) + ($grace * 60);
+                if (time() > $endtime) {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        // Should never get here.
+        return false;
+    }
+
+    protected function process_response($response) {
+        debugging('Function process_response must be implemented by child class.', DEBUG_DEVELOPER);
+    }
+
+    public function add_webexuser_host($webexuser) {
+        global $DB;
+
+        $creator = $this->get_meeting_webex_user();
+        if ($webexuser->webexid === $creator->webexid) {
+            return true;
+        }
+
+        $moodleuser = $DB->get_record('user', array('id' => $webexuser->moodleuserid));
+        $user = new \stdClass();
+        $user->webexid = $webexuser->webexid;
+        $user->email = $moodleuser->email;
+        $user->firstname = $moodleuser->firstname;
+        $user->lastname = $moodleuser->lastname;
+
+        $data = new \stdClass();
+        $data->meetingkey = $this->values['meetingkey'];
+        $data->hostusers = array($user);
+
+        $gen = $this->gen;
+        $xml = $gen::update_meeting($data);
+
+        if (!($response = $this->webex->get_response($xml, $creator))) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    // ---------------------------------------------------
+    // URL Functions.
+    // ---------------------------------------------------
+    public function get_host_url($returnurl = false) {
+        $baseurl = webex::get_base_url();
+        $url = $baseurl.'/m.php?AT=HM&MK='.$this->values['meetingkey'];
+        if ($returnurl) {
+            $url .= '&BU='.urlencode($returnurl);
+        }
+
+        return $url;
+    }
+
+    public function get_moodle_join_url($user, $returnurl = false) {
+        $baseurl = webex::get_base_url();
+
+        $url = $baseurl.'/m.php?AT=JM&MK='.$this->values['meetingkey'];
+        $url .= '&AE='.$user->email.'&AN='.$user->firstname.'%20'.$user->lastname;
+        if ($returnurl) {
+            $url .= '&BU='.urlencode($returnurl);
+        }
+
+        return $url;
+    }
+
+    public function get_external_join_url() {
+        $baseurl = webex::get_base_url();
+
+        if (!isset($this->values['eventid'])) {
+            $this->get_info(true);
+        }
+
+        $url = $baseurl.'/k2/j.php?ED='.$this->values['eventid'].'&UID=1';
+
+        return $url;
     }
 
     // ---------------------------------------------------
@@ -72,8 +294,8 @@ class webex_meeting_shell {
     public function get_meeting_webex_user() {
         global $DB, $USER;
 
-        if (isset($this->meetingrecord->creatorwebexuser) && $this->meetingrecord->creatorwebexuser) {
-            $webexuser = $DB->get_record('webexactivity_users', array('id' => $this->meetingrecord->creatorwebexuser));
+        if (isset($this->values['creatorwebexuser'])) {
+            $webexuser = $DB->get_record('webexactivity_users', array('id' => $this->values['creatorwebexuser']));
         } else {
             $webexuser = $this->webex->get_webex_user($USER);
         }
@@ -94,32 +316,23 @@ class webex_meeting_shell {
         }
     }
 
-    public function set_value($name, $val) {
-        $this->values[$name] = $val;
-        if (!array_key_exists($name, $this->values)) {
-            debugging('Unknown meeting value set '.$name, DEBUG_DEVELOPER);
+    public function save() {
+        if (!$this->save_to_webex()) {
             return false;
         }
+
+        if (!$this->save_to_db()) {
+            return false;
+        }
+
         return true;
     }
 
-    public function get_value($name) {
-        if (!array_key_exists($name, $this->values)) {
-            debugging('Unknown meeting value requested '.$name, DEBUG_DEVELOPER);
-            return false;
-        }
-
-        return $this->values[$name];
-    }
-
-    public function save() {
+    public function save_to_db() {
         global $DB;
 
-        $this->meetingrecord = new \stdClass();
-
-        foreach ($this->values as $key => $val) {
-            $this->meetingrecord->$key = $val;
-        }
+        $this->values['timemodified'] = time();
+        $this->meetingrecord = self::array_to_object($this->values);
 
         if (isset($this->meetingrecord->id)) {
             if ($DB->update_record('webexactivity', $this->meetingrecord)) {
@@ -128,11 +341,51 @@ class webex_meeting_shell {
             return false;
         } else {
             if ($id = $DB->insert_record('webexactivity', $this->meetingrecord)) {
-                $this->meetingrecord->id = id;
+                $this->meetingrecord->id = $id;
                 $this->values['id'] = $id;
                 return true;
             }
             return false;
         }
+    }
+
+    public function delete() {
+        // TODO delete recordings.
+
+        if (!$this->delete_from_webex()) {
+            return false;
+        }
+
+        if (!$this->delete_from_db()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function delete_from_db() {
+        global $DB;
+
+        if (!isset($this->values['id'])) {
+            return true;
+        }
+
+        if (!$DB->delete_records('webexactivity', array('id' => $this->values['id']))) {
+            return false;
+        }
+
+        unset($this->values['id']);
+        unset($this->meetingrecord);
+        return true;
+    }
+    
+    public static function array_to_object($arr) {
+        $obj = new \stdClass();
+
+        foreach ($arr as $key => $val) {
+            $obj->$key = $val;
+        }
+
+        return $obj;
     }
 }

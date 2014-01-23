@@ -25,11 +25,65 @@
 namespace mod_webexactivity;
 
 class webex {
+    const WEBEXACTIVITY_TYPE_MEETING = 1;
+    const WEBEXACTIVITY_TYPE_TRAINING = 2;
+    const WEBEXACTIVITY_TYPE_SUPPORT = 3;
+    
+    const WEBEXACTIVITY_STATUS_NEVER_STARTED = 0;
+    const WEBEXACTIVITY_STATUS_STOPPED = 1;
+    const WEBEXACTIVITY_STATUS_IN_PROGRESS = 2;
+
+
     private $latesterrors = null;
 
     public function __construct() {
     }
 
+    public static function load_meeting($meeting) {
+        global $DB;
+
+        if (is_numeric($meeting)) {
+            $record = $DB->get_record('webexactivity', array('id' => $meeting));
+        }
+        if (is_object($meeting)) {
+            $record = $meeting;
+        }
+
+        switch ($record->type) {
+            case webex::WEBEXACTIVITY_TYPE_MEETING:
+                debugging('Meeting center not yet supported', DEBUG_DEVELOPER);
+                break;
+            case webex::WEBEXACTIVITY_TYPE_TRAINING:
+                return new webex_training($record);
+                break;
+            case webex::WEBEXACTIVITY_TYPE_SUPPORT:
+                debugging('Support center not yet supported', DEBUG_DEVELOPER);
+                break;
+            default:
+                debugging('Unknown Type', DEBUG_DEVELOPER);
+
+        }
+
+        return false;
+    }
+
+    public static function new_meeting($type) {
+        switch ($type) {
+            case webex::WEBEXACTIVITY_TYPE_MEETING:
+                debugging('Meeting center not yet supported', DEBUG_DEVELOPER);
+                break;
+            case webex::WEBEXACTIVITY_TYPE_TRAINING:
+                return new webex_training();
+                break;
+            case webex::WEBEXACTIVITY_TYPE_SUPPORT:
+                debugging('Support center not yet supported', DEBUG_DEVELOPER);
+                break;
+            default:
+                debugging('Unknown Type', DEBUG_DEVELOPER);
+        }
+
+        return false;
+    }
 
     // ---------------------------------------------------
     // User Functions.
@@ -78,7 +132,7 @@ class webex {
         $data->email = $moodleuser->email;
         $data->password = self::generate_password();
 
-        $xml = xml_generator::create_user($data);
+        $xml = xml_gen::create_user($data);
 
         $response = $this->get_response($xml);
 
@@ -105,7 +159,7 @@ class webex {
             // User already exists with this username or email.
 
             if ((stripos($exception, '030004') !== false) || (stripos($exception, '030005') === false)) {
-                $xml = xml_generator::get_user_info($data->webexid);
+                $xml = xml_gen::get_user_info($data->webexid);
 
                 if (!($response = $this->get_response($xml))) {
                     return false;
@@ -132,7 +186,7 @@ class webex {
     }
 
     public function check_user_auth($webexuser) {
-        $xml = xml_generator::check_user_auth($webexuser);
+        $xml = xml_gen::check_user_auth($webexuser);
 
         if (!($response = $this->get_response($xml))) {
             return false;
@@ -152,7 +206,7 @@ class webex {
 
         $webexuser->password = self::generate_password();
 
-        $xml = xml_generator::update_user_password($webexuser);
+        $xml = xml_gen::update_user_password($webexuser);
 
         $response = $this->get_response($xml);
 
@@ -171,7 +225,7 @@ class webex {
     }
 
     public function get_login_url($webexuser, $backurl = false, $forwardurl = false) {
-        $xml = xml_generator::get_user_login_url($webexuser->webexid);
+        $xml = xml_gen::get_user_login_url($webexuser->webexid);
 
         if (!($response = $this->get_response($xml, $webexuser))) {
             return false;
@@ -231,7 +285,7 @@ class webex {
     public function get_open_sessions() {
         global $DB;
 
-        $xml = xml_generator::list_open_sessions();
+        $xml = xml_gen::list_open_sessions();
 
         if (!($response = $this->get_response($xml))) {
             return false;
@@ -284,7 +338,7 @@ class webex {
         $params->startdate = time() - (2 * 24 * 3600);
         $params->enddate = time() + (12 * 3600);
 
-        $xml = xml_generator::list_recordings($params);
+        $xml = xml_gen::list_recordings($params);
 
         if (!($response = $this->get_response($xml))) {
             return false;
@@ -338,7 +392,7 @@ class webex {
     public function get_response($basexml, $webexuser = false) {
         global $USER;
 
-        $xml = xml_generator::auth_wrap($basexml, $webexuser);
+        $xml = xml_gen::auth_wrap($basexml, $webexuser);
 
         list($status, $response, $errors) = $this->fetch_response($xml);
 
@@ -348,7 +402,7 @@ class webex {
             // Bad user password, reset it and try again.
             if ($webexuser && (isset($errors['exception'])) && ($errors['exception'] === '030002')) {
                 $webexuser = $this->update_user_password($webexuser);
-                $xml = xml_generator::auth_wrap($basexml, $webexuser);
+                $xml = xml_gen::auth_wrap($basexml, $webexuser);
                 list($status, $response, $errors) = $this->fetch_response($xml);
                 if ($status) {
                     return $response;

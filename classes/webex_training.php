@@ -26,12 +26,44 @@ namespace mod_webexactivity;
 
 class webex_training extends webex_meeting_shell {
 
+    protected $gen = '\mod_webexactivity\xml_gen_training';
+
     public function __construct($meeting = false) {
-        parent::__construct();
+        parent::__construct($meeting);
 
         if ($this->values['type'] === null) {
-            $this->values['type'] = WEBEXACTIVITY_TYPE_TRAINING;
+            $this->values['type'] = webex::WEBEXACTIVITY_TYPE_TRAINING;
         }
+    }
+
+    protected function process_response($response) {
+        global $DB;
+
+        if ($response === false) {
+            return false;
+        }
+
+        if (empty($response)) {
+            return true;
+        }
+
+        if (isset($response['train:sessionkey']['0']['#'])) {
+            $this->values['meetingkey'] = $response['train:sessionkey']['0']['#'];
+        }
+
+        if (isset($response['train:additionalInfo']['0']['#']['train:guestToken']['0']['#'])) {
+            $this->values['guesttoken'] = $response['train:additionalInfo']['0']['#']['train:guestToken']['0']['#'];
+        }
+
+        if (isset($response['train:eventID']['0']['#'])) {
+            $this->values['eventid'] = $response['train:eventID']['0']['#'];
+        }
+
+        if (isset($response['train:hostKey']['0']['#'])) {
+            $this->values['hostkey'] = $response['train:hostKey']['0']['#'];
+        }
+
+        return true;
     }
 
 }

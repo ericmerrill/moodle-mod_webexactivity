@@ -1,2 +1,41 @@
 
+#recordings {
+    clear: both;
+    width: 100%;
+    text-align: center;
+}
 
+#recordings .recording { 
+    border: 1px solid black;
+    margin: 5px;
+}
+
+#recordings .recording .buttons { 
+    border: 1px solid black;
+    /*float: left;*/
+    width: 100px;
+    text-align: right;
+    padding-right: 15px;
+    display: inline-block; 
+}
+
+#recordings .recording .buttons .play {
+    display: inline-block;
+}
+
+#recordings .recording .buttons .download {
+    display: inline-block;
+}
+
+#recordings .recording .details { 
+    border: 1px solid black;
+    /*float: right;*/
+    width: 300px;
+    text-align: left;
+    
+display: inline-block;
+}
+
+#recordings .recording .details .name { 
+    font-weight: bold;
+}
