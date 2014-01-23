@@ -33,7 +33,6 @@ $view = optional_param('view', false, PARAM_ALPHA);
 
 $cm = get_coursemodule_from_id('webexactivity', $id, 0, false, MUST_EXIST);
 $webexrecord = $DB->get_record('webexactivity', array('id' => $cm->instance), '*', MUST_EXIST);
-//$webexmeeting = new \mod_webexactivity\webex_meeting($webexrecord);
 $webexmeeting = \mod_webexactivity\webex::load_meeting($webexrecord);
 $webex = new \mod_webexactivity\webex();
 
@@ -155,12 +154,12 @@ if (!$view) {
 
             echo '<div class="buttons">';
             echo '<div class="play">';
-            
+
             echo '<a target="_blank" href="'.$recording->streamurl.'">'.get_string('recordingstreamurl', 'webexactivity').'</a>';
             echo '</div>';
             echo '<div class="download">';
             $icon = new \pix_icon('i/import', 'Download');
-            
+
             echo '<a target="_blank" href="'.$recording->fileurl.'">'.get_string('recordingfileurl', 'webexactivity').'</a>';
             echo '</div>';
             echo '</div>';
@@ -195,9 +194,6 @@ if (!$view) {
     echo get_string('externallinktext', 'webexactivity');
     echo $webexmeeting->get_external_join_url();
 }
-
-//print "<pre>"; print_r($webextrain->get_info());print "</pre>";
-
 
 echo $OUTPUT->box_end();
 

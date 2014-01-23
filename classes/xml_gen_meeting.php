@@ -26,12 +26,16 @@ namespace mod_webexactivity;
 
 class xml_gen_meeting extends xml_gen {
 
-    public static function get_meeting_info($meeingkey) {}
+    public static function get_meeting_info($meeingkey) {
+    }
 
-    public static function create_meeting($data) {}
+    public static function create_meeting($data) {
+    }
 
-    public static function update_meeting($data) {}
+    public static function update_meeting($data) {
+    }
 
-    public static function delete_meeting($meetingkey) {}
+    public static function delete_meeting($meetingkey) {
+    }
 
 }

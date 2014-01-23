@@ -84,7 +84,6 @@ function webexactivity_add_instance($data, $mform) {
 }
 
 function webexactivity_update_instance($data, $mform) {
-    
     $cmid = $data->coursemodule;
     $cm = get_coursemodule_from_id('webexactivity', $cmid, 0, false, MUST_EXIST);
     $meeting = \mod_webexactivity\webex::load_meeting($cm->instance);

@@ -69,7 +69,7 @@ class webex_meeting_shell {
         if (is_object($meeting)) {
             $this->meetingrecord = $meeting;
         }
-        
+
         $this->load_webex_record($meeting);
     }
 
@@ -85,9 +85,8 @@ class webex_meeting_shell {
                 if ($val < (time() + 60)) {
                     $val = time() + 60;
                 }
-
-            // If the current time is already set, and the time is past or near past.
             } else if ($val < (time() + 60)) {
+                // If the current time is already set, and the time is past or near past.
                 if ($curr > time()) {
                     // If the current time is in the future, assume they want to start it now.
                     $val = time() + 60;
@@ -145,7 +144,7 @@ class webex_meeting_shell {
 
         $xml = $gen::delete_meeting($this->values['meetingkey']);
 
-        $response = $this->webex->get_response($xml, $webexuser); 
+        $response = $this->webex->get_response($xml, $webexuser);
 
         if (empty($response)) {
             return true;
@@ -378,7 +377,7 @@ class webex_meeting_shell {
         unset($this->meetingrecord);
         return true;
     }
-    
+
     public static function array_to_object($arr) {
         $obj = new \stdClass();
 

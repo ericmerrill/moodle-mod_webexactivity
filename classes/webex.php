@@ -28,7 +28,7 @@ class webex {
     const WEBEXACTIVITY_TYPE_MEETING = 1;
     const WEBEXACTIVITY_TYPE_TRAINING = 2;
     const WEBEXACTIVITY_TYPE_SUPPORT = 3;
-    
+
     const WEBEXACTIVITY_STATUS_NEVER_STARTED = 0;
     const WEBEXACTIVITY_STATUS_STOPPED = 1;
     const WEBEXACTIVITY_STATUS_IN_PROGRESS = 2;
@@ -50,13 +50,13 @@ class webex {
         }
 
         switch ($record->type) {
-            case webex::WEBEXACTIVITY_TYPE_MEETING:
+            case self::WEBEXACTIVITY_TYPE_MEETING:
                 debugging('Meeting center not yet supported', DEBUG_DEVELOPER);
                 break;
-            case webex::WEBEXACTIVITY_TYPE_TRAINING:
+            case self::WEBEXACTIVITY_TYPE_TRAINING:
                 return new webex_training($record);
                 break;
-            case webex::WEBEXACTIVITY_TYPE_SUPPORT:
+            case self::WEBEXACTIVITY_TYPE_SUPPORT:
                 debugging('Support center not yet supported', DEBUG_DEVELOPER);
                 break;
             default:
@@ -69,13 +69,13 @@ class webex {
 
     public static function new_meeting($type) {
         switch ($type) {
-            case webex::WEBEXACTIVITY_TYPE_MEETING:
+            case self::WEBEXACTIVITY_TYPE_MEETING:
                 debugging('Meeting center not yet supported', DEBUG_DEVELOPER);
                 break;
-            case webex::WEBEXACTIVITY_TYPE_TRAINING:
+            case self::WEBEXACTIVITY_TYPE_TRAINING:
                 return new webex_training();
                 break;
-            case webex::WEBEXACTIVITY_TYPE_SUPPORT:
+            case self::WEBEXACTIVITY_TYPE_SUPPORT:
                 debugging('Support center not yet supported', DEBUG_DEVELOPER);
                 break;
             default:
