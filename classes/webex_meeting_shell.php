@@ -65,9 +65,10 @@ class webex_meeting_shell {
 
         if (is_numeric($meeting)) {
             $this->meetingrecord = $DB->get_record('webexactivity', array('id' => $meeting));
-        }
-        if (is_object($meeting)) {
+        } else if (is_object($meeting)) {
             $this->meetingrecord = $meeting;
+        } else {
+            debugging('webex_meeting_shell constructor passed unknown type.', DEBUG_DEVELOPER);
         }
 
         $this->load_webex_record($meeting);
@@ -251,6 +252,41 @@ class webex_meeting_shell {
 
 
     // ---------------------------------------------------
+    // Recording Functions.
+    // ---------------------------------------------------
+    public function delete_recordings() {
+        $recordings = $this->get_recordings();
+
+        if (!is_array($recordings)) {
+            return true;
+        }
+
+        foreach ($recordings as $recording) {
+            $recording->delete();
+        }
+
+        return true;
+    }
+
+    public function get_recordings() {
+        global $DB;
+
+        $recordingrecords = $DB->get_records('webexactivity_recording', array('webexid' => $this->get_value('id')));
+
+        if (!$recordingrecords) {
+            return false;
+        }
+
+        $out = array();
+
+        foreach ($recordingrecords as $record) {
+            $out[] = new webex_recording($record);
+        }
+
+        return $out;
+    }
+
+    // ---------------------------------------------------
     // URL Functions.
     // ---------------------------------------------------
     public function get_host_url($returnurl = false) {
@@ -294,7 +330,7 @@ class webex_meeting_shell {
         global $DB, $USER;
 
         if (isset($this->values['creatorwebexuser'])) {
-            $webexuser = $DB->get_record('webexactivity_users', array('id' => $this->values['creatorwebexuser']));
+            $webexuser = $DB->get_record('webexactivity_user', array('id' => $this->values['creatorwebexuser']));
         } else {
             $webexuser = $this->webex->get_webex_user($USER);
         }
@@ -349,7 +385,9 @@ class webex_meeting_shell {
     }
 
     public function delete() {
-        // TODO delete recordings.
+        if (!$this->delete_recordings()) {
+            return false;
+        }
 
         if (!$this->delete_from_webex()) {
             return false;

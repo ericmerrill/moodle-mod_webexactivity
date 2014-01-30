@@ -50,3 +50,11 @@
 #recordings .recording .details .name {
     font-weight: bold;
 }
+
+.webexerror {
+    /*background-color: #ffb4b4;*/
+    padding: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 110%;
+}

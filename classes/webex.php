@@ -44,9 +44,11 @@ class webex {
 
         if (is_numeric($meeting)) {
             $record = $DB->get_record('webexactivity', array('id' => $meeting));
-        }
-        if (is_object($meeting)) {
+        } else if (is_object($meeting)) {
             $record = $meeting;
+        } else {
+            debugging('Unable to load meeting', DEBUG_DEVELOPER);
+            return false;
         }
 
         switch ($record->type) {
@@ -116,7 +118,7 @@ class webex {
             return false;
         }
 
-        $webexuser = $DB->get_record('webexactivity_users', array('moodleuserid' => $moodleuser->id));
+        $webexuser = $DB->get_record('webexactivity_user', array('moodleuserid' => $moodleuser->id));
 
         if ($webexuser !== false) {
             $webexuser->password = self::decrypt_password($webexuser->password);
@@ -143,7 +145,7 @@ class webex {
                 $webexuser->webexuserid = $response['use:userId']['0']['#'];
                 $webexuser->webexid = $data->webexid;
                 $webexuser->password = self::encrypt_password($data->password);
-                if ($webexuser->id = $DB->insert_record('webexactivity_users', $webexuser)) {
+                if ($webexuser->id = $DB->insert_record('webexactivity_user', $webexuser)) {
                     return $webexuser;
                 } else {
                     return false;
@@ -171,7 +173,7 @@ class webex {
                     $newwebexuser->webexid = $data->webexid;
                     $newwebexuser->webexuserid = $response['use:userId']['0']['#'];
                     $newwebexuser->password = '';
-                    if ($newwebexuser->id = $DB->insert_record('webexactivity_users', $newwebexuser)) {
+                    if ($newwebexuser->id = $DB->insert_record('webexactivity_user', $newwebexuser)) {
                         $newwebexuser = $this->update_user_password($newwebexuser);
 
                         return $newwebexuser;
@@ -214,7 +216,7 @@ class webex {
             $newwebexuser = new \stdClass();
             $newwebexuser->id = $webexuser->id;
             $newwebexuser->password = self::encrypt_password($webexuser->password);
-            if ($DB->update_record('webexactivity_users', $newwebexuser)) {
+            if ($DB->update_record('webexactivity_user', $newwebexuser)) {
                 return $webexuser;
             } else {
                 return false;
@@ -246,6 +248,17 @@ class webex {
         return $returnurl;
     }
 
+    public function get_logout_url($backurl = false) {
+        $url = self::get_base_url();
+
+        $url .= '/p.php?AT=LO';
+        if ($backurl) {
+            $encoded = urlencode($backurl);
+            $url .= '&BU='.$encoded;
+        }
+
+        return $url;
+    }
 
     // ---------------------------------------------------
     // Support Functions.
@@ -287,10 +300,12 @@ class webex {
 
         $xml = xml_gen::list_open_sessions();
 
-        if (!($response = $this->get_response($xml))) {
+        $response = $this->get_response($xml);
+        if ($response === false) {
             return false;
         }
 
+        // TODO WTF is this?
         if (!is_array($response) && isset($response['ep:services'])) {
             return true;
         }
@@ -298,30 +313,32 @@ class webex {
         $processtime = time();
         $cleartime = $processtime - 60;
 
-        foreach ($response['ep:services'] as $service) {
-            foreach ($service['#']['ep:sessions'] as $session) {
-                $session = $session['#'];
+        if (is_array($response) && isset($response['ep:services'])) {
+            foreach ($response['ep:services'] as $service) {
+                foreach ($service['#']['ep:sessions'] as $session) {
+                    $session = $session['#'];
 
-                $meetingkey = $session['ep:sessionKey'][0]['#'];
-                if ($meeting = $DB->get_record('webexactivity', array('meetingkey' => $meetingkey))) {
-                    $new = new \stdClass();
-                    $new->id = $meeting->id;
-                    $new->status = WEBEXACTIVITY_STATUS_IN_PROGRESS;
-                    $new->laststatuscheck = $processtime;
+                    $meetingkey = $session['ep:sessionKey'][0]['#'];
+                    if ($meeting = $DB->get_record('webexactivity', array('meetingkey' => $meetingkey))) {
+                        $new = new \stdClass();
+                        $new->id = $meeting->id;
+                        $new->status = self::WEBEXACTIVITY_STATUS_IN_PROGRESS;
+                        $new->laststatuscheck = $processtime;
 
-                    $DB->update_record('webexactivity', $new);
+                        $DB->update_record('webexactivity', $new);
+                    }
                 }
             }
         }
 
         $select = 'laststatuscheck < ? AND status = ?';
-        $params = array('lasttime' => $cleartime, 'status' => WEBEXACTIVITY_STATUS_IN_PROGRESS);
+        $params = array('lasttime' => $cleartime, 'status' => self::WEBEXACTIVITY_STATUS_IN_PROGRESS);
 
         if ($meetings = $DB->get_records_select('webexactivity', $select, $params)) {
             foreach ($meetings as $meeting) {
                 $new = new \stdClass();
                 $new->id = $meeting->id;
-                $new->status = WEBEXACTIVITY_STATUS_STOPPED;
+                $new->status = self::WEBEXACTIVITY_STATUS_STOPPED;
                 $new->laststatuscheck = $processtime;
 
                 $DB->update_record('webexactivity', $new);
@@ -378,6 +395,10 @@ class webex {
             $rec->timecreated = strtotime($recording['ep:createTime'][0]['#']);
             $rec->streamurl = $recording['ep:streamURL'][0]['#'];
             $rec->fileurl = $recording['ep:fileURL'][0]['#'];
+            $size = $recording['ep:size'][0]['#'];
+            $size = floatval($size);
+            $size = $size * 1024 * 1024;
+            $rec->filesize = (int)$size;
             $rec->duration = $recording['ep:duration'][0]['#'];
 
             if (!$DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
@@ -409,7 +430,7 @@ class webex {
                 }
             }
             if ((isset($errors['exception'])) && ($errors['exception'] === '000015')) {
-                return $response;
+                return array();
             }
 
             if (debugging('Error when processing XML', DEBUG_DEVELOPER)) {

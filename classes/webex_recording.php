@@ -27,6 +27,10 @@ namespace mod_webexactivity;
 class webex_recording {
     private $recording = null;
 
+    // Load these lazily.
+    //private $meeting = null;
+    private $webex = null;
+
     public function __construct($recording) {
         global $DB;
 
@@ -34,6 +38,8 @@ class webex_recording {
             $this->recording = $recording;
         } else if (is_numeric($recording)) {
             $this->recording = $DB->get_record('webexactivity_recording', array('id' => $recording));
+        } else {
+            debugging('Recording constructor passed unknown type.', DEBUG_DEVELOPER);
         }
 
         if (!$this->recording) {
@@ -41,6 +47,33 @@ class webex_recording {
             return false;
         }
     }
+
+    private function load_webex() {
+        if (isset($this->webex)) {
+            return true;
+        }
+
+        $this->webex = new webex();
+
+        return true;
+    }
+
+    /*private function load_meeting() {
+        if (isset($this->meeting)) {
+            return true;
+        }
+
+        $this->load_webex();
+
+        $this->meeting = $this->webex->load_meeting($this->get_value('webexid'));
+
+        if (!$this->meeting) {
+            $this->meeting = null;
+            debugging('Unable to load recording meeting', DEBUG_DEVELOPER);
+            return false;
+            // TODO error handling.
+        }
+    }*/
 
     public function show() {
         global $DB;
@@ -66,8 +99,61 @@ class webex_recording {
         return $DB->update_record('webexactivity_recording', $update);
     }
 
-    public function delete() {
+    public function delete($user = false) {
+        global $DB;
 
+        //$this->load_meeting();
+        $xml = xml_gen::delete_recording($this->get_value('recordingid'));
+
+        $webexuser = $this->get_recording_webex_user();
+
+        $response = $this->webex->get_response($xml, $webexuser);
+
+        if ($response === false) {
+            // TODO error handling.
+            return false;
+        }
+
+        $DB->delete_records('webexactivity_recording', array('id' => $this->get_value('id')));
+
+        return true;
+    }
+
+    public function set_name($name) {
+        global $DB;
+
+        $this->load_webex();
+
+        $this->recording->name = $name;
+
+        $update = new \stdClass;
+        $update->id = $this->get_value('id');
+        $update->name = $this->get_value('name');
+        $DB->update_record('webexactivity_recording', $update);
+
+        $params = new \stdClass;
+        $params->recordingid = $this->get_value('recordingid');
+        $params->name = $name;
+
+        $xml = xml_gen::update_recording($params);
+//print_r($xml);
+        $webexuser = $this->get_recording_webex_user();
+
+        $response = $this->webex->get_response($xml, $webexuser);
+
+print_r($response);
+    }
+
+    public function get_recording_webex_user() {
+        global $DB, $USER;
+
+        if (isset($this->recording->hostid)) {
+            $webexuser = $DB->get_record('webexactivity_user', array('webexid' => $this->recording->hostid));
+        } else {
+            $webexuser = $this->webex->get_webex_user($USER);
+        }
+
+        return $webexuser;
     }
 
     public function get_value($name) {

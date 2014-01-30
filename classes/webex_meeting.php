@@ -65,7 +65,7 @@ class webex_meeting {
         global $DB, $USER;
 
         if (isset($this->meetingrecord->creatorwebexuser) && $this->meetingrecord->creatorwebexuser) {
-            $webexuser = $DB->get_record('webexactivity_users', array('id' => $this->meetingrecord->creatorwebexuser));
+            $webexuser = $DB->get_record('webexactivity_user', array('id' => $this->meetingrecord->creatorwebexuser));
         } else {
             $webexuser = $this->webex->get_webex_user($USER);
         }
@@ -80,7 +80,8 @@ class webex_meeting {
 
 
     // Unused.
-    public function add_hosts($users) {
+    // TODO ?
+    /*public function add_hosts($users) {
         $webexuser = $this->get_meeting_webex_user();
 
         $meeting = clone $this->meetingrecord;
@@ -94,12 +95,13 @@ class webex_meeting {
         if ($response === false) {
             return false;
         }
-    }
+    }*/
 
     // ---------------------------------------------------
     // Recording Functions.
     // ---------------------------------------------------
-    public function retrieve_recordings() {
+    // TODO ?
+    /*public function retrieve_recordings() {
         global $DB;
 
         $this->meetingrecord->laststatuscheck = time();
@@ -138,6 +140,6 @@ class webex_meeting {
                 $DB->insert_record('webexactivity_recording', $rec);
             }
         }
-    }
+    }*/
 
 }

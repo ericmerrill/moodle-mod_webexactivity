@@ -30,6 +30,17 @@ $id = optional_param('id', 0, PARAM_INT); // Course module ID.
 $action = optional_param('action', false, PARAM_ALPHA);
 $view = optional_param('view', false, PARAM_ALPHA);
 
+$error = false;
+
+// Webex codes.
+$webexres = array();
+$webexres['AT'] = optional_param('AT', false, PARAM_ALPHA);
+$webexres['ST'] = optional_param('ST', false, PARAM_ALPHA);
+$webexres['RS'] = optional_param('RS', false, PARAM_ALPHA);
+
+
+
+
 
 $cm = get_coursemodule_from_id('webexactivity', $id, 0, false, MUST_EXIST);
 $webexrecord = $DB->get_record('webexactivity', array('id' => $cm->instance), '*', MUST_EXIST);
@@ -46,6 +57,70 @@ $canhost = has_capability('mod/webexactivity:hostmeeting', $context);
 
 $returnurl = new moodle_url('/mod/webexactivity/view.php', array('id' => $id));
 
+if ($webexres['ST'] === 'FAIL') {
+    $error = true;
+
+    if ($webexres['AT'] === 'JM') {
+        switch ($webexres['RS']) {
+            case 'MeetingNotInProgress':
+            case 'InvalidMeetingKeyOrPassword':
+            case 'MeetingLocked':
+            case 'InvalidMeetingKey':
+                $error = get_string('error_'.$webexres['AT'].'_'.$webexres['RS'], 'webexactivity');
+                break;
+            default:
+                debugging('An unknown webex occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
+                $error = get_string('error_unknown', 'webexactivity');
+                break;
+
+        }
+    } else if ($webexres['AT'] === 'HM') {
+        switch ($webexres['RS']) {
+            case 'AccessDenied':
+                $error = get_string('error_'.$webexres['AT'].'_'.$webexres['RS'], 'webexactivity');
+                break;
+            default:
+                debugging('An unknown webex occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
+                $error = get_string('error_unknown', 'webexactivity');
+                break;
+        }
+    } else if ($webexres['AT'] === 'LI') {
+        switch ($webexres['RS']) {
+            case 'AlreadyLogon':
+                $params = array('id' => $id);
+                if ($action === 'hostmeetingerror') {
+                    $params['action'] = 'hostmeeting';
+                }
+                $hosturl = new moodle_url($returnurl, $params);
+
+                $logouturl = $webex->get_logout_url($hosturl->out(false));
+
+                redirect($logouturl);
+                // TODO logout and try to host again.
+                break;
+            case 'AccessDenied':
+            case 'AccountLocked':
+            case 'AutoLoginDisabled':
+            case 'InvalidSessionTicket':
+            case 'InvalidTicket':
+                $error = get_string('error_'.$webexres['AT'].'_'.$webexres['RS'], 'webexactivity');
+            default:
+                debugging('An unknown webex occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
+                $error = get_string('error_unknown', 'webexactivity');
+                break;
+        }
+    } else if ($webexres['AT'] === 'LO') {
+        // We don't car about Logout errors.
+        $error = false;
+    } else {
+        debugging('Unknown webex AT command error: '.$webexres['AT'], DEBUG_DEVELOPER);
+        $error = get_string('error_unknown', 'webexactivity');
+    }
+
+}
+
+
+
 // Do redirect actions here.
 switch ($action) {
     case 'hostmeeting':
@@ -60,7 +135,10 @@ switch ($action) {
         $webexuser = $webex->get_webex_user($USER);
         $webexmeeting->add_webexuser_host($webexuser);
         $hosturl = $webexmeeting->get_host_url($returnurl);
-        $authurl = $webex->get_login_url($webexuser, false, $hosturl);
+
+        $params = array('id' => $id, 'action' => 'hostmeetingerror');
+        $failurl = new moodle_url($returnurl, $params);
+        $authurl = $webex->get_login_url($webexuser, $failurl->out(false), $hosturl);
 
         $new = new \stdClass();
         $new->id = $webexmeeting->get_value('id');
@@ -94,7 +172,7 @@ switch ($action) {
 
         $recording->hide();
 
-        redirect($returnurl->out());
+        redirect($returnurl->out(false));
         break;
 
     case 'showrecording':
@@ -112,7 +190,7 @@ switch ($action) {
 
         $recording->show();
 
-        redirect($returnurl->out());
+        redirect($returnurl->out(false));
         break;
 
     case 'deleterecording':
@@ -136,8 +214,25 @@ switch ($action) {
             break;
         } else {
             $recording->delete();
-            redirect($returnurl->out());
+            redirect($returnurl->out(false));
         }
+        break;
+
+    case 'renamerecording':
+        if (!$canhost) {
+            // TODO Error here.
+            break;
+        }
+
+        $recordingid = required_param('recordingid', PARAM_INT);
+        $recording = new \mod_webexactivity\webex_recording($recordingid);
+        $recwebexid = $recording->get_value('webexid');
+        if ($recwebexid !== $cm->instance) {
+            // TODO Error here.
+            break;
+        }
+
+        $recording->set_name('Name 1');
         break;
 }
 
@@ -152,6 +247,17 @@ $PAGE->set_activity_record($webexrecord);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($webexmeeting->get_value('name')), 2);
+
+if ($error !== false) {
+    echo $OUTPUT->box_start('webexerror');
+
+    if (is_string($error)) {
+        echo $OUTPUT->error_text($error);
+    }
+
+    echo $OUTPUT->box_end();
+}
+
 
 echo $OUTPUT->box_start();
 
@@ -250,69 +356,37 @@ if (!$view) {
             echo '<div class="recordingblock details">';
             echo '<div class="name">'.$recording->name.'</div>';
             echo '<div class="date">'.userdate($recording->timecreated).'</div>';
-            echo '<div class="length">'.get_string('recordinglength', 'webexactivity', round($recording->duration / 60)).'</div>';
+            $params = new \stdClass();
+            if (isset($recording->filesize)) {
+                $params->size = display_size($recording->filesize);
+            } else {
+                $params->size = 'Unknown Size';
+            }
+            $params->time = format_time($recording->duration);
+            echo '<div class="length">'.get_string('recordinglength', 'webexactivity', $params).'</div>';
             echo '</div>';
 
             if ($canhost) {
                 // Editing buttons.
                 echo '<div class="recordingblock buttons">';
 
-                /*$menu = new \action_menu();
-                $menu->set_menu_trigger(get_string('edit'));
-                $menu->set_alignment(action_menu::TL, action_menu::TR);
-
-                $menu->add(new action_menu_link(
-                    $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'recordingid' => $recording->id, 'action' => 'hide')),
-                    new \pix_icon('t/hide', 'Hide recording'),
-                    'Hide recording', false
-                ));
-
                 // Delete, rename, hide.
-                if ($recording->visible) {
-                    $menu->add(new action_menu_link(
-                        $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'recordingid' => $recording->id, 'action' => 'hide')),
-                        new \pix_icon('t/hide', 'Hide recording'),
-                        'Hide recording', false
-                    ));
-                } else {
-                    $menu->add(new action_menu_link(
-                        $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'recordingid' => $recording->id, 'action' => 'show')),
-                        new \pix_icon('t/show', 'Show recording'),
-                        'Show recording', false
-                    ));
-                }
-
-                $menu->add(new action_menu_link(
-                    $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'recordingid' => $recording->id, 'action' => 'edit')),
-                    new \pix_icon('t/editstring', 'Edit name'),
-                    'Edit name', false
-                ));
-
-                $menu->add(new action_menu_link(
-                    $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'recordingid' => $recording->id, 'action' => 'delete')),
-                    new \pix_icon('t/delete', 'Delete'),
-                    'Delete', false
-                ));
-
-                
-                $menu->prioritise = true;
-
-                echo $OUTPUT->render($menu);*/
-
-                
-                // Delete, rename, hide.
-                $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'recordingid' => $recording->id, 'action' => 'edit'));
+                $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'renamerecording');
+                $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
                 echo $OUTPUT->action_icon($urlobj->out(), new \pix_icon('t/editstring', 'Edit recording name'));
 
                 if ($recording->visible) {
-                    $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'recordingid' => $recording->id, 'action' => 'hiderecording'));
+                    $params['action'] = 'hiderecording';
+                    $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
                     echo $OUTPUT->action_icon($urlobj->out(), new \pix_icon('t/hide', 'Hide recording'));
                 } else {
-                    $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'recordingid' => $recording->id, 'action' => 'showrecording'));
+                    $params['action'] = 'showrecording';
+                    $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
                     echo $OUTPUT->action_icon($urlobj->out(), new \pix_icon('t/show', 'Show recording'));
                 }
 
-                $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'recordingid' => $recording->id, 'action' => 'deleterecording'));
+                $params['action'] = 'deleterecording';
+                $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
                 echo $OUTPUT->action_icon($urlobj->out(), new \pix_icon('t/delete', 'Delete recording'));
 
                 echo '</div>';
@@ -329,9 +403,16 @@ if (!$view) {
     echo $webexmeeting->get_external_join_url();
 } else if ($view === 'deleterecording') {
     $recordingid = required_param('recordingid', PARAM_INT);
+    $recording = new \mod_webexactivity\webex_recording($recordingid);
 
-    $confirmurl = new moodle_url($returnurl, array('id' => $id, 'action' => 'deleterecording', 'confirm' => 1, 'recordingid' => $recordingid));
-    echo $OUTPUT->confirm("Message here", $confirmurl, $returnurl);
+    $params = array('id' => $id, 'action' => 'deleterecording', 'confirm' => 1, 'recordingid' => $recordingid);
+    $confirmurl = new moodle_url($returnurl, $params);
+
+    $params = new stdClass();
+    $params->name = $recording->get_value('name');
+    $params->time = format_time($recording->get_value('duration'));
+    $message = get_string('confirmrecordingdelete', 'webexactivity', $params);
+    echo $OUTPUT->confirm($message, $confirmurl, $returnurl);
 }
 
 echo $OUTPUT->box_end();

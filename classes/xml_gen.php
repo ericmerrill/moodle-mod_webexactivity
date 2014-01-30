@@ -171,6 +171,30 @@ class xml_gen {
         return $xml;
     }
 
+    public static function delete_recording($recordingid) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.DelRecording">';
+        $xml .= '<recordingID>'.$recordingid.'</recordingID>';
+        $xml .= '</bodyContent></body>';
+
+        return $xml;
+    }
+
+    public static function update_recording($data) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.SetRecordingInfo">';
+        $xml .= '<recording><recordingID>'.$data->recordingid.'</recordingID><description>Des 1</description></recording>';
+
+        if (isset($data->name)) {
+            $xml .= '<basic>';
+            $xml .= '<topic>'.htmlentities($data->name).'</topic>';
+            $xml .= '<agenda>Agenda 1</agenda>';
+            $xml .= '</basic>';
+        }
+        $xml .= '<fileAccess><attendeeDownload>false</attendeeDownload></fileAccess>';
+        $xml .= '</bodyContent></body>';
+
+        return $xml;
+    }
+
     // ---------------------------------------------------
     // Support Functions.
     // ---------------------------------------------------

@@ -356,7 +356,37 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014012102, 'webexactivity');
     }
+
+    if ($oldversion < 2014013000) {
+
+        // Define table webexactivity_users to be renamed to webexactivity_user.
+        $table = new xmldb_table('webexactivity_users');
+
+        // Launch rename table for webexactivity_user.
+        $dbman->rename_table($table, 'webexactivity_user');
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014013000, 'webexactivity');
+    }
+
+    if ($oldversion < 2014013002) {
+
+        // Define field filesize to be added to webexactivity_recording.
+        $table = new xmldb_table('webexactivity_recording');
+        $field = new xmldb_field('filesize', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'fileurl');
+
+        // Conditionally launch add field filesize.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014013002, 'webexactivity');
+    }
+
     return true;
 }
 
