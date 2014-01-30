@@ -102,7 +102,8 @@ class webex_recording {
     public function delete($user = false) {
         global $DB;
 
-        //$this->load_meeting();
+        $this->load_webex();
+
         $xml = xml_gen::delete_recording($this->get_value('recordingid'));
 
         $webexuser = $this->get_recording_webex_user();
