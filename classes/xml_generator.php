@@ -285,6 +285,14 @@ class xml_generator {
         return $xml;
     }
 
+    public static function delete_recording($recordingid) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.DelRecording">';
+        $xml .= '<recordingID>'.$recordingid.'</recordingID>';
+        $xml .= '</bodyContent></body>';
+
+        return $xml;
+    }
+
     // ---------------------------------------------------
     // Support Functions.
     // ---------------------------------------------------

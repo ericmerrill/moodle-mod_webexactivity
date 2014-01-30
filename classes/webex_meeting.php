@@ -36,8 +36,7 @@ class webex_meeting {
 
         if (is_numeric($meeting)) {
             $this->meetingrecord = $DB->get_record('webexactivity', array('id' => $meeting));
-        }
-        if (is_object($meeting)) {
+        } else if (is_object($meeting)) {
             $this->meetingrecord = $meeting;
         }
 

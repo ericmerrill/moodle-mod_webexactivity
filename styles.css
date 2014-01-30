@@ -5,17 +5,33 @@
 }
 
 #recordings .recording {
-    border: 1px solid black;
-    margin: 5px;
+    /*border: 1px solid black;*/
+    margin-bottom: 20px;
+}
+
+#recordings #recordingsheader {
+    font-weight: bold;
+    font-size: 110%;
+    margin-bottom: 10px;
+}
+
+#recordings .hiddenrecording {
+    color: gray;
+}
+
+#recordings .recording .recordingblock {
+    vertical-align: top;
+    display: inline-block;
+    /*border: 1px solid black;*/
 }
 
 #recordings .recording .buttons {
-    border: 1px solid black;
-    /*float: left;*/
-    width: 100px;
+    /*border: 1px solid black;*/
+    /*width: 200px;*/
     text-align: right;
-    padding-right: 15px;
-    display: inline-block;
+    /*padding-right: 15px;*/
+    margin-right: 10px;
+    margin-left: 10px;
 }
 
 #recordings .recording .buttons .play {
@@ -27,11 +43,8 @@
 }
 
 #recordings .recording .details {
-    border: 1px solid black;
-    /*float: right;*/
-    width: 300px;
+    max-width: 400px;
     text-align: left;
-    display: inline-block;
 }
 
 #recordings .recording .details .name {
