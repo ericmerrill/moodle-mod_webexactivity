@@ -18,11 +18,13 @@
  * An activity to interface with WebEx.
  *
  * @package   mod_webexactvity
- * @copyright Eric Merrill (merrill@oakland.edu)
+ * @copyright 2014 Eric Merrill (merrill@oakland.edu)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace mod_webexactivity;
+
+defined('MOODLE_INTERNAL') || die();
 
 class webex_meeting {
     private $meetingrecord = null;
