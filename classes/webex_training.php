@@ -24,6 +24,8 @@
 
 namespace mod_webexactivity;
 
+defined('MOODLE_INTERNAL') || die();
+
 class webex_training extends webex_meeting_shell {
 
     protected $gen = '\mod_webexactivity\xml_gen_training';

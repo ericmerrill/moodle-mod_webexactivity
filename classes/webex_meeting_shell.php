@@ -342,6 +342,7 @@ class webex_meeting_shell {
 
         if (isset($this->values['creatorwebexuser'])) {
             $webexuser = $DB->get_record('webexactivity_user', array('id' => $this->values['creatorwebexuser']));
+            $webexuser->password = webex::decrypt_password($webexuser->password);
         } else {
             $webexuser = $this->webex->get_webex_user($USER);
         }

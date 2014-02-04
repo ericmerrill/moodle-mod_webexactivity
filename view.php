@@ -56,6 +56,7 @@ require_capability('mod/webexactivity:view', $context);
 $canhost = has_capability('mod/webexactivity:hostmeeting', $context);
 
 $returnurl = new moodle_url('/mod/webexactivity/view.php', array('id' => $id));
+$PAGE->set_url('/mod/webexactivity/view.php', array('id' => $cm->id));
 
 if ($webexres['ST'] === 'FAIL') {
     $error = true;
@@ -193,6 +194,51 @@ switch ($action) {
         redirect($returnurl->out(false));
         break;
 
+    case 'editrecording':
+        if (!$canhost) {
+            // TODO Error here.
+            break;
+        }
+
+        $recordingid = required_param('recordingid', PARAM_INT);
+        $recording = new \mod_webexactivity\webex_recording($recordingid);
+        $recwebexid = $recording->get_value('webexid');
+        if ($recwebexid !== $cm->instance) {
+            // TODO Error here.
+            break;
+        }
+
+        require_once('editrecording_form.php');
+
+        $mform = new editrecording_form();
+
+        if ($mform->is_cancelled()) {
+            $action = false;
+            $view = false;
+        } else if ($fromform = $mform->get_data()) {
+            $recording->set_value('name', $fromform->name);
+            if (isset($fromform->visible)) {
+                $recording->set_value('visible', 1);
+            } else {
+                $recording->set_value('visible', 0);
+            }
+            $recording->save_to_db();
+            //$recording->set_name($fromform->name);
+        } else {
+            $view = 'editrecording';
+
+            $data = new stdClass();
+            $data->name = $recording->get_value('name');
+            $data->id = $id;
+            $data->recordingid = $recording->get_value('id');
+            $data->action = 'editrecording';
+            $data->visible = $recording->get_value('visible');
+            $mform->set_data($data);
+            break;
+
+        }
+
+        break;
     case 'deleterecording':
         if (!$canhost) {
             // TODO Error here.
@@ -238,7 +284,7 @@ switch ($action) {
 
 add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webexmeeting->get_value('id'), $cm->id);
 
-$PAGE->set_url('/mod/webexactivity/view.php', array('id' => $cm->id));
+
 
 $PAGE->set_title($course->shortname.': '.$webexmeeting->get_value('name'));
 $PAGE->set_heading($course->fullname);
@@ -371,9 +417,9 @@ if (!$view) {
                 echo '<div class="recordingblock buttons">';
 
                 // Delete, rename, hide.
-                $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'renamerecording');
+                $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'editrecording');
                 $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-                echo $OUTPUT->action_icon($urlobj->out(), new \pix_icon('t/editstring', 'Edit recording name'));
+                echo $OUTPUT->action_icon($urlobj->out(), new \pix_icon('t/editstring', 'Edit recording'));
 
                 if ($recording->visible) {
                     $params['action'] = 'hiderecording';
@@ -399,9 +445,17 @@ if (!$view) {
     }
 
 } else if ($view === 'guest') {
+    // Show the external participant link.
+
     echo get_string('externallinktext', 'webexactivity');
     echo $webexmeeting->get_external_join_url();
+} else if ($view === 'editrecording') {
+    // Show the editing recording link.
+    $recordingid = required_param('recordingid', PARAM_INT);
+
+    $mform->display();
 } else if ($view === 'deleterecording') {
+    // Show the delete recording confirmation page.
     $recordingid = required_param('recordingid', PARAM_INT);
     $recording = new \mod_webexactivity\webex_recording($recordingid);
 

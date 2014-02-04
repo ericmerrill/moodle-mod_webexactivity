@@ -24,6 +24,8 @@
 
 namespace mod_webexactivity;
 
+defined('MOODLE_INTERNAL') || die();
+
 class xml_gen {
     public function __construct() {
     }

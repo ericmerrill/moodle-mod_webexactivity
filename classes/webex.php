@@ -24,6 +24,8 @@
 
 namespace mod_webexactivity;
 
+defined('MOODLE_INTERNAL') || die();
+
 class webex {
     const WEBEXACTIVITY_TYPE_MEETING = 1;
     const WEBEXACTIVITY_TYPE_TRAINING = 2;
@@ -400,6 +402,7 @@ class webex {
             $size = $size * 1024 * 1024;
             $rec->filesize = (int)$size;
             $rec->duration = $recording['ep:duration'][0]['#'];
+            $rec->timemodified = time();
 
             if (!$DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
                 $DB->insert_record('webexactivity_recording', $rec);

@@ -24,6 +24,8 @@
 
 namespace mod_webexactivity;
 
+defined('MOODLE_INTERNAL') || die();
+
 class xml_gen_training extends xml_gen {
 
 

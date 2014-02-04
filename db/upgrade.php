@@ -387,6 +387,29 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014013002, 'webexactivity');
     }
 
+    if ($oldversion < 2014020401) {
+
+        // Set the introformat to 1 (html).
+        $DB->execute('UPDATE {webexactivity} SET introformat = 1');
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014020401, 'webexactivity');
+    }
+
+    if ($oldversion < 2014020403) {
+
+        // Define field timemodified to be added to webexactivity_recording.
+        $table = new xmldb_table('webexactivity_recording');
+        $field = new xmldb_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'visible');
+
+        // Conditionally launch add field timemodified.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014020403, 'webexactivity');
+    }
+
     return true;
 }
 

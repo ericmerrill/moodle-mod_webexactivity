@@ -24,6 +24,8 @@
 
 namespace mod_webexactivity;
 
+defined('MOODLE_INTERNAL') || die();
+
 class webex_recording {
     private $recording = null;
 
@@ -120,29 +122,23 @@ class webex_recording {
         return true;
     }
 
-    public function set_name($name) {
+    private function set_name($name) {
         global $DB;
 
         $this->load_webex();
 
         $this->recording->name = $name;
 
-        $update = new \stdClass;
-        $update->id = $this->get_value('id');
-        $update->name = $this->get_value('name');
-        $DB->update_record('webexactivity_recording', $update);
 
         $params = new \stdClass;
         $params->recordingid = $this->get_value('recordingid');
         $params->name = $name;
 
         $xml = xml_gen::update_recording($params);
-//print_r($xml);
+
         $webexuser = $this->get_recording_webex_user();
 
         $response = $this->webex->get_response($xml, $webexuser);
-
-print_r($response);
     }
 
     public function get_recording_webex_user() {
@@ -150,6 +146,7 @@ print_r($response);
 
         if (isset($this->recording->hostid)) {
             $webexuser = $DB->get_record('webexactivity_user', array('webexid' => $this->recording->hostid));
+            $webexuser->password = webex::decrypt_password($webexuser->password);
         } else {
             $webexuser = $this->webex->get_webex_user($USER);
         }
@@ -162,6 +159,33 @@ print_r($response);
     }
 
     public function set_value($name, $val) {
+        switch ($name) {
+            case 'name':
+                $this->set_name($val);
+                break;
+            default:
+        }
+
         $this->recording->$name = $val;
     }
+
+    public function save_to_db() {
+        global $DB;
+
+        $this->recording->timemodified = time();
+
+        if (isset($this->recording->id)) {
+            if ($DB->update_record('webexactivity_recording', $this->recording)) {
+                return true;
+            }
+            return false;
+        } else {
+            if ($id = $DB->insert_record('webexactivity_recording', $this->recording)) {
+                $this->recording->id = $id;
+                return true;
+            }
+            return false;
+        }
+    }
+
 }

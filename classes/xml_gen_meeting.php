@@ -24,6 +24,8 @@
 
 namespace mod_webexactivity;
 
+defined('MOODLE_INTERNAL') || die();
+
 class xml_gen_meeting extends xml_gen {
 
     public static function get_meeting_info($meeingkey) {
