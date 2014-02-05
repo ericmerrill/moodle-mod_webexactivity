@@ -149,7 +149,7 @@ class xml_gen {
     // ---------------------------------------------------
     public static function list_recordings($data) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.LstRecording">';
-
+        $xml .= '<listControl><startFrom>0</startFrom><maximumNum>1000</maximumNum></listControl>';
         if (isset($data->meetingkey)) {
             $xml .= '<sessionKey>'.$data->meetingkey.'</sessionKey>';
         }

@@ -410,6 +410,78 @@ class webex {
         }
     }
 
+    public function temp_update_recordings() {
+        global $DB;
+
+        $params = new \stdClass();
+        $params->startdate = time() - (60 * 24 * 3600);
+        $params->enddate = time() + (12 * 3600);
+
+        $xml = xml_gen::list_recordings($params);
+
+        if (!($response = $this->get_response($xml))) {
+            return false;
+        }
+
+        if (!is_array($response)) {
+            return true;
+        }
+
+        $recordings = $response['ep:recording'];
+
+        foreach ($recordings as $recording) {
+            $recording = $recording['#'];
+
+            if (!isset($recording['ep:sessionKey'][0]['#'])) {
+                continue;
+            }
+
+            $key = $recording['ep:sessionKey'][0]['#'];
+            $recordingid = $recording['ep:recordingID'][0]['#'];
+            $recordingdb = $DB->get_record('webexactivity_recording', array('recordingid' => $recordingid));
+
+            if ($recordingdb) {
+                $update = new \stdClass();
+                $update->id = $recordingdb->id;
+                $size = $recording['ep:size'][0]['#'];
+                $size = floatval($size);
+                $size = $size * 1024 * 1024;
+                $update->filesize = (int)$size;
+
+                $DB->update_record('webexactivity_recording', $update);
+            } else {
+                $meeting = $DB->get_record('webexactivity', array('meetingkey' => $key));
+                if (!$meeting) {
+                    continue;
+                }
+
+                $rec = new \stdClass();
+                $rec->webexid = $meeting->id;
+                $rec->meetingkey = $key;
+                $rec->recordingid = $recording['ep:recordingID'][0]['#'];
+                $rec->hostid = $recording['ep:hostWebExID'][0]['#'];
+                $rec->name = $recording['ep:name'][0]['#'];
+                $rec->timecreated = strtotime($recording['ep:createTime'][0]['#']);
+                $rec->streamurl = $recording['ep:streamURL'][0]['#'];
+                $rec->fileurl = $recording['ep:fileURL'][0]['#'];
+                $size = $recording['ep:size'][0]['#'];
+                $size = floatval($size);
+                $size = $size * 1024 * 1024;
+                $rec->filesize = (int)$size;
+                $rec->duration = $recording['ep:duration'][0]['#'];
+                $rec->timemodified = time();
+
+                if (!$DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
+                    $DB->insert_record('webexactivity_recording', $rec);
+                }
+
+
+
+
+            }
+        }
+    }
+
     // ---------------------------------------------------
     // Connection Functions.
     // ---------------------------------------------------
