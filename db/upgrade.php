@@ -406,8 +406,24 @@ function xmldb_webexactivity_upgrade($oldversion) {
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
+
         // Webex Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014020403, 'webexactivity');
+    }
+
+    if ($oldversion < 2014020404) {
+
+         // Define field deleted to be added to webexactivity_recording.
+        $table = new xmldb_table('webexactivity_recording');
+        $field = new xmldb_field('deleted', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'visible');
+
+        // Conditionally launch add field deleted.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014020404, 'webexactivity');
     }
 
     return true;

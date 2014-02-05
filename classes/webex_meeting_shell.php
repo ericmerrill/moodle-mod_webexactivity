@@ -190,41 +190,61 @@ class webex_meeting_shell {
         return $response;
     }
 
-    public function is_available($host = false) {
-        if ($host) {
-            if ($this->meetingrecord->status == webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
-                return true;
-            }
+    public function get_time_status() {
+        $time = time();
+        $grace = get_config('webexactivity', 'meetingclosegrace');
+        $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->duration * 60) + ($grace * 60);
+        $starttime = $this->meetingrecord->starttime - (20 * 60);
 
-            $grace = get_config('webexactivity', 'meetingclosegrace');
-            $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->duration * 60) + ($grace * 60);
+        if ($this->meetingrecord->status == webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+            return webex::WEBEXACTIVITY_TIME_IN_PROGRESS;
+        }
 
-            if (time() > $endtime) {
-                return false;
-            }
+        if ($time < $starttime) {
+            return webex::WEBEXACTIVITY_TIME_UPCOMING;
+        }
 
-            return true;
-        } else {
-            if ($this->meetingrecord->status == webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
-                return true;
+        if ($time > $endtime) {
+            if ($time > ($endtime + (24 * 3600))) {
+                return webex::WEBEXACTIVITY_TIME_LONG_PAST;
             } else {
-                $grace = get_config('webexactivity', 'meetingclosegrace');
+                return webex::WEBEXACTIVITY_TIME_PAST;
+            }
+        }
 
-                $starttime = $this->meetingrecord->starttime - (20 * 60);
-                if (time() < $starttime) {
-                    return false;
-                }
+        return webex::WEBEXACTIVITY_TIME_AVAILABLE;
 
-                $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->duration * 60) + ($grace * 60);
-                if (time() > $endtime) {
-                    return false;
-                }
+    }
 
+    public function is_available($host = false) {
+        $status = $this->get_time_status();
+
+        if ($host) {
+            if (($status === \mod_webexactivity\webex::WEBEXACTIVITY_TIME_AVAILABLE) ||
+                    ($status === \mod_webexactivity\webex::WEBEXACTIVITY_TIME_IN_PROGRESS) ||
+                    ($status === \mod_webexactivity\webex::WEBEXACTIVITY_TIME_UPCOMING)) {
+                return true;
+            }
+        } else {
+            if (($status === \mod_webexactivity\webex::WEBEXACTIVITY_TIME_AVAILABLE) ||
+                    ($status === \mod_webexactivity\webex::WEBEXACTIVITY_TIME_IN_PROGRESS)) {
                 return true;
             }
         }
 
-        // Should never get here.
+        return false;
+    }
+
+    public function is_past() {
+        if ($this->meetingrecord->status == webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+            return false;
+        }
+
+        $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->duration * 60) + ($grace * 60);
+        if (time() > $endtime) {
+            return true;
+        }
+
         return false;
     }
 
@@ -282,7 +302,7 @@ class webex_meeting_shell {
     public function get_recordings() {
         global $DB;
 
-        $recordingrecords = $DB->get_records('webexactivity_recording', array('webexid' => $this->get_value('id')));
+        $recordingrecords = $DB->get_records('webexactivity_recording', array('webexid' => $this->get_value('id'), 'deleted' => 0));
 
         if (!$recordingrecords) {
             return false;

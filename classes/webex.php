@@ -35,6 +35,12 @@ class webex {
     const WEBEXACTIVITY_STATUS_STOPPED = 1;
     const WEBEXACTIVITY_STATUS_IN_PROGRESS = 2;
 
+    const WEBEXACTIVITY_TIME_UPCOMING = 0;
+    const WEBEXACTIVITY_TIME_AVAILABLE = 1;
+    const WEBEXACTIVITY_TIME_IN_PROGRESS = 2;
+    const WEBEXACTIVITY_TIME_PAST = 3;
+    const WEBEXACTIVITY_TIME_LONG_PAST = 4;
+
 
     private $latesterrors = null;
 
@@ -408,6 +414,21 @@ class webex {
                 $DB->insert_record('webexactivity_recording', $rec);
             }
         }
+    }
+
+    public function remove_deleted_recordings() {
+        global $DB;
+
+        $params = array('time' => (time() - (48 * 3600)));
+        $rs = $DB->get_recordset_select('webexactivity_recording', 'deleted > 0 AND deleted < :time', $params);
+
+        foreach ($rs as $record) {
+            $recording = new webex_recording($record);
+            print 'Deleting: '.$recording->get_value('name')."\n";
+            $recording->true_delete();
+        }
+
+        $rs->close();
     }
 
     public function temp_update_recordings() {

@@ -323,6 +323,7 @@ if (!$view) {
     }
 
     // Output links.
+    $timestatus = $webexmeeting->get_time_status();
     if ($canhost && $webexmeeting->is_available(true)) {
         // Host link.
         echo '<tr><td colspan=2 align="center">';
@@ -332,15 +333,19 @@ if (!$view) {
         echo '</td></tr>';
     }
     // Join Link.
-    if ($webexmeeting->is_available()) {
+    if ($webexmeeting->is_available(false)) {
         echo '<tr><td colspan=2 align="center">';
         $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'action' => 'joinmeeting'));
         $params = array('url' => $urlobj->out());
         echo get_string('joinmeetinglink', 'webexactivity', $params);
         echo '</td></tr>';
-    } else {
+    } else if ($timestatus === \mod_webexactivity\webex::WEBEXACTIVITY_TIME_UPCOMING) {
         echo '<tr><td colspan=2 align="center">';
-        echo get_string('notavailable', 'webexactivity');
+        echo get_string('meetingupcoming', 'webexactivity');
+        echo '</td></tr>';
+    } else if ($timestatus === \mod_webexactivity\webex::WEBEXACTIVITY_TIME_PAST) {
+        echo '<tr><td colspan=2 align="center">';
+        echo get_string('meetingpast', 'webexactivity');
         echo '</td></tr>';
     }
 
@@ -359,7 +364,8 @@ if (!$view) {
         $params['visible'] = 1;
     }
 
-    if ($recordings = $DB->get_records('webexactivity_recording', $params, 'timecreated ASC')) {
+    //if ($recordings = $DB->get_records('webexactivity_recording', $params, 'timecreated ASC')) {
+    if ($recordings = $webexmeeting->get_recordings()) {
         $candownload = $webexmeeting->get_value('studentdownload');
         $candownload = $candownload || $canhost;
 
@@ -372,7 +378,7 @@ if (!$view) {
         echo '</div>';
 
         foreach ($recordings as $recording) {
-            if ($recording->visible) {
+            if ($recording->get_value('visible')) {
                 echo '<div class="recording">';
             } else {
                 // If hidden and we don't have management, then skip.
@@ -386,13 +392,13 @@ if (!$view) {
             echo '<div class="recordingblock buttons">';
             // Play button.
             echo '<div class="play">';
-            echo $OUTPUT->action_icon($recording->streamurl, new \pix_icon('play', 'Play', 'mod_webexactivity'));
+            echo $OUTPUT->action_icon($recording->get_value('streamurl'), new \pix_icon('play', 'Play', 'mod_webexactivity'));
             echo '</div>';
 
             // Download Button.
             if ($candownload) {
                 echo '<div class="download">';
-                echo $OUTPUT->action_icon($recording->fileurl, new \pix_icon('download', 'Download', 'mod_webexactivity'));
+                echo $OUTPUT->action_icon($recording->get_value('fileurl'), new \pix_icon('download', 'Download', 'mod_webexactivity'));
                 echo '</div>';
             }
 
@@ -400,15 +406,15 @@ if (!$view) {
 
             // Recording information.
             echo '<div class="recordingblock details">';
-            echo '<div class="name">'.$recording->name.'</div>';
-            echo '<div class="date">'.userdate($recording->timecreated).'</div>';
+            echo '<div class="name">'.$recording->get_value('name').'</div>';
+            echo '<div class="date">'.userdate($recording->get_value('timecreated')).'</div>';
             $params = new \stdClass();
-            if (isset($recording->filesize)) {
-                $params->size = display_size($recording->filesize);
+            if ($recording->get_value('filesize') !== null) {
+                $params->size = display_size($recording->get_value('filesize'));
             } else {
                 $params->size = 'Unknown Size';
             }
-            $params->time = format_time($recording->duration);
+            $params->time = format_time($recording->get_value('duration'));
             echo '<div class="length">'.get_string('recordinglength', 'webexactivity', $params).'</div>';
             echo '</div>';
 
@@ -417,11 +423,11 @@ if (!$view) {
                 echo '<div class="recordingblock buttons">';
 
                 // Delete, rename, hide.
-                $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'editrecording');
+                $params = array('id' => $id, 'recordingid' => $recording->get_value('id'), 'action' => 'editrecording');
                 $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
                 echo $OUTPUT->action_icon($urlobj->out(), new \pix_icon('t/editstring', 'Edit recording'));
 
-                if ($recording->visible) {
+                if ($recording->get_value('visible')) {
                     $params['action'] = 'hiderecording';
                     $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
                     echo $OUTPUT->action_icon($urlobj->out(), new \pix_icon('t/hide', 'Hide recording'));

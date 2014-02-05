@@ -101,7 +101,16 @@ class webex_recording {
         return $DB->update_record('webexactivity_recording', $update);
     }
 
-    public function delete($user = false) {
+    public function delete() {
+        global $DB;
+
+        $update = new \stdClass();
+        $update->id = $this->recording->id;
+        $update->deleted = time();
+        return $DB->update_record('webexactivity_recording', $update);
+    }
+
+    public function true_delete() {
         global $DB;
 
         $this->load_webex();
@@ -155,6 +164,15 @@ class webex_recording {
     }
 
     public function get_value($name) {
+        switch ($name) {
+            case 'visible':
+                if ($this->recording->deleted > 0) {
+                    return 0;
+                }
+                break;
+            default:
+        }
+        
         return $this->recording->$name;
     }
 

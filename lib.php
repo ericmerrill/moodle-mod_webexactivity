@@ -113,6 +113,7 @@ function webexactivity_cron() {
     $webex = new \mod_webexactivity\webex();
     $webex->get_recordings();
     $webex->get_open_sessions();
+    $webex->remove_deleted_recordings();
 
     return true;
 }
