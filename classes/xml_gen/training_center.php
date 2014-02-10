@@ -22,11 +22,11 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity;
+namespace mod_webexactivity\xml_gen;
 
 defined('MOODLE_INTERNAL') || die();
 
-class xml_gen_training extends xml_gen {
+class training_center extends base {
 
 
     public static function get_meeting_info($meetingkey) {

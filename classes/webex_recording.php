@@ -122,7 +122,7 @@ class webex_recording {
 
         $this->load_webex();
 
-        $xml = xml_gen::delete_recording($this->get_value('recordingid'));
+        $xml = xml_gen\base::delete_recording($this->get_value('recordingid'));
 
         $webexuser = $this->get_recording_webex_user();
 
@@ -150,7 +150,7 @@ class webex_recording {
         $params->recordingid = $this->get_value('recordingid');
         $params->name = $name;
 
-        $xml = xml_gen::update_recording($params);
+        $xml = xml_gen\base::update_recording($params);
 
         $webexuser = $this->get_recording_webex_user();
 

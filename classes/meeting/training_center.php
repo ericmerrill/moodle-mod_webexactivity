@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity;
+namespace mod_webexactivity\meeting;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -33,15 +33,15 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class webex_training extends webex_meeting_shell {
+class training_center extends base {
 
-    protected $gen = '\mod_webexactivity\xml_gen_training';
+    protected $gen = '\mod_webexactivity\xml_gen\training_center';
 
     public function __construct($meeting = false) {
         parent::__construct($meeting);
 
         if ($this->values['type'] === null) {
-            $this->values['type'] = webex::WEBEXACTIVITY_TYPE_TRAINING;
+            $this->values['type'] = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING;
         }
     }
 

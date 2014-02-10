@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity;
+namespace mod_webexactivity\meeting;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class webex_meeting_shell {
+class base {
     protected $meetingrecord = null;
 
     protected $values = array(
@@ -58,17 +58,17 @@ class webex_meeting_shell {
             'studentdownload' => 1,
             'xml' => null, // Temp.
             'laststatuscheck' => 0,
-            'status' => webex::WEBEXACTIVITY_STATUS_NEVER_STARTED,
+            'status' => \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_NEVER_STARTED,
             'timemodified' => 0);
 
     protected $webex;
 
-    protected $gen = '\mod_webexactivity\xml_gen';
+    protected $gen = '\mod_webexactivity\xml_gen\base';
 
     public function __construct($meeting = false) {
         global $DB;
 
-        $this->webex = new webex();
+        $this->webex = new \mod_webexactivity\webex();
 
         if ($meeting === false) {
             return;
@@ -79,7 +79,7 @@ class webex_meeting_shell {
         } else if (is_object($meeting)) {
             $this->meetingrecord = $meeting;
         } else {
-            debugging('webex_meeting_shell constructor passed unknown type.', DEBUG_DEVELOPER);
+            debugging('meeting\base constructor passed unknown type.', DEBUG_DEVELOPER);
         }
 
         $this->load_webex_record($meeting);
@@ -196,23 +196,23 @@ class webex_meeting_shell {
         $endtime = $this->meetingrecord->starttime + ($this->meetingrecord->duration * 60) + ($grace * 60);
         $starttime = $this->meetingrecord->starttime - (20 * 60);
 
-        if ($this->meetingrecord->status == webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
-            return webex::WEBEXACTIVITY_TIME_IN_PROGRESS;
+        if ($this->meetingrecord->status == \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+            return \mod_webexactivity\webex::WEBEXACTIVITY_TIME_IN_PROGRESS;
         }
 
         if ($time < $starttime) {
-            return webex::WEBEXACTIVITY_TIME_UPCOMING;
+            return \mod_webexactivity\webex::WEBEXACTIVITY_TIME_UPCOMING;
         }
 
         if ($time > $endtime) {
             if ($time > ($endtime + (24 * 3600))) {
-                return webex::WEBEXACTIVITY_TIME_LONG_PAST;
+                return \mod_webexactivity\webex::WEBEXACTIVITY_TIME_LONG_PAST;
             } else {
-                return webex::WEBEXACTIVITY_TIME_PAST;
+                return \mod_webexactivity\webex::WEBEXACTIVITY_TIME_PAST;
             }
         }
 
-        return webex::WEBEXACTIVITY_TIME_AVAILABLE;
+        return \mod_webexactivity\webex::WEBEXACTIVITY_TIME_AVAILABLE;
 
     }
 
@@ -236,7 +236,7 @@ class webex_meeting_shell {
     }
 
     public function is_past() {
-        if ($this->meetingrecord->status == webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+        if ($this->meetingrecord->status == \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
             return false;
         }
 
@@ -311,7 +311,7 @@ class webex_meeting_shell {
         $out = array();
 
         foreach ($recordingrecords as $record) {
-            $out[] = new webex_recording($record);
+            $out[] = new \mod_webexactivity\webex_recording($record);
         }
 
         return $out;
@@ -321,7 +321,7 @@ class webex_meeting_shell {
     // URL Functions.
     // ---------------------------------------------------
     public function get_host_url($returnurl = false) {
-        $baseurl = webex::get_base_url();
+        $baseurl = \mod_webexactivity\webex::get_base_url();
         $url = $baseurl.'/m.php?AT=HM&MK='.$this->values['meetingkey'];
         if ($returnurl) {
             $url .= '&BU='.urlencode($returnurl);
@@ -331,7 +331,7 @@ class webex_meeting_shell {
     }
 
     public function get_moodle_join_url($user, $returnurl = false) {
-        $baseurl = webex::get_base_url();
+        $baseurl = \mod_webexactivity\webex::get_base_url();
 
         $url = $baseurl.'/m.php?AT=JM&MK='.$this->values['meetingkey'];
         $url .= '&AE='.$user->email.'&AN='.$user->firstname.'%20'.$user->lastname;
@@ -343,7 +343,7 @@ class webex_meeting_shell {
     }
 
     public function get_external_join_url() {
-        $baseurl = webex::get_base_url();
+        $baseurl = \mod_webexactivity\webex::get_base_url();
 
         if (!isset($this->values['eventid'])) {
             $this->get_info(true);
@@ -362,7 +362,7 @@ class webex_meeting_shell {
 
         if (isset($this->values['creatorwebexuser'])) {
             $webexuser = $DB->get_record('webexactivity_user', array('id' => $this->values['creatorwebexuser']));
-            $webexuser->password = webex::decrypt_password($webexuser->password);
+            $webexuser->password = \mod_webexactivity\webex::decrypt_password($webexuser->password);
         } else {
             $webexuser = $this->webex->get_webex_user($USER);
         }

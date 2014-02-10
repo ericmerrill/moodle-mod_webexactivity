@@ -336,7 +336,6 @@ if ($error !== false) {
     echo $OUTPUT->box_end();
 }
 
-
 echo $OUTPUT->box_start();
 
 if (!$view) {

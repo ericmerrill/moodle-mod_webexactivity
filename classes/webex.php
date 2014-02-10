@@ -71,7 +71,8 @@ class webex {
                 debugging('Meeting center not yet supported', DEBUG_DEVELOPER);
                 break;
             case self::WEBEXACTIVITY_TYPE_TRAINING:
-                return new webex_training($record);
+                $meeting = new meeting\training_center($record);
+                return $meeting;
                 break;
             case self::WEBEXACTIVITY_TYPE_SUPPORT:
                 debugging('Support center not yet supported', DEBUG_DEVELOPER);
@@ -90,7 +91,7 @@ class webex {
                 debugging('Meeting center not yet supported', DEBUG_DEVELOPER);
                 break;
             case self::WEBEXACTIVITY_TYPE_TRAINING:
-                return new webex_training();
+                return new meeting\training_center();
                 break;
             case self::WEBEXACTIVITY_TYPE_SUPPORT:
                 debugging('Support center not yet supported', DEBUG_DEVELOPER);
@@ -149,7 +150,7 @@ class webex {
         $data->email = $moodleuser->email;
         $data->password = self::generate_password();
 
-        $xml = xml_gen::create_user($data);
+        $xml = xml_gen\base::create_user($data);
 
         $response = $this->get_response($xml);
 
@@ -176,7 +177,7 @@ class webex {
             // User already exists with this username or email.
 
             if ((stripos($exception, '030004') !== false) || (stripos($exception, '030005') === false)) {
-                $xml = xml_gen::get_user_info($data->webexid);
+                $xml = xml_gen\base::get_user_info($data->webexid);
 
                 if (!($response = $this->get_response($xml))) {
                     return false;
@@ -203,7 +204,7 @@ class webex {
     }
 
     public function check_user_auth($webexuser) {
-        $xml = xml_gen::check_user_auth($webexuser);
+        $xml = xml_gen\base::check_user_auth($webexuser);
 
         if (!($response = $this->get_response($xml))) {
             return false;
@@ -223,7 +224,7 @@ class webex {
 
         $webexuser->password = self::generate_password();
 
-        $xml = xml_gen::update_user_password($webexuser);
+        $xml = xml_gen\base::update_user_password($webexuser);
 
         $response = $this->get_response($xml);
 
@@ -242,7 +243,7 @@ class webex {
     }
 
     public function get_login_url($webexuser, $backurl = false, $forwardurl = false) {
-        $xml = xml_gen::get_user_login_url($webexuser->webexid);
+        $xml = xml_gen\base::get_user_login_url($webexuser->webexid);
 
         if (!($response = $this->get_response($xml, $webexuser))) {
             return false;
@@ -313,7 +314,7 @@ class webex {
     public function get_open_sessions() {
         global $DB;
 
-        $xml = xml_gen::list_open_sessions();
+        $xml = xml_gen\base::list_open_sessions();
 
         $response = $this->get_response($xml);
         if ($response === false) {
@@ -370,7 +371,7 @@ class webex {
         $params->startdate = time() - (2 * 24 * 3600);
         $params->enddate = time() + (12 * 3600);
 
-        $xml = xml_gen::list_recordings($params);
+        $xml = xml_gen\base::list_recordings($params);
 
         if (!($response = $this->get_response($xml))) {
             return false;
@@ -446,7 +447,7 @@ class webex {
     public function get_response($basexml, $webexuser = false) {
         global $USER;
 
-        $xml = xml_gen::auth_wrap($basexml, $webexuser);
+        $xml = xml_gen\base::auth_wrap($basexml, $webexuser);
 
         list($status, $response, $errors) = $this->fetch_response($xml);
 
@@ -456,7 +457,7 @@ class webex {
             // Bad user password, reset it and try again.
             if ($webexuser && (isset($errors['exception'])) && ($errors['exception'] === '030002')) {
                 $webexuser = $this->update_user_password($webexuser);
-                $xml = xml_gen::auth_wrap($basexml, $webexuser);
+                $xml = xml_gen\base::auth_wrap($basexml, $webexuser);
                 list($status, $response, $errors) = $this->fetch_response($xml);
                 if ($status) {
                     return $response;
