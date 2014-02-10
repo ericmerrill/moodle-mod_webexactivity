@@ -389,6 +389,8 @@ class webex {
 
         $recordings = $response['ep:recording'];
 
+        $processall = (boolean)\get_config('webexactivity', 'manageallrecordings');
+
         foreach ($recordings as $recording) {
             $recording = $recording['#'];
 
@@ -398,12 +400,17 @@ class webex {
 
             $key = $recording['ep:sessionKey'][0]['#'];
             $meeting = $DB->get_record('webexactivity', array('meetingkey' => $key));
-            if (!$meeting) {
+            if (!$meeting && !$processall) {
                 continue;
             }
 
             $rec = new \stdClass();
-            $rec->webexid = $meeting->id;
+            if ($meeting) {
+                $rec->webexid = $meeting->id;
+            } else { 
+                $rec->webexid = null;
+            }
+            
             $rec->meetingkey = $key;
             $rec->recordingid = $recording['ep:recordingID'][0]['#'];
             $rec->hostid = $recording['ep:hostWebExID'][0]['#'];
@@ -427,7 +434,9 @@ class webex {
     public function remove_deleted_recordings() {
         global $DB;
 
-        $params = array('time' => (time() - (48 * 3600)));
+        $holdtime = get_config('webexactivity', 'recordingtrashtime');
+
+        $params = array('time' => (time() - ($holdtime * 3600)));
         $rs = $DB->get_recordset_select('webexactivity_recording', 'deleted > 0 AND deleted < :time', $params);
 
         foreach ($rs as $record) {

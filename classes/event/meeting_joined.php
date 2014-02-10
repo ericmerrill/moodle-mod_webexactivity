@@ -27,13 +27,13 @@ namespace mod_webexactivity\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * mod_webexactiviy recording downloaded event.
+ * mod_webexactiviy meeting joined event.
  *
  * @package    mod_webexactvity
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class recording_downloaded extends \core\event\content_viewed {
+class meeting_joined extends \core\event\content_viewed {
 
     /**
      * Returns description of what happened.
@@ -41,7 +41,7 @@ class recording_downloaded extends \core\event\content_viewed {
      * @return string
      */
     public function get_description() {
-        return 'User with id ' . $this->userid . ' downloaded webex recording with id ' . $this->objectid;
+        return 'User with id ' . $this->userid . ' joined webex meeting with id ' . $this->objectid;
     }
 
     /**
@@ -50,7 +50,7 @@ class recording_downloaded extends \core\event\content_viewed {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'webexactivity', 'recording downloaded', 'view.php?id=' . $this->context->instanceid, $this->objectid,
+        return array($this->courseid, 'webexactivity', 'meeting joined', 'view.php?id=' . $this->context->instanceid, $this->objectid,
             $this->context->instanceid);
     }
 
@@ -60,7 +60,7 @@ class recording_downloaded extends \core\event\content_viewed {
      * @return string
      */
     public static function get_name() {
-        return get_string('event_recording_downloaded', 'webexactivity');
+        return get_string('event_meeting_joined', 'webexactivity');
     }
 
     /**
@@ -88,7 +88,7 @@ class recording_downloaded extends \core\event\content_viewed {
             $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
         }
 
-        $this->data['objecttable'] = 'webexactivity_recording';
+        $this->data['objecttable'] = 'webexactivity';
     }
 
     /**

@@ -78,10 +78,15 @@ class recording_viewed extends \core\event\content_viewed {
      * @return void
      */
     protected function init() {
+        global $CFG;
         $this->data['crud'] = 'r';
         // Level needed for 2.6, but depeciated in 2.7.
-        $this->data['level'] = self::LEVEL_PARTICIPATING;
-        $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
+        if ($CFG->version < 2013111899) {
+            $this->data['level'] = self::LEVEL_PARTICIPATING;
+        } else {
+            $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
+        }
+
         $this->data['objecttable'] = 'webexactivity_recording';
     }
 

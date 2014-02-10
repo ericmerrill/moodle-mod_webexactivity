@@ -126,6 +126,24 @@ class base {
         return $this->values[$name];
     }
 
+    // ---------------------------------------------------
+    // Magic Methods.
+    // ---------------------------------------------------
+    public function __set($name, $val) {
+        $this->set_value($name, $val);
+        // TODO.
+    }
+
+    public function __get($name) {        
+        return $this->get_value($name);
+        // TODO.
+    }
+
+    public function __isset($name) {
+        return isset($this->values[$name]);
+    }
+
+
 
     // ---------------------------------------------------
     // Meeting Functions.

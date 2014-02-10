@@ -147,6 +147,14 @@ switch ($action) {
         $new->laststatustime = time();
         $DB->update_record('webexactivity', $new);
 
+        $params = array(
+            'context' => $context,
+            'objectid' => $webexmeeting->id
+        );
+        $event = \mod_webexactivity\event\meeting_hosted::create($params);
+        $event->add_record_snapshot('webexactivity', $webexrecord);
+        $event->trigger();
+
         redirect($authurl);
         break;
 
@@ -155,6 +163,15 @@ switch ($action) {
             break;
         }
         $joinurl = $webexmeeting->get_moodle_join_url($USER, $returnurl);
+
+        $params = array(
+            'context' => $context,
+            'objectid' => $webexmeeting->id
+        );
+        $event = \mod_webexactivity\event\meeting_joined::create($params);
+        $event->add_record_snapshot('webexactivity', $webexrecord);
+        $event->trigger();
+
         redirect($joinurl);
         break;
 
@@ -307,6 +324,14 @@ switch ($action) {
             $view = 'deleterecording';
             break;
         } else {
+            $params = array(
+                'context' => $context,
+                'objectid' => $recordingid
+            );
+            $event = \mod_webexactivity\event\recording_deleted::create($params);
+            $event->add_record_snapshot('webexactivity_recording', $recording->record);
+            $event->trigger();
+
             $recording->delete();
             redirect($returnurl->out(false));
         }
@@ -424,13 +449,13 @@ if (!$view) {
             echo '<div class="play">';
             $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'viewrecording');
             $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-            echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('play', 'Play', 'mod_webexactivity'));
+            echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('play', 'Play', 'mod_webexactivity'), null, array('target' => '_blank'));
             echo '</div>';
 
             // Download Button.
             if ($candownload) {
                 echo '<div class="download">';
-                echo $OUTPUT->action_icon($recording->fileurl, new \pix_icon('download', 'Download', 'mod_webexactivity'));
+                echo $OUTPUT->action_icon($recording->fileurl, new \pix_icon('download', 'Download', 'mod_webexactivity'), null, array('target' => '_blank'));
                 echo '</div>';
             }
 

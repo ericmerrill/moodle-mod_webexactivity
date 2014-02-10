@@ -24,26 +24,48 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+
+$ADMIN->add('modsettings', new admin_category('modwebexactivityfolder', new lang_string('pluginname', 'mod_webexactivity'), $module->is_enabled() === false));
+
+$settings = new admin_settingpage($section, get_string('settings', 'mod_webexactivity'), 'moodle/site:config', $module->is_enabled() === false);
+
+
 if ($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configtext('webexactivity/url', get_string('url', 'webexactivity'),
-            get_string('url_help', 'webexactivity'), ''));
+    $settings->add(new admin_setting_heading('apisettings', get_string('apisettings', 'mod_webexactivity'), ''));
 
-    $settings->add(new admin_setting_configtext('webexactivity/siteid', get_string('siteid', 'webexactivity'),
-            get_string('siteid_help', 'webexactivity'), ''));
+    $settings->add(new admin_setting_configtext('webexactivity/url', get_string('url', 'mod_webexactivity'),
+            get_string('url_help', 'mod_webexactivity'), ''));
 
-    $settings->add(new admin_setting_configtext('webexactivity/partnerid', get_string('partnerid', 'webexactivity'),
-            get_string('partnerid_help', 'webexactivity'), ''));
+    $settings->add(new admin_setting_configtext('webexactivity/siteid', get_string('siteid', 'mod_webexactivity'),
+            get_string('siteid_help', 'mod_webexactivity'), ''));
 
-    $settings->add(new admin_setting_configtext('webexactivity/apiusername', get_string('apiusername', 'webexactivity'),
-            get_string('apiusername_help', 'webexactivity'), ''));
+    $settings->add(new admin_setting_configtext('webexactivity/partnerid', get_string('partnerid', 'mod_webexactivity'),
+            get_string('partnerid_help', 'mod_webexactivity'), ''));
 
-    $settings->add(new admin_setting_configpasswordunmask('webexactivity/apipassword', get_string('apipassword', 'webexactivity'),
-            get_string('apipassword_help', 'webexactivity'), ''));
+    $settings->add(new admin_setting_configtext('webexactivity/apiusername', get_string('apiusername', 'mod_webexactivity'),
+            get_string('apiusername_help', 'mod_webexactivity'), ''));
 
-    $settings->add(new admin_setting_configtext('webexactivity/prefix', get_string('prefix', 'webexactivity'),
-            get_string('prefix_help', 'webexactivity'), ''));
+    $settings->add(new admin_setting_configpasswordunmask('webexactivity/apipassword', get_string('apipassword', 'mod_webexactivity'),
+            get_string('apipassword_help', 'mod_webexactivity'), ''));
 
-    $settings->add(new admin_setting_configtext('webexactivity/meetingclosegrace', get_string('meetingclosegrace', 'webexactivity'),
-            get_string('meetingclosegrace_help', 'webexactivity'), ''));
+    $settings->add(new admin_setting_configtext('webexactivity/prefix', get_string('prefix', 'mod_webexactivity'),
+            get_string('prefix_help', 'mod_webexactivity'), ''));
 
+    $settings->add(new admin_setting_heading('meetingsettings', get_string('meetingsettings', 'mod_webexactivity'), ''));
+
+    $settings->add(new admin_setting_configtext('webexactivity/meetingclosegrace', get_string('meetingclosegrace', 'mod_webexactivity'),
+            get_string('meetingclosegrace_help', 'mod_webexactivity'), '120'));
+
+    $settings->add(new admin_setting_heading('recordingsettings', get_string('recordingsettings', 'mod_webexactivity'), ''));
+
+    // TODO - Impliment.
+    $settings->add(new admin_setting_configtext('webexactivity/recordingtrashtime', get_string('recordingtrashtime', 'mod_webexactivity'),
+            get_string('recordingtrashtime_help', 'mod_webexactivity'), '48'));
+
+    $settings->add(new admin_setting_configcheckbox('webexactivity/manageallrecordings', get_string('manageallrecordings', 'mod_webexactivity'),
+            get_string('manageallrecordings_help', 'mod_webexactivity'), 0));
 }
+
+$ADMIN->add('modwebexactivityfolder', $settings);
+// Tell core we already added the settings structure.
+$settings = null;

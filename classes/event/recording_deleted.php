@@ -27,13 +27,13 @@ namespace mod_webexactivity\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * mod_webexactiviy recording downloaded event.
+ * mod_webexactiviy recording deleted event.
  *
  * @package    mod_webexactvity
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class recording_downloaded extends \core\event\content_viewed {
+class recording_deleted extends \core\event\content_viewed {
 
     /**
      * Returns description of what happened.
@@ -41,7 +41,7 @@ class recording_downloaded extends \core\event\content_viewed {
      * @return string
      */
     public function get_description() {
-        return 'User with id ' . $this->userid . ' downloaded webex recording with id ' . $this->objectid;
+        return 'User with id ' . $this->userid . ' deleted webex recording with id ' . $this->objectid;
     }
 
     /**
@@ -50,7 +50,7 @@ class recording_downloaded extends \core\event\content_viewed {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'webexactivity', 'recording downloaded', 'view.php?id=' . $this->context->instanceid, $this->objectid,
+        return array($this->courseid, 'webexactivity', 'recording deleted', 'view.php?id=' . $this->context->instanceid, $this->objectid,
             $this->context->instanceid);
     }
 
@@ -60,7 +60,7 @@ class recording_downloaded extends \core\event\content_viewed {
      * @return string
      */
     public static function get_name() {
-        return get_string('event_recording_downloaded', 'webexactivity');
+        return get_string('event_recording_deleted', 'webexactivity');
     }
 
     /**
@@ -83,9 +83,9 @@ class recording_downloaded extends \core\event\content_viewed {
         $this->data['crud'] = 'r';
         // Level needed for 2.6, but depeciated in 2.7.
         if ($CFG->version < 2013111899) {
-            $this->data['level'] = self::LEVEL_PARTICIPATING;
+            $this->data['level'] = self::LEVEL_OTHER;
         } else {
-            $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
+            $this->data['edulevel'] = self::LEVEL_OTHER;
         }
 
         $this->data['objecttable'] = 'webexactivity_recording';
