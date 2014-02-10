@@ -26,6 +26,13 @@ namespace mod_webexactivity;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Class that represents and controls a Training Center meeting instance.
+ *
+ * @package    mod_webexactvity
+ * @copyright  2014 Eric Merrill (merrill@oakland.edu)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class webex_training extends webex_meeting_shell {
 
     protected $gen = '\mod_webexactivity\xml_gen_training';

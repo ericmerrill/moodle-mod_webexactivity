@@ -26,6 +26,13 @@ namespace mod_webexactivity;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * A class that represents a WebEx recording.
+ *
+ * @package    mod_webexactvity
+ * @copyright  2014 Eric Merrill (merrill@oakland.edu)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class webex_recording {
     private $recording = null;
 
@@ -77,7 +84,7 @@ class webex_recording {
         }
     }*/
 
-    public function show() {
+    private function show() {
         global $DB;
 
         $update = new \stdClass();
@@ -89,7 +96,7 @@ class webex_recording {
         return $DB->update_record('webexactivity_recording', $update);
     }
 
-    public function hide() {
+    private function hide() {
         global $DB;
 
         $update = new \stdClass();
@@ -163,7 +170,7 @@ class webex_recording {
         return $webexuser;
     }
 
-    public function get_value($name) {
+    private function get_value($name) {
         switch ($name) {
             case 'visible':
                 if ($this->recording->deleted > 0) {
@@ -176,7 +183,7 @@ class webex_recording {
         return $this->recording->$name;
     }
 
-    public function set_value($name, $val) {
+    private function set_value($name, $val) {
         switch ($name) {
             case 'name':
                 $this->set_name($val);
@@ -206,4 +213,50 @@ class webex_recording {
         }
     }
 
+
+    // ---------------------------------------------------
+    // Magic Methods.
+    // ---------------------------------------------------
+    public function __set($name, $val) {
+        switch ($name) {
+            case 'name':
+                $this->set_name($val);
+                break;
+            case 'visible':
+                if ($val) {
+                    $this->show();
+                } else {
+                    $this->hide();
+                }
+                return;
+                break;
+            case 'record':
+                debugging('Recording record can only be set at construction time');
+                return;
+        }
+
+        $this->recording->$name = $val;
+    }
+
+    public function __get($name) {
+        switch ($name) {
+            case 'visible':
+                if ($this->recording->deleted > 0) {
+                    return 0;
+                }
+                break;
+            case 'record':
+                return $this->recording;
+        }
+        
+        return $this->recording->$name;
+    }
+
+    public function __isset($name) {
+        switch ($name) {
+            case 'record':
+                return isset($this->recording);
+        }
+        return isset($this->recording->$name);
+    }
 }

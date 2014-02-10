@@ -158,6 +158,54 @@ switch ($action) {
         redirect($joinurl);
         break;
 
+    case 'viewrecording':
+        $recordingid = required_param('recordingid', PARAM_INT);
+        $recording = new \mod_webexactivity\webex_recording($recordingid);
+        $recwebexid = $recording->webexid;
+        if ((!$canhost) && (!$recording->visible)) {
+            // TODO Error here.
+            break;
+        }
+        if ($recwebexid !== $cm->instance) {
+            // TODO Error here.
+            break;
+        }
+
+        $params = array(
+            'context' => $context,
+            'objectid' => $recordingid
+        );
+        $event = \mod_webexactivity\event\recording_viewed::create($params);
+        $event->add_record_snapshot('webexactivity_recording', $recording->record);
+        $event->trigger();
+
+        redirect($recording->streamurl);
+        break;
+
+    case 'downloadrecording';
+        $recordingid = required_param('recordingid', PARAM_INT);
+        $recording = new \mod_webexactivity\webex_recording($recordingid);
+        $recwebexid = $recording->webexid;
+        if ((!$canhost) && (!$recording->visible)) {
+            // TODO Error here.
+            break;
+        }
+        if ($recwebexid !== $cm->instance) {
+            // TODO Error here.
+            break;
+        }
+
+        $params = array(
+            'context' => $context,
+            'objectid' => $recordingid
+        );
+        $event = \mod_webexactivity\event\recording_downloaded::create($params);
+        $event->add_record_snapshot('webexactivity_recording', $recording->record);
+        $event->trigger();
+
+        redirect($recording->streamurl);
+        break;
+
     case 'hiderecording':
         if (!$canhost) {
             // TODO Error here.
@@ -165,13 +213,13 @@ switch ($action) {
         }
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\webex_recording($recordingid);
-        $recwebexid = $recording->get_value('webexid');
+        $recwebexid = $recording->webexid;
         if ($recwebexid !== $cm->instance) {
             // TODO Error here.
             break;
         }
 
-        $recording->hide();
+        $recording->visible = 0;
 
         redirect($returnurl->out(false));
         break;
@@ -183,13 +231,13 @@ switch ($action) {
         }
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\webex_recording($recordingid);
-        $recwebexid = $recording->get_value('webexid');
+        $recwebexid = $recording->webexid;
         if ($recwebexid !== $cm->instance) {
             // TODO Error here.
             break;
         }
 
-        $recording->show();
+        $recording->visible = 1;
 
         redirect($returnurl->out(false));
         break;
@@ -202,7 +250,7 @@ switch ($action) {
 
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\webex_recording($recordingid);
-        $recwebexid = $recording->get_value('webexid');
+        $recwebexid = $recording->webexid;
         if ($recwebexid !== $cm->instance) {
             // TODO Error here.
             break;
@@ -216,11 +264,11 @@ switch ($action) {
             $action = false;
             $view = false;
         } else if ($fromform = $mform->get_data()) {
-            $recording->set_value('name', $fromform->name);
+            $recording->name = $fromform->name;
             if (isset($fromform->visible)) {
-                $recording->set_value('visible', 1);
+                $recording->visible = 1;
             } else {
-                $recording->set_value('visible', 0);
+                $recording->visible = 0;
             }
             $recording->save_to_db();
             //$recording->set_name($fromform->name);
@@ -228,11 +276,11 @@ switch ($action) {
             $view = 'editrecording';
 
             $data = new stdClass();
-            $data->name = $recording->get_value('name');
+            $data->name = $recording->name;
             $data->id = $id;
-            $data->recordingid = $recording->get_value('id');
+            $data->recordingid = $recording->id;
             $data->action = 'editrecording';
-            $data->visible = $recording->get_value('visible');
+            $data->visible = $recording->visible;
             $mform->set_data($data);
             break;
 
@@ -247,7 +295,7 @@ switch ($action) {
 
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\webex_recording($recordingid);
-        $recwebexid = $recording->get_value('webexid');
+        $recwebexid = $recording->webexid;
         if ($recwebexid !== $cm->instance) {
             // TODO Error here.
             break;
@@ -264,22 +312,6 @@ switch ($action) {
         }
         break;
 
-    case 'renamerecording':
-        if (!$canhost) {
-            // TODO Error here.
-            break;
-        }
-
-        $recordingid = required_param('recordingid', PARAM_INT);
-        $recording = new \mod_webexactivity\webex_recording($recordingid);
-        $recwebexid = $recording->get_value('webexid');
-        if ($recwebexid !== $cm->instance) {
-            // TODO Error here.
-            break;
-        }
-
-        $recording->set_name('Name 1');
-        break;
 }
 
 add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webexmeeting->get_value('id'), $cm->id);
@@ -328,7 +360,7 @@ if (!$view) {
         // Host link.
         echo '<tr><td colspan=2 align="center">';
         $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'action' => 'hostmeeting'));
-        $params = array('url' => $urlobj->out());
+        $params = array('url' => $urlobj->out(false));
         echo get_string('hostmeetinglink', 'webexactivity', $params);
         echo '</td></tr>';
     }
@@ -336,7 +368,7 @@ if (!$view) {
     if ($webexmeeting->is_available(false)) {
         echo '<tr><td colspan=2 align="center">';
         $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'action' => 'joinmeeting'));
-        $params = array('url' => $urlobj->out());
+        $params = array('url' => $urlobj->out(false));
         echo get_string('joinmeetinglink', 'webexactivity', $params);
         echo '</td></tr>';
     } else if ($timestatus === \mod_webexactivity\webex::WEBEXACTIVITY_TIME_UPCOMING) {
@@ -352,7 +384,7 @@ if (!$view) {
     if ($canhost && $webexmeeting->is_available(true)) {
         echo '<tr><td colspan=2 align="center">';
         $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'view' => 'guest'));
-        $params = array('url' => $urlobj->out());
+        $params = array('url' => $urlobj->out(false));
         echo get_string('getexternallink', 'webexactivity', $params);
         echo '</td></tr>';
     }
@@ -364,7 +396,6 @@ if (!$view) {
         $params['visible'] = 1;
     }
 
-    //if ($recordings = $DB->get_records('webexactivity_recording', $params, 'timecreated ASC')) {
     if ($recordings = $webexmeeting->get_recordings()) {
         $candownload = $webexmeeting->get_value('studentdownload');
         $candownload = $candownload || $canhost;
@@ -378,7 +409,7 @@ if (!$view) {
         echo '</div>';
 
         foreach ($recordings as $recording) {
-            if ($recording->get_value('visible')) {
+            if ($recording->visible) {
                 echo '<div class="recording">';
             } else {
                 // If hidden and we don't have management, then skip.
@@ -392,13 +423,15 @@ if (!$view) {
             echo '<div class="recordingblock buttons">';
             // Play button.
             echo '<div class="play">';
-            echo $OUTPUT->action_icon($recording->get_value('streamurl'), new \pix_icon('play', 'Play', 'mod_webexactivity'));
+            $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'viewrecording');
+            $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
+            echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('play', 'Play', 'mod_webexactivity'));
             echo '</div>';
 
             // Download Button.
             if ($candownload) {
                 echo '<div class="download">';
-                echo $OUTPUT->action_icon($recording->get_value('fileurl'), new \pix_icon('download', 'Download', 'mod_webexactivity'));
+                echo $OUTPUT->action_icon($recording->fileurl, new \pix_icon('download', 'Download', 'mod_webexactivity'));
                 echo '</div>';
             }
 
@@ -406,15 +439,15 @@ if (!$view) {
 
             // Recording information.
             echo '<div class="recordingblock details">';
-            echo '<div class="name">'.$recording->get_value('name').'</div>';
-            echo '<div class="date">'.userdate($recording->get_value('timecreated')).'</div>';
+            echo '<div class="name">'.$recording->name.'</div>';
+            echo '<div class="date">'.userdate($recording->timecreated).'</div>';
             $params = new \stdClass();
-            if ($recording->get_value('filesize') !== null) {
-                $params->size = display_size($recording->get_value('filesize'));
+            if ($recording->filesize !== null) {
+                $params->size = display_size($recording->filesize);
             } else {
                 $params->size = 'Unknown Size';
             }
-            $params->time = format_time($recording->get_value('duration'));
+            $params->time = format_time($recording->duration);
             echo '<div class="length">'.get_string('recordinglength', 'webexactivity', $params).'</div>';
             echo '</div>';
 
@@ -423,23 +456,23 @@ if (!$view) {
                 echo '<div class="recordingblock buttons">';
 
                 // Delete, rename, hide.
-                $params = array('id' => $id, 'recordingid' => $recording->get_value('id'), 'action' => 'editrecording');
+                $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'editrecording');
                 $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-                echo $OUTPUT->action_icon($urlobj->out(), new \pix_icon('t/editstring', 'Edit recording'));
+                echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('t/editstring', 'Edit recording'));
 
-                if ($recording->get_value('visible')) {
+                if ($recording->visible) {
                     $params['action'] = 'hiderecording';
                     $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-                    echo $OUTPUT->action_icon($urlobj->out(), new \pix_icon('t/hide', 'Hide recording'));
+                    echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('t/hide', 'Hide recording'));
                 } else {
                     $params['action'] = 'showrecording';
                     $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-                    echo $OUTPUT->action_icon($urlobj->out(), new \pix_icon('t/show', 'Show recording'));
+                    echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('t/show', 'Show recording'));
                 }
 
                 $params['action'] = 'deleterecording';
                 $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-                echo $OUTPUT->action_icon($urlobj->out(), new \pix_icon('t/delete', 'Delete recording'));
+                echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('t/delete', 'Delete recording'));
 
                 echo '</div>';
             }
@@ -469,8 +502,8 @@ if (!$view) {
     $confirmurl = new moodle_url($returnurl, $params);
 
     $params = new stdClass();
-    $params->name = $recording->get_value('name');
-    $params->time = format_time($recording->get_value('duration'));
+    $params->name = $recording->name;
+    $params->time = format_time($recording->duration);
     $message = get_string('confirmrecordingdelete', 'webexactivity', $params);
     echo $OUTPUT->confirm($message, $confirmurl, $returnurl);
 }
