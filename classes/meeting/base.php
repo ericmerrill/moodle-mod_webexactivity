@@ -380,7 +380,11 @@ class base {
 
         if (isset($this->values['creatorwebexuser'])) {
             $webexuser = $DB->get_record('webexactivity_user', array('id' => $this->values['creatorwebexuser']));
-            $webexuser->password = \mod_webexactivity\webex::decrypt_password($webexuser->password);
+            if ($webexuser) {
+                return new \mod_webexactivity\webex_user($webexuser);
+            } else {
+                $webexuser = $this->webex->get_webex_user($USER);
+            }
         } else {
             $webexuser = $this->webex->get_webex_user($USER);
         }

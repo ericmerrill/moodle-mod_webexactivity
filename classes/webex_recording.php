@@ -158,11 +158,10 @@ class webex_recording {
     }
 
     public function get_recording_webex_user() {
-        global $DB, $USER;
+        global $USER;
 
         if (isset($this->recording->hostid)) {
-            $webexuser = $DB->get_record('webexactivity_user', array('webexid' => $this->recording->hostid));
-            $webexuser->password = webex::decrypt_password($webexuser->password);
+            $webexuser = new \mod_webexactivity\webex_user($this->recording->hostid);
         } else {
             $webexuser = $this->webex->get_webex_user($USER);
         }

@@ -119,7 +119,7 @@ class webex {
             if ($status) {
                 return $webexuser;
             } else {
-                $webexuser = $this->update_user_password($webexuser);
+                $webexuser->update_password(self::generate_password());
                 return $webexuser;
             }
         } else {
@@ -127,6 +127,7 @@ class webex {
         }
     }
 
+    // TODO move to new webex_user object().
     public function get_webex_user_record($moodleuser) {
         global $DB;
 
@@ -137,8 +138,7 @@ class webex {
         $webexuser = $DB->get_record('webexactivity_user', array('moodleuserid' => $moodleuser->id));
 
         if ($webexuser !== false) {
-            $webexuser->password = self::decrypt_password($webexuser->password);
-            return $webexuser;
+            return new \mod_webexactivity\webex_user($webexuser);
         }
 
         $prefix = get_config('webexactivity', 'prefix');
@@ -152,16 +152,16 @@ class webex {
 
         $xml = xml_gen\base::create_user($data);
 
-        $response = $this->get_response($xml);
+        $response = $this->get_response($xml, false, true);
 
         if ($response) {
             if (isset($response['use:userId']['0']['#'])) {
-                $webexuser = new \stdClass();
+                $webexuser = new \mod_webexactivity\webex_user();
                 $webexuser->moodleuserid = $moodleuser->id;
                 $webexuser->webexuserid = $response['use:userId']['0']['#'];
                 $webexuser->webexid = $data->webexid;
-                $webexuser->password = self::encrypt_password($data->password);
-                if ($webexuser->id = $DB->insert_record('webexactivity_user', $webexuser)) {
+                $webexuser->password = $data->password;
+                if ($webexuser->save_to_db()) {
                     return $webexuser;
                 } else {
                     return false;
@@ -184,14 +184,13 @@ class webex {
                 }
 
                 if (strcasecmp($data->email, $response['use:email']['0']['#']) === 0) {
-                    $newwebexuser = new \stdClass();
+                    $newwebexuser = new \mod_webexactivity\webex_user();
                     $newwebexuser->moodleuserid = $moodleuser->id;
                     $newwebexuser->webexid = $data->webexid;
                     $newwebexuser->webexuserid = $response['use:userId']['0']['#'];
                     $newwebexuser->password = '';
-                    if ($newwebexuser->id = $DB->insert_record('webexactivity_user', $newwebexuser)) {
-                        $newwebexuser = $this->update_user_password($newwebexuser);
-
+                    if ($newwebexuser->save_to_db()) {
+                        $newwebexuser->update_password(self::generate_password());
                         return $newwebexuser;
                     } else {
                         return false;
@@ -214,29 +213,6 @@ class webex {
 
         if ($response) {
             return true;
-        } else {
-            return false;
-        }
-    }
-
-    public function update_user_password($webexuser) {
-        global $DB;
-
-        $webexuser->password = self::generate_password();
-
-        $xml = xml_gen\base::update_user_password($webexuser);
-
-        $response = $this->get_response($xml);
-
-        if ($response !== false) {
-            $newwebexuser = new \stdClass();
-            $newwebexuser->id = $webexuser->id;
-            $newwebexuser->password = self::encrypt_password($webexuser->password);
-            if ($DB->update_record('webexactivity_user', $newwebexuser)) {
-                return $webexuser;
-            } else {
-                return false;
-            }
         } else {
             return false;
         }
@@ -299,16 +275,6 @@ class webex {
             $pass[] = $alphabet[$n];
         }
         return implode($pass).'!2Da';
-    }
-
-    public static function encrypt_password($password) {
-        // BOOOOOO Weak!!
-        return base64_encode($password);
-    }
-
-    public static function decrypt_password($encrypted) {
-        // BOOOOOO Weak!!
-        return base64_decode($encrypted);
     }
 
     public function get_open_sessions() {
@@ -453,7 +419,7 @@ class webex {
     // ---------------------------------------------------
     // Connection Functions.
     // ---------------------------------------------------
-    public function get_response($basexml, $webexuser = false) {
+    public function get_response($basexml, $webexuser = false, $expecterror = false) {
         global $USER;
 
         $xml = xml_gen\base::auth_wrap($basexml, $webexuser);
@@ -465,7 +431,7 @@ class webex {
         } else {
             // Bad user password, reset it and try again.
             if ($webexuser && (isset($errors['exception'])) && ($errors['exception'] === '030002')) {
-                $webexuser = $this->update_user_password($webexuser);
+                $webexuser->update_password(self::generate_password());
                 $xml = xml_gen\base::auth_wrap($basexml, $webexuser);
                 list($status, $response, $errors) = $this->fetch_response($xml);
                 if ($status) {
@@ -476,7 +442,7 @@ class webex {
                 return array();
             }
 
-            if (debugging('Error when processing XML', DEBUG_DEVELOPER)) {
+            if (!$expecterror && debugging('Error when processing XML', DEBUG_DEVELOPER)) {
                 var_dump($errors);
             }
 

@@ -24,14 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-define('WEBEXACTIVITY_TYPE_MEETING', 1);
-define('WEBEXACTIVITY_TYPE_TRAINING', 2);
-define('WEBEXACTIVITY_TYPE_SUPPORT', 3);
-
-define('WEBEXACTIVITY_STATUS_NEVER_STARTED', 0);
-define('WEBEXACTIVITY_STATUS_STOPPED', 1);
-define('WEBEXACTIVITY_STATUS_IN_PROGRESS', 2);
-
 function webexactivity_supports($feature) {
     switch($feature) {
         case FEATURE_MOD_ARCHETYPE:
@@ -45,7 +37,7 @@ function webexactivity_supports($feature) {
         case FEATURE_MOD_INTRO:
             return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS:
-            return false;
+            return true;
         case FEATURE_GRADE_HAS_GRADE:
             return false;
         case FEATURE_GRADE_OUTCOMES:

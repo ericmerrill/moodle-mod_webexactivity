@@ -25,6 +25,7 @@
 // Code to view the passed webex.
 
 require('../../config.php');
+require_once($CFG->libdir.'/completionlib.php');
 
 $id = optional_param('id', 0, PARAM_INT); // Course module ID.
 $action = optional_param('action', false, PARAM_ALPHA);
@@ -48,6 +49,9 @@ $webexmeeting = \mod_webexactivity\webex::load_meeting($webexrecord);
 $webex = new \mod_webexactivity\webex();
 
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+
+$completion = new completion_info($course);
+$completion->set_module_viewed($cm);
 
 require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
