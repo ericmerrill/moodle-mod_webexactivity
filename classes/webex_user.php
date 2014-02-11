@@ -37,7 +37,6 @@ class webex_user {
     private $user = null;
 
     // Load these lazily.
-    //private $webex = null;
 
     public function __construct($user = null) {
         global $DB;
@@ -80,8 +79,8 @@ class webex_user {
 
     }
 
-    // TODO create_user();
-    // TODO update_user();?
+    // TODO create_user.
+    // TODO update_user?
 
 
     public static function encrypt_password($password) {
@@ -100,8 +99,7 @@ class webex_user {
     public function save_to_db() {
         global $DB;
 
-        // TODO.
-        //$this->recording->timemodified = time();
+        // TODO Time modified.
 
         if (isset($this->user->id)) {
             if ($DB->update_record('webexactivity_user', $this->user)) {
@@ -142,7 +140,7 @@ class webex_user {
                 return $this->user;
                 break;
         }
-        
+
         return $this->user->$name;
     }
 

@@ -86,11 +86,11 @@ class base {
     }
 
     // ---------------------------------------------------
-    // Accessor Functions.
+    // Magic Methods.
     // ---------------------------------------------------
-    public function set_value($name, $val) {
+    public function __set($name, $val) {
         if ($name === 'starttime') {
-            $curr = $this->get_value('starttime');
+            $curr = $this->__get('starttime');
             // If the current time is not set, new meeting.
             if ($curr === null) {
                 // If the time is past, or near past, set it to the near future.
@@ -115,27 +115,16 @@ class base {
             return false;
         }
         return true;
+        // TODO.
     }
 
-    public function get_value($name) {
+    public function __get($name) {
         if (!array_key_exists($name, $this->values)) {
             debugging('Unknown meeting value requested '.$name, DEBUG_DEVELOPER);
             return false;
         }
 
         return $this->values[$name];
-    }
-
-    // ---------------------------------------------------
-    // Magic Methods.
-    // ---------------------------------------------------
-    public function __set($name, $val) {
-        $this->set_value($name, $val);
-        // TODO.
-    }
-
-    public function __get($name) {        
-        return $this->get_value($name);
         // TODO.
     }
 
@@ -320,7 +309,7 @@ class base {
     public function get_recordings() {
         global $DB;
 
-        $recordingrecords = $DB->get_records('webexactivity_recording', array('webexid' => $this->get_value('id'), 'deleted' => 0));
+        $recordingrecords = $DB->get_records('webexactivity_recording', array('webexid' => $this->__get('id'), 'deleted' => 0));
 
         if (!$recordingrecords) {
             return false;

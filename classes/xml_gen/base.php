@@ -26,14 +26,31 @@ namespace mod_webexactivity\xml_gen;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * A class that (statically) provides all base xml generation.
+ *
+ * @package    mod_webexactvity
+ * @copyright  2014 Eric Merrill (merrill@oakland.edu)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class base {
-    public function __construct() {
-    }
-
+    /**
+     * Wraps given XML in the propper authentication headers.
+     *
+     * @param string            $xml The PHP type is followed by the variable name.
+     * @param webex_user|bool   $user The user to use. Use admin if not provided.
+     * @return string           The wrapped XML.
+     */
     public static function auth_wrap($xml, $user = false) {
         return self::standard_wrap(self::get_auth_header($user).$xml);
     }
 
+    /**
+     * Wraps given XML in the propper body wrapper.
+     *
+     * @param string    $xml The PHP type is followed by the variable name.
+     * @return string   The wrapped XML.
+     */
     private static function standard_wrap($xml) {
         $outxml = '<?xml version="1.0" encoding="UTF-8"?>'.
                   '<serv:message xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'.
@@ -44,6 +61,12 @@ class base {
         return $outxml;
     }
 
+    /**
+     * Wraps given XML in the propper authentication headers.
+     *
+     * @param webex_user|bool   $user The user to use. Use admin if false or not provided.
+     * @return string           The authentication block.
+     */
     private static function get_auth_header($user = false) {
         global $CFG;
 
@@ -53,10 +76,10 @@ class base {
 
         if ($user == false) {
             $outxml .= '<webExID>'.$config->apiusername.'</webExID>';
-            $outxml .= '<password>'.$config->apipassword.'</password>';
+            $outxml .= '<password>'.htmlentities($config->apipassword).'</password>';
         } else {
             $outxml .= '<webExID>'.$user->webexid.'</webExID>';
-            $outxml .= '<password>'.$user->password.'</password>';
+            $outxml .= '<password>'.htmlentities($user->password).'</password>';
         }
 
         $outxml .= '<siteID>'.$config->siteid.'</siteID>';
@@ -70,6 +93,12 @@ class base {
     // ---------------------------------------------------
     // User Functions.
     // ---------------------------------------------------
+    /**
+     * Provide the xml to retrieve user information.
+     *
+     * @param string    $username The username of the user to lookup.
+     * @return string   The XML.
+     */
     public static function get_user_info($username) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.GetUser">'.
                '<webExId>'.$username.'</webExId>'.
@@ -78,6 +107,12 @@ class base {
         return $xml;
     }
 
+    /**
+     * Provide the xml to retrieve a users login url.
+     *
+     * @param string    $username The username of the user to lookup.
+     * @return string   The XML.
+     */
     public static function get_user_login_url($username) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.GetloginurlUser">'.
                '<webExID>'.$username.'</webExID>';
@@ -86,13 +121,26 @@ class base {
         return $xml;
     }
 
+    /**
+     * Provide the xml to create a user.
+     *
+     * Required keys in $data are:
+     * 1/ firstname - First name of the user
+     * 2/ lastname - Last name of the user
+     * 3/ webexid - WebEx userid to use
+     * 4/ email - Email address of the user
+     * 5/ password - Plain text password to get
+     *
+     * @param object    $data Data object to use.
+     * @return string   The XML.
+     */
     public static function create_user($data) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.CreateUser">'.
-               '<firstName>'.$data->firstname.'</firstName>'.
-               '<lastName>'.$data->lastname.'</lastName>'.
+               '<firstName>'.htmlentities($data->firstname).'</firstName>'.
+               '<lastName>'.htmlentities($data->lastname).'</lastName>'.
                '<webExId>'.$data->webexid.'</webExId>'.
                '<email>'.$data->email.'</email>'.
-               '<password>'.$data->password.'</password>'.
+               '<password>'.htmlentities($data->password).'</password>'.
                '<privilege><host>true</host></privilege>'.
                '<active>ACTIVATED</active>'.
                '</bodyContent></body>';
@@ -100,6 +148,12 @@ class base {
         return $xml;
     }
 
+    /**
+     * Provide the xml to send a new password for a user.
+     *
+     * @param webex_user    $webexuser A webex user.
+     * @return string       The XML.
+     */
     public static function update_user_password($webexuser) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.SetUser">'.
                '<webExId>'.$webexuser->webexid.'</webExId>'.
@@ -110,6 +164,12 @@ class base {
         return $xml;
     }
 
+    /**
+     * Provide the xml to check the authentication of a user.
+     *
+     * @param webex_user    $webexuser A webex user.
+     * @return string       The XML.
+     */
     public static function check_user_auth($webexuser) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.GetUser">'.
                '<webExId>'.$webexuser->webexid.'</webExId>'.
@@ -121,22 +181,55 @@ class base {
     // ---------------------------------------------------
     // Meeting Functions.
     // ---------------------------------------------------
+    /**
+     * Provide the xml to get information about a meeting. Must be overridden.
+     *
+     * @param string    $meetingkey Meeting key to lookup.
+     * @return string   The XML.
+     */
     public static function get_meeting_info($meeingkey) {
         debugging('Function get_meeting_info must be implemented by child class.', DEBUG_DEVELOPER);
     }
 
+    /**
+     * Provide the xml to create a meeting. Must be overridden.
+     *
+     * TODO list data keys
+     *
+     * @param object    $data Meeting data to make.
+     * @return string   The XML.
+     */
     public static function create_meeting($data) {
         debugging('Function create_meeting must be implemented by child class.', DEBUG_DEVELOPER);
     }
 
+    /**
+     * Provide the xml to update a meeting. Must be overridden.
+     *
+     * TODO list data keys
+     *
+     * @param object    $data Meeting data to make.
+     * @return string   The XML.
+     */
     public static function update_meeting($data) {
         debugging('Function update_meeting must be implemented by child class.', DEBUG_DEVELOPER);
     }
 
+    /**
+     * Provide the xml to delete a meeting. Must be overridden.
+     *
+     * @param string    $meetingkey Meeting key to delete.
+     * @return string   The XML.
+     */
     public static function delete_meeting($meetingkey) {
         debugging('Function delete_meeting must be implemented by child class.', DEBUG_DEVELOPER);
     }
 
+    /**
+     * Provide the xml to list all open sessions on the WebEx server.
+     *
+     * @return string   The XML.
+     */
     public static function list_open_sessions() {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.LstOpenSession">'.
                '</bodyContent></body>';
@@ -147,6 +240,17 @@ class base {
     // ---------------------------------------------------
     // Recording Functions.
     // ---------------------------------------------------
+    /**
+     * Provide the xml to create a user.
+     *
+     * Optional keys in $data are:
+     * 1/ meetingkey - Meeting key to retrieve recordings for.
+     * 2/ startdate - Start time range.
+     * 3/ enddate - End time range.
+     *
+     * @param object    $data Data object to use.
+     * @return string   The XML.
+     */
     public static function list_recordings($data) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.LstRecording">';
         $xml .= '<listControl><startFrom>0</startFrom><maximumNum>1000</maximumNum></listControl>';
@@ -165,6 +269,12 @@ class base {
         return $xml;
     }
 
+    /**
+     * Provide the xml to get detailed recording info.
+     *
+     * @param string    $recordingid Recording ID get.
+     * @return string   The XML.
+     */
     public static function recording_detail($recordingid) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.GetRecordingInfo">';
         $xml .= '<recordingID>'.$recordingid.'</recordingID>';
@@ -173,6 +283,12 @@ class base {
         return $xml;
     }
 
+    /**
+     * Provide the xml to get delete a recording.
+     *
+     * @param string    $recordingid Recording ID delete.
+     * @return string   The XML.
+     */
     public static function delete_recording($recordingid) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.DelRecording">';
         $xml .= '<recordingID>'.$recordingid.'</recordingID>';
@@ -181,6 +297,18 @@ class base {
         return $xml;
     }
 
+    /**
+     * Provide the xml to get update recording info.
+     *
+     * Required keys in $data are:
+     * 1/ recordingid - Meeting key to retrieve recordings for.
+     * 
+     * Optional keys in $data are:
+     * 1/ name - The name to set.
+     *
+     * @param $object    $data Data object.
+     * @return string    The XML.
+     */
     public static function update_recording($data) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.SetRecordingInfo">';
         $xml .= '<recording><recordingID>'.$data->recordingid.'</recordingID><description>Des 1</description></recording>';
@@ -200,6 +328,12 @@ class base {
     // ---------------------------------------------------
     // Support Functions.
     // ---------------------------------------------------
+    /**
+     * Format a timestamp to send to WebEx.
+     *
+     * @param int       $time Timestamp to format.
+     * @return string   The XML.
+     */
     public static function time_to_date_string($time) {
         return date('m/d/Y H:i:s', $time);
     }

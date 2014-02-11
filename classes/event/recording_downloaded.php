@@ -50,8 +50,8 @@ class recording_downloaded extends \core\event\content_viewed {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'webexactivity', 'recording downloaded', 'view.php?id=' . $this->context->instanceid, 'Recording ID '.$this->objectid,
-            $this->context->instanceid);
+        return array($this->courseid, 'webexactivity', 'recording downloaded', 'view.php?id=' . $this->context->instanceid,
+                'Recording ID '.$this->objectid, $this->context->instanceid);
     }
 
     /**

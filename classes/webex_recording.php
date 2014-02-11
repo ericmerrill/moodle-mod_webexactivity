@@ -37,7 +37,6 @@ class webex_recording {
     private $recording = null;
 
     // Load these lazily.
-    //private $meeting = null;
     private $webex = null;
 
     public function __construct($recording) {
@@ -67,23 +66,6 @@ class webex_recording {
         return true;
     }
 
-    /*private function load_meeting() {
-        if (isset($this->meeting)) {
-            return true;
-        }
-
-        $this->load_webex();
-
-        $this->meeting = $this->webex->load_meeting($this->get_value('webexid'));
-
-        if (!$this->meeting) {
-            $this->meeting = null;
-            debugging('Unable to load recording meeting', DEBUG_DEVELOPER);
-            return false;
-            // TODO error handling.
-        }
-    }*/
-
     private function show() {
         global $DB;
 
@@ -91,7 +73,7 @@ class webex_recording {
         $update->id = $this->recording->id;
         $update->visible = 1;
 
-        $this->set_value('visible', 1);
+        $this->__set('visible', 1);
 
         return $DB->update_record('webexactivity_recording', $update);
     }
@@ -103,7 +85,7 @@ class webex_recording {
         $update->id = $this->recording->id;
         $update->visible = 0;
 
-        $this->set_value('visible', 0);
+        $this->__set('visible', 0);
 
         return $DB->update_record('webexactivity_recording', $update);
     }
@@ -122,7 +104,7 @@ class webex_recording {
 
         $this->load_webex();
 
-        $xml = xml_gen\base::delete_recording($this->get_value('recordingid'));
+        $xml = xml_gen\base::delete_recording($this->__get('recordingid'));
 
         $webexuser = $this->get_recording_webex_user();
 
@@ -133,7 +115,7 @@ class webex_recording {
             return false;
         }
 
-        $DB->delete_records('webexactivity_recording', array('id' => $this->get_value('id')));
+        $DB->delete_records('webexactivity_recording', array('id' => $this->__get('id')));
 
         return true;
     }
@@ -145,9 +127,8 @@ class webex_recording {
 
         $this->recording->name = $name;
 
-
         $params = new \stdClass;
-        $params->recordingid = $this->get_value('recordingid');
+        $params->recordingid = $this->__get('recordingid');
         $params->name = $name;
 
         $xml = xml_gen\base::update_recording($params);
@@ -167,30 +148,6 @@ class webex_recording {
         }
 
         return $webexuser;
-    }
-
-    private function get_value($name) {
-        switch ($name) {
-            case 'visible':
-                if ($this->recording->deleted > 0) {
-                    return 0;
-                }
-                break;
-            default:
-        }
-        
-        return $this->recording->$name;
-    }
-
-    private function set_value($name, $val) {
-        switch ($name) {
-            case 'name':
-                $this->set_name($val);
-                break;
-            default:
-        }
-
-        $this->recording->$name = $val;
     }
 
     public function save_to_db() {
@@ -247,7 +204,7 @@ class webex_recording {
             case 'record':
                 return $this->recording;
         }
-        
+
         return $this->recording->$name;
     }
 

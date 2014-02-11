@@ -26,6 +26,13 @@ namespace mod_webexactivity\xml_gen;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * A class that (statically) provides training center xml.
+ *
+ * @package    mod_webexactvity
+ * @copyright  2014 Eric Merrill (merrill@oakland.edu)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class training_center extends base {
 
 

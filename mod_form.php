@@ -52,9 +52,6 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
 
         $mform->addElement('header', 'additionalsettings', get_string('additionalsettings', 'webexactivity'));
 
-        //$mform->addElement('checkbox', 'allchat', get_string('allchat', 'webexactivity'));
-        //$mform->setDefault('allchat', 1);
-
         $mform->addElement('checkbox', 'studentdownload', get_string('studentdownload', 'webexactivity'));
         $mform->setDefault('studentdownload', 1);
 

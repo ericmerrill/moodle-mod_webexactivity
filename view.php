@@ -146,7 +146,7 @@ switch ($action) {
         $authurl = $webex->get_login_url($webexuser, $failurl->out(false), $hosturl);
 
         $new = new \stdClass();
-        $new->id = $webexmeeting->get_value('id');
+        $new->id = $webexmeeting->id;
         $new->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS;
         $new->laststatustime = time();
         $DB->update_record('webexactivity', $new);
@@ -292,7 +292,6 @@ switch ($action) {
                 $recording->visible = 0;
             }
             $recording->save_to_db();
-            //$recording->set_name($fromform->name);
         } else {
             $view = 'editrecording';
 
@@ -343,17 +342,17 @@ switch ($action) {
 
 }
 
-add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webexmeeting->get_value('id'), $cm->id);
+add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webexmeeting->id, $cm->id);
 
 
 
-$PAGE->set_title($course->shortname.': '.$webexmeeting->get_value('name'));
+$PAGE->set_title($course->shortname.': '.$webexmeeting->name);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($webexrecord);
 
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string($webexmeeting->get_value('name')), 2);
+echo $OUTPUT->heading(format_string($webexmeeting->name), 2);
 
 if ($error !== false) {
     echo $OUTPUT->box_start('webexerror');
@@ -371,9 +370,9 @@ if (!$view) {
     echo '<table align="center" cellpadding="5">' . "\n";
 
     $formelements = array(
-        get_string('description', 'webexactivity')  => $webexmeeting->get_value('intro'),
-        get_string('starttime', 'webexactivity')   => userdate($webexmeeting->get_value('starttime')),
-        get_string('duration', 'webexactivity')    => $webexmeeting->get_value('duration')
+        get_string('description', 'webexactivity')  => $webexmeeting->intro,
+        get_string('starttime', 'webexactivity')   => userdate($webexmeeting->starttime),
+        get_string('duration', 'webexactivity')    => $webexmeeting->duration
     );
 
     foreach ($formelements as $key => $val) {
@@ -419,13 +418,13 @@ if (!$view) {
 
     echo '</table>';
 
-    $params = array('webexid' => $webexmeeting->get_value('id'));
+    $params = array('webexid' => $webexmeeting->id);
     if (!$canhost) {
         $params['visible'] = 1;
     }
 
     if ($recordings = $webexmeeting->get_recordings()) {
-        $candownload = $webexmeeting->get_value('studentdownload');
+        $candownload = $webexmeeting->studentdownload;
         $candownload = $candownload || $canhost;
 
         echo '<hr>';
@@ -453,13 +452,15 @@ if (!$view) {
             echo '<div class="play">';
             $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'viewrecording');
             $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-            echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('play', 'Play', 'mod_webexactivity'), null, array('target' => '_blank'));
+            echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('play', 'Play', 'mod_webexactivity'),
+                    null, array('target' => '_blank'));
             echo '</div>';
 
             // Download Button.
             if ($candownload) {
                 echo '<div class="download">';
-                echo $OUTPUT->action_icon($recording->fileurl, new \pix_icon('download', 'Download', 'mod_webexactivity'), null, array('target' => '_blank'));
+                echo $OUTPUT->action_icon($recording->fileurl, new \pix_icon('download', 'Download', 'mod_webexactivity'),
+                        null, array('target' => '_blank'));
                 echo '</div>';
             }
 

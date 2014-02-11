@@ -55,21 +55,21 @@ function webexactivity_supports($feature) {
 function webexactivity_add_instance($data, $mform) {
 
     $meeting = \mod_webexactivity\webex::new_meeting(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING);
-    $meeting->set_value('starttime', $data->starttime);
-    $meeting->set_value('duration', $data->duration);
-    $meeting->set_value('intro', $data->intro);
-    $meeting->set_value('introformat', $data->introformat);
-    $meeting->set_value('name', $data->name);
-    $meeting->set_value('course', $data->course);
-    $meeting->set_value('status', \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_NEVER_STARTED);
+    $meeting->starttime = $data->starttime;
+    $meeting->duration = $data->duration;
+    $meeting->intro = $data->intro;
+    $meeting->introformat = $data->introformat;
+    $meeting->name = $data->name;
+    $meeting->course = $data->course;
+    $meeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_NEVER_STARTED;
     if (isset($data->studentdownload) && $data->studentdownload) {
-        $meeting->set_value('studentdownload', 1);
+        $meeting->studentdownload = 1;
     } else {
-        $meeting->set_value('studentdownload', 0);
+        $meeting->studentdownload = 0;
     }
 
     if ($meeting->save()) {
-        return $meeting->get_value('id');
+        return $meeting->id;
     }
 
     return false;
@@ -80,17 +80,17 @@ function webexactivity_update_instance($data, $mform) {
     $cm = get_coursemodule_from_id('webexactivity', $cmid, 0, false, MUST_EXIST);
     $meeting = \mod_webexactivity\webex::load_meeting($cm->instance);
 
-    $meeting->set_value('starttime', $data->starttime);
-    $meeting->set_value('duration', $data->duration);
-    $meeting->set_value('intro', $data->intro);
-    $meeting->set_value('introformat', $data->introformat);
-    $meeting->set_value('name', $data->name);
-    $meeting->set_value('course', $data->course);
+    $meeting->starttime = $data->starttime;
+    $meeting->duration = $data->duration;
+    $meeting->intro = $data->intro;
+    $meeting->introformat = $data->introformat;
+    $meeting->name = $data->name;
+    $meeting->course = $data->course;
 
     if (isset($data->studentdownload) && $data->studentdownload) {
-        $meeting->set_value('studentdownload', 1);
+        $meeting->studentdownload = 1;
     } else {
-        $meeting->set_value('studentdownload', 0);
+        $meeting->studentdownload = 0;
     }
 
     return $meeting->save();

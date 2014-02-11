@@ -373,10 +373,10 @@ class webex {
             $rec = new \stdClass();
             if ($meeting) {
                 $rec->webexid = $meeting->id;
-            } else { 
+            } else {
                 $rec->webexid = null;
             }
-            
+
             $rec->meetingkey = $key;
             $rec->recordingid = $recording['ep:recordingID'][0]['#'];
             $rec->hostid = $recording['ep:hostWebExID'][0]['#'];
@@ -407,7 +407,7 @@ class webex {
 
         foreach ($rs as $record) {
             $recording = new webex_recording($record);
-            print 'Deleting: '.$recording->get_value('name')."\n";
+            print 'Deleting: '.$recording->name."\n";
             $recording->true_delete();
         }
 
