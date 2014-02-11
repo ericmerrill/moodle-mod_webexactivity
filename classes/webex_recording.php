@@ -39,6 +39,9 @@ class webex_recording {
     // Load these lazily.
     private $webex = null;
 
+    // Track if there is a change that needs to go to WebEx.
+    private $webexchange = false;
+
     public function __construct($recording) {
         global $DB;
 
@@ -66,7 +69,7 @@ class webex_recording {
         return true;
     }
 
-    private function show() {
+/*    private function show() {
         global $DB;
 
         $update = new \stdClass();
@@ -88,7 +91,7 @@ class webex_recording {
         $this->__set('visible', 0);
 
         return $DB->update_record('webexactivity_recording', $update);
-    }
+    }*/
 
     public function delete() {
         global $DB;
@@ -120,7 +123,7 @@ class webex_recording {
         return true;
     }
 
-    private function set_name($name) {
+    /*private function set_name($name) {
         global $DB;
 
         $this->load_webex();
@@ -136,7 +139,7 @@ class webex_recording {
         $webexuser = $this->get_recording_webex_user();
 
         $response = $this->webex->get_response($xml, $webexuser);
-    }
+    }*/
 
     public function get_recording_webex_user() {
         global $USER;
@@ -148,6 +151,16 @@ class webex_recording {
         }
 
         return $webexuser;
+    }
+
+    public function save() {
+        if ($this->webexchange) {
+            if (!$this->save_to_webex()) {
+                return false;
+            }
+            $this->webexchange = false;
+        }
+        return $this->save_to_db();
     }
 
     public function save_to_db() {
@@ -169,6 +182,26 @@ class webex_recording {
         }
     }
 
+    public function save_to_webex() {
+        $this->load_webex();
+
+        $params = new \stdClass;
+        $params->recordingid = $this->__get('recordingid');
+        $params->name = $this->recording->name;
+
+        $xml = xml_gen\base::update_recording($params);
+
+        $webexuser = $this->get_recording_webex_user();
+
+        $response = $this->webex->get_response($xml, $webexuser);
+
+        if ($response) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
     // ---------------------------------------------------
     // Magic Methods.
@@ -176,15 +209,17 @@ class webex_recording {
     public function __set($name, $val) {
         switch ($name) {
             case 'name':
-                $this->set_name($val);
+                if (strcmp($val, $this->recording->name) === 0) {
+                    return;
+                }
+                $this->webexchange = true;
                 break;
             case 'visible':
                 if ($val) {
-                    $this->show();
+                    $val = 1;
                 } else {
-                    $this->hide();
+                    $val = 0;
                 }
-                return;
                 break;
             case 'record':
                 debugging('Recording record can only be set at construction time');

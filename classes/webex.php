@@ -334,7 +334,7 @@ class webex {
     // ---------------------------------------------------
     public function get_recordings() {
         $params = new \stdClass();
-        $params->startdate = time() - (2 * 24 * 3600);
+        $params->startdate = time() - (120 * 3600);
         $params->enddate = time() + (12 * 3600);
 
         $xml = xml_gen\base::list_recordings($params);

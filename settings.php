@@ -72,5 +72,15 @@ if ($ADMIN->fulltree) {
 }
 
 $ADMIN->add('modwebexactivityfolder', $settings);
+
+$ADMIN->add("modwebexactivityfolder", new admin_externalpage('modwebexactivityrecordings', get_string('page_managerecordings', 'mod_webexactivity'),
+        "$CFG->wwwroot/mod/webexactivity/admin_recordings.php", "moodle/role:manage"));
+
+$ADMIN->add("modwebexactivityfolder", new admin_externalpage('modwebexactivityusers', get_string('page_manageusers', 'mod_webexactivity'),
+        "$CFG->wwwroot/mod/webexactivity/admin_users.php", "moodle/role:manage"));
+
 // Tell core we already added the settings structure.
 $settings = null;
+
+
+

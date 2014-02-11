@@ -241,6 +241,7 @@ switch ($action) {
         }
 
         $recording->visible = 0;
+        $recording->save();
 
         redirect($returnurl->out(false));
         break;
@@ -259,6 +260,7 @@ switch ($action) {
         }
 
         $recording->visible = 1;
+        $recording->save();
 
         redirect($returnurl->out(false));
         break;
@@ -291,7 +293,7 @@ switch ($action) {
             } else {
                 $recording->visible = 0;
             }
-            $recording->save_to_db();
+            $recording->save();
         } else {
             $view = 'editrecording';
 
