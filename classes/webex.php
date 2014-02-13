@@ -378,7 +378,6 @@ class webex {
             }
 
             // TODO Convert to use object?
-            // TODO Recording added event.
             $rec->meetingkey = $key;
             $rec->recordingid = $recording['ep:recordingID'][0]['#'];
             $rec->hostid = $recording['ep:hostWebExID'][0]['#'];
@@ -394,7 +393,21 @@ class webex {
             $rec->timemodified = time();
 
             if (!$DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
-                $DB->insert_record('webexactivity_recording', $rec);
+                $rec->id = $DB->insert_record('webexactivity_recording', $rec);
+
+                if ($meeting) {
+                    $cm = get_coursemodule_from_instance('webexactivity', $meeting->id);
+                    $context = \context_module::instance($cm->id);
+                    $params = array(
+                        'context' => $context,
+                        'objectid' => $rec->id
+                    );
+                    $event = \mod_webexactivity\event\recording_created::create($params);
+                    $event->add_record_snapshot('webexactivity_recording', $rec);
+                    $event->add_record_snapshot('webexactivity', $meeting);
+                    $event->trigger();
+                }
+
             }
         }
     }

@@ -80,7 +80,7 @@ class recording_deleted extends \core\event\base {
     protected function init() {
         global $CFG;
 
-        $this->data['crud'] = 'r';
+        $this->data['crud'] = 'd';
         // Level needed for 2.6, but depeciated in 2.7.
         if ($CFG->version < 2013111899) {
             $this->data['level'] = self::LEVEL_OTHER;

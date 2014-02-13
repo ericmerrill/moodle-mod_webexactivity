@@ -27,13 +27,13 @@ namespace mod_webexactivity\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * mod_webexactiviy meeting started event.
+ * mod_webexactiviy recording deleted event.
  *
  * @package    mod_webexactvity
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class meeting_started extends \core\event\base {
+class recording_created extends \core\event\base {
 
     /**
      * Returns description of what happened.
@@ -41,7 +41,7 @@ class meeting_started extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return 'WebEx meeting with id ' . $this->objectid . ' started.';
+        return 'WebEx recording with id ' . $this->objectid . ' created in meeting with id ' . $this->context->instanceid;
     }
 
     /**
@@ -50,8 +50,8 @@ class meeting_started extends \core\event\base {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'webexactivity', 'meeting started', 'view.php?id=' . $this->context->instanceid,
-                '', $this->context->instanceid);
+        return array($this->courseid, 'webexactivity', 'recording created', 'view.php?id=' . $this->context->instanceid,
+                'Recording ID '.$this->objectid, $this->context->instanceid);
     }
 
     /**
@@ -60,7 +60,7 @@ class meeting_started extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('event_meeting_started', 'webexactivity');
+        return get_string('event_recording_created', 'webexactivity');
     }
 
     /**
@@ -80,7 +80,7 @@ class meeting_started extends \core\event\base {
     protected function init() {
         global $CFG;
 
-        $this->data['crud'] = 'u';
+        $this->data['crud'] = 'c';
         // Level needed for 2.6, but depeciated in 2.7.
         if ($CFG->version < 2013111899) {
             $this->data['level'] = self::LEVEL_OTHER;
@@ -88,6 +88,6 @@ class meeting_started extends \core\event\base {
             $this->data['edulevel'] = self::LEVEL_OTHER;
         }
 
-        $this->data['objecttable'] = 'webexactivity';
+        $this->data['objecttable'] = 'webexactivity_recording';
     }
 }

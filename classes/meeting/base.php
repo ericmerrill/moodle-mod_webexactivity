@@ -497,10 +497,9 @@ class base {
 
     public function save() {
         if ($this->webexchange) {
-            print "SAVE";
-/*            if (!$this->save_to_webex()) {
+            if (!$this->save_to_webex()) {
                 return false;
-            }*/
+            }
         }
 
         if (!$this->save_to_db()) {

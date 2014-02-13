@@ -51,7 +51,7 @@ class meeting_ended extends \core\event\base {
      */
     protected function get_legacy_logdata() {
         return array($this->courseid, 'webexactivity', 'meeting ended', 'view.php?id=' . $this->context->instanceid,
-                $this->objectid, $this->context->instanceid);
+                '', $this->context->instanceid);
     }
 
     /**

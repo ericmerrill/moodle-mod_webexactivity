@@ -51,7 +51,7 @@ class meeting_hosted extends \core\event\content_viewed {
      */
     protected function get_legacy_logdata() {
         return array($this->courseid, 'webexactivity', 'meeting hosted', 'view.php?id=' . $this->context->instanceid,
-                $this->objectid, $this->context->instanceid);
+                '', $this->context->instanceid);
     }
 
     /**
