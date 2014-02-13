@@ -33,122 +33,48 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class meeting_center {
-    private $meetingrecord = null;
+class meeting_center extends base {
 
-    private $webex;
+    /** 
+     * The XML generator class name to use.
+     **/
+    const GENERATOR = '\mod_webexactivity\xml_gen\meeting_center';
 
-    public function __construct($meeting) {
-        global $DB;
+    /** 
+     * Prefix for retrieved XML fields.
+     **/
+    const XML_PREFIX = 'meet';
 
-        $this->webex = new webex();
+    /**
+     * Builds the meeting object.
+     *
+     * @param object/int    $meeting Object of meeting record, or id of record to load.
+     */
+    public function __construct($meeting = false) {
+        parent::__construct($meeting);
 
-        if (is_numeric($meeting)) {
-            $this->meetingrecord = $DB->get_record('webexactivity', array('id' => $meeting));
-        } else if (is_object($meeting)) {
-            $this->meetingrecord = $meeting;
-        }
-
-        if (!$this->meetingrecord) {
-            // TODO Throw exception.
-            return false;
+        if (!isset($this->type)) {
+            $this->type = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_MEETING;
         }
     }
 
-
-    // ---------------------------------------------------
-    // Support Functions.
-    // ---------------------------------------------------
-    public static function get_base_url() {
-        $host = get_config('webexactivity', 'url');
-
-        if ($host === false) {
+    /**
+     * Process a response from WebEx into the meeting.
+     *
+     * @param array    $response XML array of the response from WebEx for meeting information.
+     */
+    protected function process_response($response) {
+        if (!parent::process_response($response)) {
             return false;
         }
-        $url = 'https://'.$host.'.webex.com/'.$host;
 
-        return $url;
+        if (empty($response)) {
+            return true;
+        }
+
+        // Type specific code goes here.
+
+        return true;
     }
-
-    public function get_meeting_webex_user() {
-        global $DB, $USER;
-
-        if (isset($this->meetingrecord->creatorwebexuser) && $this->meetingrecord->creatorwebexuser) {
-            $webexuser = $DB->get_record('webexactivity_user', array('id' => $this->meetingrecord->creatorwebexuser));
-        } else {
-            $webexuser = $this->webex->get_webex_user($USER);
-        }
-
-        return $webexuser;
-    }
-
-    // ---------------------------------------------------
-    // Meeting Functions.
-    // ---------------------------------------------------
-
-
-
-    // Unused.
-    // TODO ?
-    /*public function add_hosts($users) {
-        $webexuser = $this->get_meeting_webex_user();
-
-        $meeting = clone $this->meetingrecord;
-        $meeting->hostusers = $users;
-
-        $xml = xml_generator::update_training_session($meeting);
-
-        $this->meetingrecord->xml = $xml;
-        $response = $this->webex->get_response($xml, $webexuser);
-
-        if ($response === false) {
-            return false;
-        }
-    }*/
-
-    // ---------------------------------------------------
-    // Recording Functions.
-    // ---------------------------------------------------
-    // TODO ?
-    /*public function retrieve_recordings() {
-        global $DB;
-
-        $this->meetingrecord->laststatuscheck = time();
-        $DB->update_record('webexactivity', $this->meetingrecord);
-
-        if (!$this->meetingrecord->meetingkey) {
-            return;
-        }
-
-        $params = new \stdClass();
-        $params->meetingkey = $this->meetingrecord->meetingkey;
-
-        $xml = xml_generator::list_recordings($params);
-
-        if (!($response = $this->webex->get_response($xml))) {
-            return false;
-        }
-
-        $recordings = $response['ep:recording'];
-
-        foreach ($recordings as $recording) {
-            $recording = $recording['#'];
-
-            $rec = new \stdClass();
-            $rec->webexid = $this->meetingrecord->id;
-            $rec->meetingkey = $this->meetingrecord->meetingkey;
-            $rec->recordingid = $recording['ep:recordingID'][0]['#'];
-            $rec->hostid = $recording['ep:hostWebExID'][0]['#'];
-            $rec->name = $recording['ep:name'][0]['#'];
-            $rec->timecreated = strtotime($recording['ep:createTime'][0]['#']);
-            $rec->streamurl = $recording['ep:streamURL'][0]['#'];
-            $rec->fileurl = $recording['ep:fileURL'][0]['#'];
-            $rec->duration = $recording['ep:duration'][0]['#'];
-
-            if (!$DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
-                $DB->insert_record('webexactivity_recording', $rec);
-            }
-        }
-    }*/
 
 }

@@ -40,6 +40,16 @@ class training_center extends base {
      **/
     const GENERATOR = '\mod_webexactivity\xml_gen\training_center';
 
+    /** 
+     * Prefix for retrieved XML fields.
+     **/
+    const XML_PREFIX = 'train';
+
+    /**
+     * Builds the meeting object.
+     *
+     * @param object/int    $meeting Object of meeting record, or id of record to load.
+     */
     public function __construct($meeting = false) {
         parent::__construct($meeting);
 
@@ -48,10 +58,13 @@ class training_center extends base {
         }
     }
 
+    /**
+     * Process a response from WebEx into the meeting.
+     *
+     * @param array    $response XML array of the response from WebEx for meeting information.
+     */
     protected function process_response($response) {
-        global $DB;
-
-        if ($response === false) {
+        if (!parent::process_response($response)) {
             return false;
         }
 
@@ -59,21 +72,7 @@ class training_center extends base {
             return true;
         }
 
-        if (isset($response['train:sessionkey']['0']['#'])) {
-            $this->meetingkey = $response['train:sessionkey']['0']['#'];
-        }
-
-        if (isset($response['train:additionalInfo']['0']['#']['train:guestToken']['0']['#'])) {
-            $this->guestkey = $response['train:additionalInfo']['0']['#']['train:guestToken']['0']['#'];
-        }
-
-        if (isset($response['train:eventID']['0']['#'])) {
-            $this->eventid = $response['train:eventID']['0']['#'];
-        }
-
-        if (isset($response['train:hostKey']['0']['#'])) {
-            $this->hostkey = $response['train:hostKey']['0']['#'];
-        }
+        // Type specific code goes here.
 
         return true;
     }

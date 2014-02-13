@@ -69,6 +69,16 @@ class base {
      **/
     const GENERATOR = '\mod_webexactivity\xml_gen\base';
 
+    /** 
+     * Prefix for retrieved XML fields.
+     **/
+    const XML_PREFIX = '';
+
+    /**
+     * Builds the meeting object.
+     *
+     * @param object/int    $meeting Object of meeting record, or id of record to load.
+     */
     public function __construct($meeting = false) {
         global $DB;
 
@@ -116,6 +126,7 @@ class base {
                 break;
             case 'duration':
                 $this->endtime = ($this->starttime + ($val * 60));
+                debugging('Meeting property "duration" is depreciated.', DEBUG_DEVELOPER);
                 return true;
                 break;
             case 'xml':
@@ -222,7 +233,7 @@ class base {
     public function get_time_status() {
         $time = time();
         $grace = get_config('webexactivity', 'meetingclosegrace');
-        $endtime = $this->starttime + ($this->duration * 60) + ($grace * 60);
+        $endtime = $this->endtime + ($grace * 60);
         $starttime = $this->starttime - (20 * 60);
 
         if ($this->status == \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
@@ -264,21 +275,44 @@ class base {
         return false;
     }
 
-    public function is_past() {
-        if ($this->status == \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+    /**
+     * Process a response from WebEx into the meeting. Must be overridden.
+     *
+     * @param array    $response XML array of the response from WebEx for meeting information.
+     */
+    protected function process_response($response) {
+        $prefix = static::XML_PREFIX;
+
+        if (empty($prefix)) {
+            debugging('Function process_response must be implemented by child class.', DEBUG_DEVELOPER);
+        }
+
+        if ($response === false) {
             return false;
         }
 
-        $endtime = $this->starttime + ($this->duration * 60) + ($grace * 60);
-        if (time() > $endtime) {
+        if (empty($response)) {
             return true;
         }
 
-        return false;
-    }
+        if (isset($response[$prefix.':sessionkey']['0']['#'])) {
+            $this->meetingkey = $response[$prefix.':sessionkey']['0']['#'];
+        }
 
-    protected function process_response($response) {
-        debugging('Function process_response must be implemented by child class.', DEBUG_DEVELOPER);
+        if (isset($response[$prefix.':additionalInfo']['0']['#'][$prefix.':guestToken']['0']['#'])) {
+            $this->guestkey = $response[$prefix.':additionalInfo']['0']['#'][$prefix.':guestToken']['0']['#'];
+        }
+
+        if (isset($response[$prefix.':eventID']['0']['#'])) {
+            $this->eventid = $response[$prefix.':eventID']['0']['#'];
+        }
+
+        if (isset($response[$prefix.':hostKey']['0']['#'])) {
+            $this->hostkey = $response[$prefix.':hostKey']['0']['#'];
+        }
+
+        return true;
+
     }
 
     public function add_webexuser_host($webexuser) {
