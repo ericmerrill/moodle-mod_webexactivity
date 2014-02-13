@@ -194,7 +194,14 @@ class base {
     /**
      * Provide the xml to create a meeting. Must be overridden.
      *
-     * TODO list data keys
+     * Required keys in $data are:
+     * 1/ startdate - Start time range.
+     * 2/ duration - Duration in minutes.
+     * 3/ name - Name of the meeting.
+     *
+     * Optional keys in $data are:
+     * 1/ intro - Meeting description.
+     * 2/ hostusers - Array of users to add as hosts.
      *
      * @param object    $data Meeting data to make.
      * @return string   The XML.
@@ -206,7 +213,15 @@ class base {
     /**
      * Provide the xml to update a meeting. Must be overridden.
      *
-     * TODO list data keys
+     * Required keys in $data are:
+     * 1/ meetingkey - Meeting key to update.
+     * 
+     * Optional keys in $data are:
+     * 1/ startdate - Start time range.
+     * 2/ duration - Duration in minutes.
+     * 3/ name - Name of the meeting.
+     * 4/ intro - Meeting description.
+     * 5/ hostusers - Array of users to add as hosts.
      *
      * @param object    $data Meeting data to make.
      * @return string   The XML.
