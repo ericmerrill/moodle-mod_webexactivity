@@ -143,7 +143,6 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014021302, 'webexactivity');
     }
 
-
     return true;
 }
 

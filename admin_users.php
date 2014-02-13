@@ -30,7 +30,7 @@ require_once($CFG->libdir.'/tablelib.php');
 admin_externalpage_setup('modwebexactivityusers');
 
 class mod_webexactivity_users_tables extends table_sql implements renderable {
-    
+
 }
 
 

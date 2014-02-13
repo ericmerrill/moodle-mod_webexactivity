@@ -69,30 +69,6 @@ class webex_recording {
         return true;
     }
 
-/*    private function show() {
-        global $DB;
-
-        $update = new \stdClass();
-        $update->id = $this->recording->id;
-        $update->visible = 1;
-
-        $this->__set('visible', 1);
-
-        return $DB->update_record('webexactivity_recording', $update);
-    }
-
-    private function hide() {
-        global $DB;
-
-        $update = new \stdClass();
-        $update->id = $this->recording->id;
-        $update->visible = 0;
-
-        $this->__set('visible', 0);
-
-        return $DB->update_record('webexactivity_recording', $update);
-    }*/
-
     public function delete() {
         global $DB;
 

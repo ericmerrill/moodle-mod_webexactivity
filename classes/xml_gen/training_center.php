@@ -35,7 +35,15 @@ defined('MOODLE_INTERNAL') || die();
  */
 class training_center extends base {
 
-
+    // ---------------------------------------------------
+    // Meeting Functions.
+    // ---------------------------------------------------
+    /**
+     * Provide the xml to get information about a meeting.
+     *
+     * @param string    $meetingkey Meeting key to lookup.
+     * @return string   The XML.
+     */
     public static function get_meeting_info($meetingkey) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.GetTrainingSession">'.
                '<sessionKey>'.$meetingkey.'</sessionKey>'.
@@ -44,6 +52,21 @@ class training_center extends base {
         return $xml;
     }
 
+    /**
+     * Provide the xml to create a meeting.
+     *
+     * Required keys in $data are:
+     * 1/ startdate - Start time range.
+     * 2/ duration - Duration in minutes.
+     * 3/ name - Name of the meeting.
+     *
+     * Optional keys in $data are:
+     * 1/ intro - Meeting description.
+     * 2/ hostusers - Array of users to add as hosts.
+     *
+     * @param object    $data Meeting data to make.
+     * @return string   The XML.
+     */
     public static function create_meeting($data) {
         if (!$sessionxml = self::training_session_xml($data)) {
             return false;
@@ -56,6 +79,22 @@ class training_center extends base {
         return $xml;
     }
 
+    /**
+     * Provide the xml to update a meeting.
+     *
+     * Required keys in $data are:
+     * 1/ meetingkey - Meeting key to update.
+     * 
+     * Optional keys in $data are:
+     * 1/ startdate - Start time range.
+     * 2/ duration - Duration in minutes.
+     * 3/ name - Name of the meeting.
+     * 4/ intro - Meeting description.
+     * 5/ hostusers - Array of users to add as hosts.
+     *
+     * @param object    $data Meeting data to make.
+     * @return string   The XML.
+     */
     public static function update_meeting($data) {
         if (!$sessionxml = self::training_session_xml($data)) {
             return false;
@@ -68,6 +107,20 @@ class training_center extends base {
         return $xml;
     }
 
+    /**
+     * Provide the detailed meeting xml for update or delete.
+     *
+     * Optional keys in $data are:
+     * 1/ meetingkey - Meeting key (required for update).
+     * 2/ startdate - Start time range.
+     * 3/ duration - Duration in minutes.
+     * 4/ name - Name of the meeting.
+     * 5/ intro - Meeting description.
+     * 6/ hostusers - Array of users to add as hosts.
+     *
+     * @param object    $data Meeting data to make.
+     * @return string   The XML.
+     */
     private static function training_session_xml($data) {
         $xml = '';
         if (isset($data->meetingkey)) {
@@ -137,6 +190,12 @@ class training_center extends base {
         return $xml;
     }
 
+    /**
+     * Provide the xml to delete a meeting.
+     *
+     * @param string    $meetingkey Meeting key to delete.
+     * @return string   The XML.
+     */
     public static function delete_meeting($meetingkey) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.DelTrainingSession">'.
                '<sessionKey>'.$meetingkey.'</sessionKey>'.

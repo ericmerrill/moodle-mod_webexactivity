@@ -40,7 +40,12 @@ class meeting_center extends base {
      * @param string    $meetingkey Meeting key to lookup.
      * @return string   The XML.
      */
-    public static function get_meeting_info($meeingkey) {
+    public static function get_meeting_info($meetingkey) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.GetMeeting">'.
+               '<meetingKey>'.$meetingkey.'</meetingKey>'.
+               '</bodyContent></body>';
+
+        return $xml;
     }
 
     /**
@@ -59,6 +64,15 @@ class meeting_center extends base {
      * @return string   The XML.
      */
     public static function create_meeting($data) {
+        if (!$meetingxml = self::meeting_xml($data)) {
+            return false;
+        }
+
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.CreateMeeting">';
+        $xml .= $meetingxml;
+        $xml .= '</bodyContent></body>';
+
+        return $xml;
     }
 
     /**
@@ -78,6 +92,98 @@ class meeting_center extends base {
      * @return string   The XML.
      */
     public static function update_meeting($data) {
+        if (!$meetingxml = self::meeting_xml($data)) {
+            return false;
+        }
+
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.SetMeeting">';
+        $xml .= $meetingxml;
+        $xml .= '</bodyContent></body>';
+
+        return $xml;
+    }
+
+    /**
+     * Provide the detailed meeting xml for update or delete.
+     *
+     * Optional keys in $data are:
+     * 1/ meetingkey - Meeting key (required for update).
+     * 2/ startdate - Start time range.
+     * 3/ duration - Duration in minutes.
+     * 4/ name - Name of the meeting.
+     * 5/ intro - Meeting description.
+     * 6/ hostusers - Array of users to add as hosts.
+     *
+     * @param object    $data Meeting data to make.
+     * @return string   The XML.
+     */
+    private static function meeting_xml($data) {
+        $xml = '';
+        if (isset($data->meetingkey)) {
+            $xml .= '<meetingKey>'.$data->meetingkey.'</meetingKey>';
+        }
+
+        $xml .= '<accessControl><listing>UNLISTED</listing></accessControl>';
+
+        // Only include the time if it isn't in the past.
+        if (isset($data->starttime) && ($data->starttime >= (time() + 10))) {
+            $startstr = self::time_to_date_string($data->starttime);
+
+            $xml .= '<schedule>';
+            $xml .= '<startDate>'.$startstr.'</startDate>';
+            $xml .= '<openTime>20</openTime>';
+            if (isset($data->duration)) {
+                $xml .= '<duration>'.$data->duration.'</duration>';
+            }
+            $xml .= '</schedule>';
+        }
+
+        if (isset($data->name)) {
+            $xml .= '<metaData>';
+            $xml .= '<confName>'.htmlentities($data->name).'</confName>';
+            if (isset($data->intro)) {
+                $xml .= '<description>'.htmlentities($data->intro).'</description>';
+            }
+            $xml .= '</metaData>';
+        }
+
+        $xml .= '<enableOptions>';
+
+        /*if (isset($data->allchat)) {
+            if ($data->allchat) {
+                $xml .= '<chatAllAttendees>true</chatAllAttendees>';
+            } else {
+                $xml .= '<chatAllAttendees>false</chatAllAttendees>';
+            }
+        }*/
+
+        $xml .= '</enableOptions>';
+
+        if (isset($data->hostusers)) {
+            $xml .= '<presenters><participants>';
+            foreach ($data->hostusers as $huser) {
+                $xml .= '<participant><person>';
+
+                if (isset($huser->firstname) && isset($huser->lastname)) {
+                    $xml .= '<name>'.$huser->firstname.' '.$huser->lastname.'</name>';
+                }
+                if (isset($huser->email)) {
+                    $xml .= '<email>'.$huser->email.'</email>';
+                }
+                if (isset($huser->webexid)) {
+                    $xml .= '<webExId>'.$huser->webexid.'</webExId>';
+                }
+                $xml .= '<type>MEMBER</type></person>'.
+                        '<role>HOST</role></participant>';
+            }
+            $xml .= '</participants></presenters>';
+        }
+
+        // TODO Expand.
+
+        $xml .= '<repeat><repeatType>SINGLE</repeatType></repeat>';
+
+        return $xml;
     }
 
     /**
@@ -87,6 +193,11 @@ class meeting_center extends base {
      * @return string   The XML.
      */
     public static function delete_meeting($meetingkey) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.DelMeeting">'.
+               '<meetingKey>'.$meetingkey.'</meetingKey>'.
+               '</bodyContent></body>';
+
+        return $xml;
     }
 
 }

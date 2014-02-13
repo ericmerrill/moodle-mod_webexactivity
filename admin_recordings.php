@@ -29,8 +29,8 @@ require_once($CFG->libdir.'/tablelib.php');
 
 admin_externalpage_setup('modwebexactivityrecordings');
 
-class mod_webexactivity_users_tables extends table_sql implements renderable {
-    
+class mod_webexactivity_recordings_tables extends table_sql implements renderable {
+
 }
 
 
@@ -41,8 +41,8 @@ $table = new mod_webexactivity_users_tables('blah');
 
 $table->set_sql('*', '{webexactivity_recording}', '1=1', array());
 
-//$table->define_columns(array('id', 'webexuserid', 'webexid'));
-//$table->define_headers(array('id', 'webexuserid', 'webexid'));
+$table->define_columns(array('id', 'webexuserid', 'webexid'));
+$table->define_headers(array('id', 'webexuserid', 'webexid'));
 
 $table->out(100, false);
 
