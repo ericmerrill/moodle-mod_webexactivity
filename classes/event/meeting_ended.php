@@ -27,13 +27,13 @@ namespace mod_webexactivity\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * mod_webexactiviy recording deleted event.
+ * mod_webexactiviy meeting ended event.
  *
  * @package    mod_webexactvity
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class recording_deleted extends \core\event\base {
+class meeting_ended extends \core\event\base {
 
     /**
      * Returns description of what happened.
@@ -41,7 +41,7 @@ class recording_deleted extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return 'User with id ' . $this->userid . ' deleted webex recording with id ' . $this->objectid;
+        return 'WebEx meeting with id ' . $this->objectid . ' ended.';
     }
 
     /**
@@ -50,8 +50,8 @@ class recording_deleted extends \core\event\base {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'webexactivity', 'recording deleted', 'view.php?id=' . $this->context->instanceid,
-                'Recording ID '.$this->objectid, $this->context->instanceid);
+        return array($this->courseid, 'webexactivity', 'meeting ended', 'view.php?id=' . $this->context->instanceid,
+                $this->objectid, $this->context->instanceid);
     }
 
     /**
@@ -60,7 +60,7 @@ class recording_deleted extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('event_recording_deleted', 'webexactivity');
+        return get_string('event_meeting_ended', 'webexactivity');
     }
 
     /**
@@ -80,7 +80,7 @@ class recording_deleted extends \core\event\base {
     protected function init() {
         global $CFG;
 
-        $this->data['crud'] = 'r';
+        $this->data['crud'] = 'u';
         // Level needed for 2.6, but depeciated in 2.7.
         if ($CFG->version < 2013111899) {
             $this->data['level'] = self::LEVEL_OTHER;
@@ -88,19 +88,6 @@ class recording_deleted extends \core\event\base {
             $this->data['edulevel'] = self::LEVEL_OTHER;
         }
 
-        $this->data['objecttable'] = 'webexactivity_recording';
+        $this->data['objecttable'] = 'webexactivity';
     }
-
-    /**
-     * Custom validation.
-     *
-     * @throws \coding_exception
-     * @return void
-     */
-    protected function validate_data() {
-        // Hack to please the parent class. 'view' was the key used in old add_to_log().
-        $this->data['other']['content'] = 'view';
-        parent::validate_data();
-    }
-
 }

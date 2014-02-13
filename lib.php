@@ -24,6 +24,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Return the list if Moodle features this module supports
+ *
+ * @param string $feature FEATURE_xx constant for requested feature
+ * @return mixed True if module supports feature, null if doesn't know
+ */
 function webexactivity_supports($feature) {
     switch($feature) {
         case FEATURE_MOD_ARCHETYPE:
@@ -52,6 +58,13 @@ function webexactivity_supports($feature) {
     }
 }
 
+/**
+ * Adds an WebEx Activity instance.
+ *
+ * @param stdClass              $data Form data
+ * @param mod_assign_mod_form   $form The form
+ * @return int The instance id of the new assignment
+ */
 function webexactivity_add_instance($data, $mform) {
 
     $meeting = \mod_webexactivity\webex::new_meeting(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING);
@@ -75,6 +88,13 @@ function webexactivity_add_instance($data, $mform) {
     return false;
 }
 
+/**
+ * Update an WebEx Activity instance.
+ *
+ * @param stdClass              $data Form data
+ * @param mod_assign_mod_form   $form The form
+ * @return bool                 If the update passed (true) or failed
+ */
 function webexactivity_update_instance($data, $mform) {
     $cmid = $data->coursemodule;
     $cm = get_coursemodule_from_id('webexactivity', $cmid, 0, false, MUST_EXIST);
@@ -96,11 +116,22 @@ function webexactivity_update_instance($data, $mform) {
     return $meeting->save();
 }
 
+/**
+ * Delete a WebEx instance.
+ *
+ * @param int   $id     Record id to delete.
+ * @return bool
+ */
 function webexactivity_delete_instance($id) {
     $meeting = \mod_webexactivity\webex::load_meeting($id);
     return $meeting->delete();
 }
 
+/**
+ * Run the WebEx cron functions.
+ *
+ * @return bool   true if successful.
+ */
 function webexactivity_cron() {
     $webex = new \mod_webexactivity\webex();
     $webex->get_recordings();
@@ -108,8 +139,4 @@ function webexactivity_cron() {
     $webex->remove_deleted_recordings();
 
     return true;
-}
-
-function webexactivity_get_recordings() {
-
 }

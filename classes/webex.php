@@ -301,13 +301,14 @@ class webex {
                     $session = $session['#'];
 
                     $meetingkey = $session['ep:sessionKey'][0]['#'];
-                    if ($meeting = $DB->get_record('webexactivity', array('meetingkey' => $meetingkey))) {
-                        $new = new \stdClass();
-                        $new->id = $meeting->id;
-                        $new->status = self::WEBEXACTIVITY_STATUS_IN_PROGRESS;
-                        $new->laststatuscheck = $processtime;
+                    if ($meetingrecord = $DB->get_record('webexactivity', array('meetingkey' => $meetingkey))) {
+                        if ($meetingrecord->status !== self::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+                            $meeting = $this->load_meeting($meetingrecord);
 
-                        $DB->update_record('webexactivity', $new);
+                            $meeting->status = self::WEBEXACTIVITY_STATUS_IN_PROGRESS;
+                            $meeting->laststatuscheck = $processtime;
+                            $meeting->save();
+                        }
                     }
                 }
             }
@@ -317,13 +318,12 @@ class webex {
         $params = array('lasttime' => $cleartime, 'status' => self::WEBEXACTIVITY_STATUS_IN_PROGRESS);
 
         if ($meetings = $DB->get_records_select('webexactivity', $select, $params)) {
-            foreach ($meetings as $meeting) {
-                $new = new \stdClass();
-                $new->id = $meeting->id;
-                $new->status = self::WEBEXACTIVITY_STATUS_STOPPED;
-                $new->laststatuscheck = $processtime;
+            foreach ($meetings as $meetingrecord) {
+                $meeting = $this->load_meeting($meetingrecord);
 
-                $DB->update_record('webexactivity', $new);
+                $meeting->status = self::WEBEXACTIVITY_STATUS_STOPPED;
+                $meeting->laststatuscheck = $processtime;
+                $meeting->save();
             }
         }
 
@@ -377,6 +377,8 @@ class webex {
                 $rec->webexid = null;
             }
 
+            // TODO Convert to use object?
+            // TODO Recording added event.
             $rec->meetingkey = $key;
             $rec->recordingid = $recording['ep:recordingID'][0]['#'];
             $rec->hostid = $recording['ep:hostWebExID'][0]['#'];

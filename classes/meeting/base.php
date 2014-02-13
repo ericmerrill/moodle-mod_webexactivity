@@ -64,6 +64,9 @@ class base {
     /** @var object A webex object to do network connections and other support services. */
     protected $webex;
 
+    /** @var bool Track if there is a change that needs to go to WebEx. */
+    protected $webexchange;
+
     /** 
      * The XML generator class name to use. Can be redefined by child classes.
      **/
@@ -125,14 +128,50 @@ class base {
                 }
                 break;
             case 'duration':
-                $this->endtime = ($this->starttime + ($val * 60));
+                $name = 'endtime';
+                $val = ($this->starttime + ($val * 60));
                 debugging('Meeting property "duration" is depreciated.', DEBUG_DEVELOPER);
-                return true;
                 break;
             case 'xml':
             case 'guestuserid':
                 debugging('Meeting property "'.$name.'" removed.', DEBUG_DEVELOPER);
                 return false;
+                break;
+            case 'status':
+                if ($val != $this->status) {
+                    if ($val === \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+                        $cm = get_coursemodule_from_instance('webexactivity', $this->id);
+                        $context = \context_module::instance($cm->id);
+                        $params = array(
+                            'context' => $context,
+                            'objectid' => $this->id
+                        );
+                        $event = \mod_webexactivity\event\meeting_started::create($params);
+                        $event->add_record_snapshot('webexactivity', $this->meetingrecord);
+                        $event->trigger();
+                    } else if ($val === \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_STOPPED) {
+                        $cm = get_coursemodule_from_instance('webexactivity', $this->id);
+                        $context = \context_module::instance($cm->id);
+                        $params = array(
+                            'context' => $context,
+                            'objectid' => $this->id
+                        );
+                        $event = \mod_webexactivity\event\meeting_ended::create($params);
+                        $event->add_record_snapshot('webexactivity', $this->meetingrecord);
+                        $event->trigger();
+                    }
+                }
+                break;
+        }
+
+        switch ($name) {
+            case 'starttime':
+            case 'endtime':
+            case 'name':
+            case 'intro':
+                if ($this->$name !== $val) {
+                    $this->webexchange = true;
+                }
                 break;
         }
 
@@ -187,7 +226,14 @@ class base {
 
         $response = $this->webex->get_response($xml, $webexuser);
 
-        return $this->process_response($response);
+        $status = $this->process_response($response);
+
+        if ($status) {
+            $this->webexchange = false;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public function delete_from_webex() {
@@ -224,7 +270,7 @@ class base {
         }
 
         if ($save) {
-            $this->save_to_db();
+            $this->save();
         }
 
         return $response;
@@ -450,8 +496,11 @@ class base {
     }
 
     public function save() {
-        if (!$this->save_to_webex()) {
-            return false;
+        if ($this->webexchange) {
+            print "SAVE";
+/*            if (!$this->save_to_webex()) {
+                return false;
+            }*/
         }
 
         if (!$this->save_to_db()) {

@@ -134,7 +134,6 @@ class webex_recording {
             if (!$this->save_to_webex()) {
                 return false;
             }
-            $this->webexchange = false;
         }
         return $this->save_to_db();
     }
@@ -172,6 +171,7 @@ class webex_recording {
         $response = $this->webex->get_response($xml, $webexuser);
 
         if ($response) {
+            $this->webexchange = false;
             return true;
         } else {
             return false;

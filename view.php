@@ -129,6 +129,7 @@ if ($webexres['ST'] === 'FAIL') {
 // Do redirect actions here.
 switch ($action) {
     case 'hostmeeting':
+        // TODO set status based on response, not click.
         if (!$webexmeeting->is_available(true)) {
             break;
         }
@@ -145,11 +146,9 @@ switch ($action) {
         $failurl = new moodle_url($returnurl, $params);
         $authurl = $webex->get_login_url($webexuser, $failurl->out(false), $hosturl);
 
-        $new = new \stdClass();
-        $new->id = $webexmeeting->id;
-        $new->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS;
-        $new->laststatustime = time();
-        $DB->update_record('webexactivity', $new);
+        $webexmeeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS;
+        $webexmeeting->laststatuscheck = time();
+        $webexmeeting->save();
 
         $params = array(
             'context' => $context,
@@ -163,6 +162,8 @@ switch ($action) {
         break;
 
     case 'joinmeeting':
+        // TODO Get feedback and then mark as started.
+
         if (!$webexmeeting->is_available()) {
             break;
         }
