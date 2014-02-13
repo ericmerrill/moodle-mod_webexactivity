@@ -35,13 +35,16 @@ defined('MOODLE_INTERNAL') || die();
  */
 class training_center extends base {
 
-    protected $gen = '\mod_webexactivity\xml_gen\training_center';
+    /** 
+     * The XML generator class name to use.
+     **/
+    const GENERATOR = '\mod_webexactivity\xml_gen\training_center';
 
     public function __construct($meeting = false) {
         parent::__construct($meeting);
 
-        if ($this->values['type'] === null) {
-            $this->values['type'] = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING;
+        if (!isset($this->type)) {
+            $this->type = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING;
         }
     }
 
@@ -57,19 +60,19 @@ class training_center extends base {
         }
 
         if (isset($response['train:sessionkey']['0']['#'])) {
-            $this->values['meetingkey'] = $response['train:sessionkey']['0']['#'];
+            $this->meetingkey = $response['train:sessionkey']['0']['#'];
         }
 
         if (isset($response['train:additionalInfo']['0']['#']['train:guestToken']['0']['#'])) {
-            $this->values['guesttoken'] = $response['train:additionalInfo']['0']['#']['train:guestToken']['0']['#'];
+            $this->guestkey = $response['train:additionalInfo']['0']['#']['train:guestToken']['0']['#'];
         }
 
         if (isset($response['train:eventID']['0']['#'])) {
-            $this->values['eventid'] = $response['train:eventID']['0']['#'];
+            $this->eventid = $response['train:eventID']['0']['#'];
         }
 
         if (isset($response['train:hostKey']['0']['#'])) {
-            $this->values['hostkey'] = $response['train:hostKey']['0']['#'];
+            $this->hostkey = $response['train:hostKey']['0']['#'];
         }
 
         return true;

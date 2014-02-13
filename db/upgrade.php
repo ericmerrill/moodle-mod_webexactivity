@@ -34,7 +34,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
     // Put any upgrade step following this.
 
     if ($oldversion < 2014013002) {
-        echo "mod_webexactivity must be upgraded to at version 2014013002 before continuing."
+        echo "mod_webexactivity must be upgraded to at version 2014013002 before continuing.";
         return false;
     }
 
@@ -76,6 +76,73 @@ function xmldb_webexactivity_upgrade($oldversion) {
         // Webex Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014020404, 'webexactivity');
     }
+
+    if ($oldversion < 2014021300) {
+
+        // Define field endtime to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('endtime', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'starttime');
+
+        // Conditionally launch add field endtime.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Convert from duration to end time.
+        $meetings = $DB->get_recordset('webexactivity');
+
+        $update = new \stdClass();
+        foreach ($meetings as $meeting) {
+            $update->id = $meeting->id;
+            $update->endtime = ($meeting->starttime + ($meeting->duration * 60));
+
+            $DB->update_record('webexactivity', $update);
+        }
+
+        $meetings->close();
+
+        // Define field duration to be dropped from webexactivity.
+        $field = new xmldb_field('duration');
+
+        // Conditionally launch drop field duration.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014021300, 'webexactivity');
+    }
+
+    if ($oldversion < 2014021301) {
+
+        // Define field guestuserid to be dropped from webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('guestuserid');
+
+        // Conditionally launch drop field guestuserid.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014021301, 'webexactivity');
+    }
+
+    if ($oldversion < 2014021302) {
+
+        // Define field guestuserid to be dropped from webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('xml');
+
+        // Conditionally launch drop field guestuserid.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014021302, 'webexactivity');
+    }
+
 
     return true;
 }
