@@ -335,7 +335,7 @@ class webex {
     // ---------------------------------------------------
     public function get_recordings() {
         $params = new \stdClass();
-        $params->startdate = time() - (120 * 3600);
+        $params->startdate = time() - (365 * 24 * 3600);
         $params->enddate = time() + (12 * 3600);
 
         $xml = type\base\xml_gen::list_recordings($params);
@@ -393,7 +393,16 @@ class webex {
             $rec->duration = $recording['ep:duration'][0]['#'];
             $rec->timemodified = time();
 
-            if (!$DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
+            if ($existing = $DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
+                $update = new \stdClass();
+                $update->id = $existing->id;
+                $update->name = $rec->name;
+                $update->streamurl = $rec->streamurl;
+                $update->fileurl = $rec->fileurl;
+                $update->timemodified = time();
+
+                $DB->update_record('webexactivity_recording', $update);
+            } else {
                 $rec->id = $DB->insert_record('webexactivity_recording', $rec);
 
                 if ($meeting) {

@@ -122,6 +122,28 @@ if ($webexres['ST'] === 'FAIL') {
         $error = get_string('error_unknown', 'webexactivity');
     }
 
+} else if ($webexres['ST'] === 'SUCCESS') {
+    if ($webexres['AT'] === 'JM') {
+        $params = array(
+            'context' => $context,
+            'objectid' => $webexmeeting->id
+        );
+        $event = \mod_webexactivity\event\meeting_joined::create($params);
+        $event->add_record_snapshot('webexactivity', $webexrecord);
+        $event->trigger();
+
+        redirect($returnurl->out(false));
+    } else if ($webexres['AT'] === 'HM') {
+        $params = array(
+            'context' => $context,
+            'objectid' => $webexmeeting->id
+        );
+        $event = \mod_webexactivity\event\meeting_hosted::create($params);
+        $event->add_record_snapshot('webexactivity', $webexrecord);
+        $event->trigger();
+
+        redirect($returnurl->out(false));
+    }
 }
 
 
@@ -150,14 +172,6 @@ switch ($action) {
         $webexmeeting->laststatuscheck = time();
         $webexmeeting->save();
 
-        $params = array(
-            'context' => $context,
-            'objectid' => $webexmeeting->id
-        );
-        $event = \mod_webexactivity\event\meeting_hosted::create($params);
-        $event->add_record_snapshot('webexactivity', $webexrecord);
-        $event->trigger();
-
         redirect($authurl);
         break;
 
@@ -168,14 +182,6 @@ switch ($action) {
             break;
         }
         $joinurl = $webexmeeting->get_moodle_join_url($USER, $returnurl);
-
-        $params = array(
-            'context' => $context,
-            'objectid' => $webexmeeting->id
-        );
-        $event = \mod_webexactivity\event\meeting_joined::create($params);
-        $event->add_record_snapshot('webexactivity', $webexrecord);
-        $event->trigger();
 
         redirect($joinurl);
         break;

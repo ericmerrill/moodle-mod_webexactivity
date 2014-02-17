@@ -136,22 +136,22 @@ function xmldb_webexactivity_upgrade($oldversion) {
         // Conditionally launch add field duration.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
-        }
 
-        $meetings = $DB->get_recordset('webexactivity');
+            $meetings = $DB->get_recordset('webexactivity');
 
-        $update = new \stdClass();
-        foreach ($meetings as $meeting) {
-            if (!isset($meeting->duration)) {
-                $update->id = $meeting->id;
-                $update->duration = (($meeting->endtime - $meeting->starttime) / 60);
-                $update->endtime = null;
-
-                $DB->update_record('webexactivity', $update);
+            $update = new \stdClass();
+            foreach ($meetings as $meeting) {
+                if (!isset($meeting->duration)) {
+                    $update->id = $meeting->id;
+                    $update->duration = (($meeting->endtime - $meeting->starttime) / 60);
+                    $update->endtime = null;
+    
+                    $DB->update_record('webexactivity', $update);
+                }
             }
-        }
 
-        $meetings->close();
+            $meetings->close();
+        }
 
         // Webex Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014021400, 'webexactivity');
