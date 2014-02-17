@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\xml_gen;
+namespace mod_webexactivity\type\training_center;
 
 defined('MOODLE_INTERNAL') || die();
 

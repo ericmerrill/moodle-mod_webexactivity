@@ -151,7 +151,7 @@ class webex {
         $data->email = $moodleuser->email;
         $data->password = self::generate_password();
 
-        $xml = xml_gen\base::create_user($data);
+        $xml = type\base\xml_gen::create_user($data);
 
         $response = $this->get_response($xml, false, true);
 
@@ -178,7 +178,7 @@ class webex {
             // User already exists with this username or email.
 
             if ((stripos($exception, '030004') !== false) || (stripos($exception, '030005') === false)) {
-                $xml = xml_gen\base::get_user_info($data->webexid);
+                $xml = type\base\xml_gen::get_user_info($data->webexid);
 
                 if (!($response = $this->get_response($xml))) {
                     return false;
@@ -204,7 +204,7 @@ class webex {
     }
 
     public function check_user_auth($webexuser) {
-        $xml = xml_gen\base::check_user_auth($webexuser);
+        $xml = type\base\xml_gen::check_user_auth($webexuser);
 
         if (!($response = $this->get_response($xml))) {
             return false;
@@ -220,7 +220,7 @@ class webex {
     }
 
     public function get_login_url($webexuser, $backurl = false, $forwardurl = false) {
-        $xml = xml_gen\base::get_user_login_url($webexuser->webexid);
+        $xml = type\base\xml_gen::get_user_login_url($webexuser->webexid);
 
         if (!($response = $this->get_response($xml, $webexuser))) {
             return false;
@@ -281,7 +281,7 @@ class webex {
     public function get_open_sessions() {
         global $DB;
 
-        $xml = xml_gen\base::list_open_sessions();
+        $xml = type\base\xml_gen::list_open_sessions();
 
         $response = $this->get_response($xml);
         if ($response === false) {
@@ -338,7 +338,7 @@ class webex {
         $params->startdate = time() - (120 * 3600);
         $params->enddate = time() + (12 * 3600);
 
-        $xml = xml_gen\base::list_recordings($params);
+        $xml = type\base\xml_gen::list_recordings($params);
 
         if (!($response = $this->get_response($xml))) {
             return false;
@@ -438,7 +438,7 @@ class webex {
     public function get_response($basexml, $webexuser = false, $expecterror = false) {
         global $USER;
 
-        $xml = xml_gen\base::auth_wrap($basexml, $webexuser);
+        $xml = type\base\xml_gen::auth_wrap($basexml, $webexuser);
 
         list($status, $response, $errors) = $this->fetch_response($xml);
 
@@ -448,7 +448,7 @@ class webex {
             // Bad user password, reset it and try again.
             if ($webexuser && (isset($errors['exception'])) && ($errors['exception'] === '030002')) {
                 $webexuser->update_password(self::generate_password());
-                $xml = xml_gen\base::auth_wrap($basexml, $webexuser);
+                $xml = type\base\xml_gen::auth_wrap($basexml, $webexuser);
                 list($status, $response, $errors) = $this->fetch_response($xml);
                 if ($status) {
                     return $response;
