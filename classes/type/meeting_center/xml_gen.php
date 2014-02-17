@@ -123,7 +123,7 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
             $xml .= '<meetingKey>'.$data->meetingkey.'</meetingKey>';
         }
 
-        $xml .= '<accessControl><listing>UNLISTED</listing></accessControl>';
+        $xml .= '<accessControl><listToPublic>false</listToPublic></accessControl>';
 
         // Only include the time if it isn't in the past.
         if (isset($data->starttime) && ($data->starttime >= (time() + 10))) {
@@ -142,7 +142,7 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
             $xml .= '<metaData>';
             $xml .= '<confName>'.htmlentities($data->name).'</confName>';
             if (isset($data->intro)) {
-                $xml .= '<description>'.htmlentities($data->intro).'</description>';
+                $xml .= '<agenda>'.htmlentities($data->intro).'</agenda>';
             }
             $xml .= '</metaData>';
         }
@@ -181,7 +181,7 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
 
         // TODO Expand.
 
-        $xml .= '<repeat><repeatType>SINGLE</repeatType></repeat>';
+        $xml .= '<repeat><repeatType>NO_REPEAT</repeatType></repeat>';
 
         return $xml;
     }

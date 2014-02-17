@@ -72,7 +72,12 @@ class meeting extends \mod_webexactivity\type\base\meeting {
             return true;
         }
 
+        $prefix = static::XML_PREFIX;
+
         // Type specific code goes here.
+        if (isset($response[$prefix.':meetingkey']['0']['#'])) {
+            $this->meetingkey = $response[$prefix.':meetingkey']['0']['#'];
+        }
 
         return true;
     }
