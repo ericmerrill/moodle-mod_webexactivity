@@ -68,10 +68,11 @@ class webex {
 
         switch ($record->type) {
             case self::WEBEXACTIVITY_TYPE_MEETING:
-                debugging('Meeting center not yet supported', DEBUG_DEVELOPER);
+                $meeting = new type\meeting_center\meeting($record);
+                return $meeting;
                 break;
             case self::WEBEXACTIVITY_TYPE_TRAINING:
-                $meeting = new meeting\training_center($record);
+                $meeting = new type\training_center\meeting($record);
                 return $meeting;
                 break;
             case self::WEBEXACTIVITY_TYPE_SUPPORT:
@@ -88,10 +89,10 @@ class webex {
     public static function new_meeting($type) {
         switch ($type) {
             case self::WEBEXACTIVITY_TYPE_MEETING:
-                debugging('Meeting center not yet supported', DEBUG_DEVELOPER);
+                return new type\meeting_center\meeting();
                 break;
             case self::WEBEXACTIVITY_TYPE_TRAINING:
-                return new meeting\training_center();
+                return new type\training_center\meeting();
                 break;
             case self::WEBEXACTIVITY_TYPE_SUPPORT:
                 debugging('Support center not yet supported', DEBUG_DEVELOPER);

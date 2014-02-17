@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\xml_gen;
+namespace mod_webexactivity\type\base;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class base {
+class xml_gen {
     /**
      * Wraps given XML in the propper authentication headers.
      *

@@ -18,32 +18,32 @@
  * An activity to interface with WebEx.
  *
  * @package   mod_webexactvity
- * @copyright Eric Merrill (merrill@oakland.edu)
+ * @copyright 2014 Eric Merrill (merrill@oakland.edu)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\meeting;
+namespace mod_webexactivity\type\meeting_center;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Class that represents and controls a Training Center meeting instance.
+ * Class that represents and controls a Meeting Center instance.
  *
  * @package    mod_webexactvity
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class training_center extends base {
+class meeting extends \mod_webexactivity\type\base\meeting {
 
     /** 
      * The XML generator class name to use.
      **/
-    const GENERATOR = '\mod_webexactivity\xml_gen\training_center';
+    const GENERATOR = '\mod_webexactivity\type\meeting_center\xml_gen';
 
     /** 
      * Prefix for retrieved XML fields.
      **/
-    const XML_PREFIX = 'train';
+    const XML_PREFIX = 'meet';
 
     /**
      * Builds the meeting object.
@@ -54,7 +54,7 @@ class training_center extends base {
         parent::__construct($meeting);
 
         if (!isset($this->type)) {
-            $this->type = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING;
+            $this->type = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_MEETING;
         }
     }
 

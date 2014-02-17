@@ -22,38 +22,34 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\xml_gen;
+namespace mod_webexactivity\type\meeting_center;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * A class that (statically) provides training center xml.
+ * A class that (statically) provides meeting center xml.
  *
  * @package    mod_webexactvity
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class training_center extends base {
-
-    // ---------------------------------------------------
-    // Meeting Functions.
-    // ---------------------------------------------------
+class xml_gen extends \mod_webexactivity\type\base\xml_gen {
     /**
-     * Provide the xml to get information about a meeting.
+     * Provide the xml to get information about a meeting. Must be overridden.
      *
      * @param string    $meetingkey Meeting key to lookup.
      * @return string   The XML.
      */
     public static function get_meeting_info($meetingkey) {
-        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.GetTrainingSession">'.
-               '<sessionKey>'.$meetingkey.'</sessionKey>'.
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.GetMeeting">'.
+               '<meetingKey>'.$meetingkey.'</meetingKey>'.
                '</bodyContent></body>';
 
         return $xml;
     }
 
     /**
-     * Provide the xml to create a meeting.
+     * Provide the xml to create a meeting. Must be overridden.
      *
      * Required keys in $data are:
      * 1/ startdate - Start time range.
@@ -68,19 +64,19 @@ class training_center extends base {
      * @return string   The XML.
      */
     public static function create_meeting($data) {
-        if (!$sessionxml = self::training_session_xml($data)) {
+        if (!$meetingxml = self::meeting_xml($data)) {
             return false;
         }
 
-        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.CreateTrainingSession">';
-        $xml .= $sessionxml;
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.CreateMeeting">';
+        $xml .= $meetingxml;
         $xml .= '</bodyContent></body>';
 
         return $xml;
     }
 
     /**
-     * Provide the xml to update a meeting.
+     * Provide the xml to update a meeting. Must be overridden.
      *
      * Required keys in $data are:
      * 1/ meetingkey - Meeting key to update.
@@ -96,12 +92,12 @@ class training_center extends base {
      * @return string   The XML.
      */
     public static function update_meeting($data) {
-        if (!$sessionxml = self::training_session_xml($data)) {
+        if (!$meetingxml = self::meeting_xml($data)) {
             return false;
         }
 
-        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.SetTrainingSession">';
-        $xml .= $sessionxml;
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.SetMeeting">';
+        $xml .= $meetingxml;
         $xml .= '</bodyContent></body>';
 
         return $xml;
@@ -121,10 +117,10 @@ class training_center extends base {
      * @param object    $data Meeting data to make.
      * @return string   The XML.
      */
-    private static function training_session_xml($data) {
+    private static function meeting_xml($data) {
         $xml = '';
         if (isset($data->meetingkey)) {
-            $xml .= '<sessionKey>'.$data->meetingkey.'</sessionKey>';
+            $xml .= '<meetingKey>'.$data->meetingkey.'</meetingKey>';
         }
 
         $xml .= '<accessControl><listing>UNLISTED</listing></accessControl>';
@@ -191,14 +187,14 @@ class training_center extends base {
     }
 
     /**
-     * Provide the xml to delete a meeting.
+     * Provide the xml to delete a meeting. Must be overridden.
      *
      * @param string    $meetingkey Meeting key to delete.
      * @return string   The XML.
      */
     public static function delete_meeting($meetingkey) {
-        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.DelTrainingSession">'.
-               '<sessionKey>'.$meetingkey.'</sessionKey>'.
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.DelMeeting">'.
+               '<meetingKey>'.$meetingkey.'</meetingKey>'.
                '</bodyContent></body>';
 
         return $xml;

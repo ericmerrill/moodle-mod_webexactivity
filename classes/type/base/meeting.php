@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\meeting;
+namespace mod_webexactivity\type\base;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class base {
+class meeting {
     /** @var object Record object containing the information about the meeting. */
     protected $meetingrecord = null;
 
@@ -54,6 +54,7 @@ class base {
             'hostkey' => null, // Unused?
             'starttime' => null,
             'endtime' => null,
+            'duration' => null,
             'hosts' => null, // Unused?
             'allchat' => 1, // Used for MC.
             'studentdownload' => 1,
@@ -169,7 +170,7 @@ class base {
             case 'endtime':
             case 'name':
             case 'intro':
-                if ($this->$name !== $val) {
+                if (!isset($this->$name) || ($this->$name !== $val)) {
                     $this->webexchange = true;
                 }
                 break;
@@ -195,10 +196,6 @@ class base {
         if (!array_key_exists($name, $this->keys)) {
             debugging('Unknown meeting value requested "'.$name.'"', DEBUG_DEVELOPER);
             return false;
-        }
-
-        if (!isset($this->meetingrecord->$name)) {
-            return null;
         }
 
         return $this->meetingrecord->$name;
