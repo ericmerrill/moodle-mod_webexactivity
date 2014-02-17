@@ -145,7 +145,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
                     $update->id = $meeting->id;
                     $update->duration = (($meeting->endtime - $meeting->starttime) / 60);
                     $update->endtime = null;
-    
+
                     $DB->update_record('webexactivity', $update);
                 }
             }

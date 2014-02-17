@@ -107,6 +107,13 @@ class meeting {
     // ---------------------------------------------------
     // Magic Methods.
     // ---------------------------------------------------
+
+    /**
+     * Magic setter method for object.
+     *
+     * @param string    $name The name of the value to be set.
+     * @param mixed     $val  The value to be set.
+     */
     public function __set($name, $val) {
         switch ($name) {
             case 'starttime':
@@ -180,6 +187,11 @@ class meeting {
         // TODO.
     }
 
+    /**
+     * Magic getter method for object.
+     *
+     * @param string    $name The name of the value to be retrieved.
+     */
     public function __get($name) {
         if (!array_key_exists($name, $this->keys)) {
             debugging('Unknown meeting value requested "'.$name.'"', DEBUG_DEVELOPER);
@@ -187,18 +199,34 @@ class meeting {
         }
 
         return $this->meetingrecord->$name;
-        // TODO.
     }
 
+    /**
+     * Magic isset method for object.
+     *
+     * @param string    $name The name of the value to be checked.
+     */
     public function __isset($name) {
         return isset($this->meetingrecord->$name);
     }
 
-
+    /**
+     * Magic unset method for object.
+     *
+     * @param string    $name The name of the value to be unset.
+     */
+    public function __unset($name) {
+        unset($this->meetingrecord->$name);
+    }
 
     // ---------------------------------------------------
     // Meeting Functions.
     // ---------------------------------------------------
+    /**
+     * Save this meeting object into WebEx.
+     *
+     * @return bool    True on success, false on failure.
+     */
     public function save_to_webex() {
         $data = $this->meetingrecord;
         $gen = static::GENERATOR;
@@ -225,7 +253,17 @@ class meeting {
         }
     }
 
+    /**
+     * Delete this meeting from WebEx.
+     *
+     * @return bool    True on success, false on failure.
+     */
     public function delete_from_webex() {
+        // If we have no key, then we don't exist in WebEx, so we can say we are deleted.
+        if (!isset($this->meetingkey)) {
+            return true;
+        }
+
         $gen = static::GENERATOR;
         $webexuser = $this->get_meeting_webex_user();
 
@@ -240,6 +278,12 @@ class meeting {
         return false;
     }
 
+    /**
+     * Fetch meeting information from WebEx.
+     *
+     * @param bool     $save True to save to the db.
+     * @return bool    True on success, false on failure.
+     */
     public function get_info($save = false) {
         if (!isset($this->meetingkey)) {
             return false;
@@ -363,6 +407,12 @@ class meeting {
 
     }
 
+    /**
+     * Add a webexuser as a host to the meeting.
+     *
+     * @param webex_user    $webexuser The user object to add.
+     * @return bool         True on success, false on failure/error.
+     */
     public function add_webexuser_host($webexuser) {
         global $DB;
 
@@ -396,6 +446,11 @@ class meeting {
     // ---------------------------------------------------
     // Recording Functions.
     // ---------------------------------------------------
+    /**
+     * Delete all meetings connected to this meeting.
+     *
+     * @return bool    True on success, false on failure/error.
+     */
     public function delete_recordings() {
         $recordings = $this->get_recordings();
 
@@ -410,13 +465,18 @@ class meeting {
         return true;
     }
 
+    /**
+     * Get all the recording objects for this meeting.
+     *
+     * @return array    Array of webex_recording objects.
+     */
     public function get_recordings() {
         global $DB;
 
         $recordingrecords = $DB->get_records('webexactivity_recording', array('webexid' => $this->id, 'deleted' => 0));
 
         if (!$recordingrecords) {
-            return false;
+            return array();
         }
 
         $out = array();
@@ -431,6 +491,12 @@ class meeting {
     // ---------------------------------------------------
     // URL Functions.
     // ---------------------------------------------------
+    /**
+     * Get the link for hosting this meeting.
+     *
+     * @param string     $returnurl The url to return the use to.
+     * @return string    The host url.
+     */
     public function get_host_url($returnurl = false) {
         $baseurl = \mod_webexactivity\webex::get_base_url();
         $url = $baseurl.'/m.php?AT=HM&MK='.$this->meetingkey;
@@ -441,6 +507,13 @@ class meeting {
         return $url;
     }
 
+    /**
+     * Get the link for a moodle user to join the meeting.
+     *
+     * @param object     $user Moodle user record.
+     * @param string     $returnurl The url to return the use to.
+     * @return string    The moodle join url.
+     */
     public function get_moodle_join_url($user, $returnurl = false) {
         $baseurl = \mod_webexactivity\webex::get_base_url();
 
@@ -453,6 +526,11 @@ class meeting {
         return $url;
     }
 
+    /**
+     * Get the link for external users to join the meeting.
+     *
+     * @return string    The external join url.
+     */
     public function get_external_join_url() {
         $baseurl = \mod_webexactivity\webex::get_base_url();
 
@@ -468,6 +546,11 @@ class meeting {
     // ---------------------------------------------------
     // Support Functions.
     // ---------------------------------------------------
+    /**
+     * Returns the webex_user that created this meeting.
+     *
+     * @return bool|webex_user    The WebEx user. False on failure.
+     */
     public function get_meeting_webex_user() {
         global $DB, $USER;
 
@@ -485,6 +568,11 @@ class meeting {
         return $webexuser;
     }
 
+    /**
+     * Load a database object into the meeting.
+     *
+     * @param object    The record to load.
+     */
     protected function load_webex_record($meeting) {
         $this->meetingrecord = $meeting;
 
@@ -497,6 +585,11 @@ class meeting {
         }
     }
 
+    /**
+     * Save the meeting to WebEx and Moodle as needed.
+     *
+     * @return bool    True on success, false on failure/error.
+     */
     public function save() {
         if ($this->webexchange) {
             if (!$this->save_to_webex()) {
@@ -511,6 +604,11 @@ class meeting {
         return true;
     }
 
+    /**
+     * Save the meeting to the Moodle database.
+     *
+     * @return bool    True on success, false on failure/error.
+     */
     public function save_to_db() {
         global $DB;
 
@@ -530,6 +628,11 @@ class meeting {
         }
     }
 
+    /**
+     * Delete the meeting (and all it's recordings) from the DB and WebEx.
+     *
+     * @return bool    True on success, false on failure/error.
+     */
     public function delete() {
         if (!$this->delete_recordings()) {
             return false;
@@ -546,6 +649,11 @@ class meeting {
         return true;
     }
 
+    /**
+     * Delete the meeting from the database.
+     *
+     * @return bool    True on success, false on failure/error.
+     */
     public function delete_from_db() {
         global $DB;
 
@@ -560,15 +668,5 @@ class meeting {
         unset($this->id);
         unset($this->meetingrecord);
         return true;
-    }
-
-    public static function array_to_object($arr) {
-        $obj = new \stdClass();
-
-        foreach ($arr as $key => $val) {
-            $obj->$key = $val;
-        }
-
-        return $obj;
     }
 }
