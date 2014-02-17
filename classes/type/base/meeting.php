@@ -128,11 +128,11 @@ class meeting {
                     }
                 }
                 break;
-            case 'duration':
+            /*case 'duration':
                 $name = 'endtime';
                 $val = ($this->starttime + ($val * 60));
                 debugging('Meeting property "duration" is depreciated.', DEBUG_DEVELOPER);
-                break;
+                break;*/
             case 'xml':
             case 'guestuserid':
                 debugging('Meeting property "'.$name.'" removed.', DEBUG_DEVELOPER);
@@ -168,6 +168,7 @@ class meeting {
         switch ($name) {
             case 'starttime':
             case 'endtime':
+            case 'duration':
             case 'name':
             case 'intro':
                 if (!isset($this->$name) || ($this->$name !== $val)) {
@@ -186,12 +187,12 @@ class meeting {
     }
 
     public function __get($name) {
-        switch ($name) {
+        /*switch ($name) {
             case 'duration':
                 $duration = (($this->meetingrecord->endtime - $this->meetingrecord->starttime) / 60);
                 return $duration;
                 break;
-        }
+        }*/
 
         if (!array_key_exists($name, $this->keys)) {
             debugging('Unknown meeting value requested "'.$name.'"', DEBUG_DEVELOPER);
