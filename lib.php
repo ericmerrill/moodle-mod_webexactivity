@@ -70,6 +70,11 @@ function webexactivity_add_instance($data, $mform) {
     $meeting = \mod_webexactivity\webex::new_meeting(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING);
     $meeting->starttime = $data->starttime;
     $meeting->duration = $data->duration;
+    if (isset($data->longavailability)) {
+        $meeting->endtime = $data->endtime;
+    } else {
+        $meeting->endtime = null;
+    }
     $meeting->intro = $data->intro;
     $meeting->introformat = $data->introformat;
     $meeting->name = $data->name;
@@ -102,6 +107,11 @@ function webexactivity_update_instance($data, $mform) {
 
     $meeting->starttime = $data->starttime;
     $meeting->duration = $data->duration;
+    if (isset($data->longavailability)) {
+        $meeting->endtime = $data->endtime;
+    } else {
+        $meeting->endtime = null;
+    }
     $meeting->intro = $data->intro;
     $meeting->introformat = $data->introformat;
     $meeting->name = $data->name;

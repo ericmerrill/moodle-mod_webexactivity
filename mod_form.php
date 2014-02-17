@@ -24,11 +24,21 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-
-
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
 
+/**
+ * Class the creates the mod_form.
+ *
+ * @package    mod_webexactvity
+ * @copyright  2014 Eric Merrill (merrill@oakland.edu)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class mod_webexactivity_mod_form extends \moodleform_mod {
+    /**
+     * Called to define this moodle form
+     *
+     * @return void
+     */
     public function definition() {
         global $CFG, $DB, $OUTPUT;
 
@@ -43,26 +53,49 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
         $this->add_intro_editor(false);
 
         $mform->addElement('date_time_selector', 'starttime', get_string('starttime', 'webexactivity'));
+        $mform->setDefault('starttime', (time() + (3600 * 1)));
         $mform->addRule('starttime', null, 'required', null, 'client');
 
-        $mform->addElement('text', 'duration', get_string('duration', 'webexactivity'), array('size' => '4'));
+        $duration = array();
+        $duration[] =& $mform->createElement('text', 'duration', '', array('size' => '4'));
+        $duration[] =& $mform->createElement('static', 'durationname', '', '('.get_string('minutes').')');
+        $mform->addGroup($duration, 'durationgroup', get_string('duration', 'webexactivity'), array(' '), false);
         $mform->setType('duration', PARAM_INT);
-        $mform->addRule('duration', null, 'required', null, 'client');
+        $mform->addRule('durationgroup', null, 'required', null, 'client');
         $mform->setDefault('duration', 20);
+        $mform->addHelpButton('durationgroup', 'duration', 'webexactivity');
 
         $mform->addElement('header', 'additionalsettings', get_string('additionalsettings', 'webexactivity'));
 
         $mform->addElement('checkbox', 'studentdownload', get_string('studentdownload', 'webexactivity'));
         $mform->setDefault('studentdownload', 1);
-
-        $mform->addElement('checkbox', 'studentdownload', get_string('studentdownload', 'webexactivity'));
-        $mform->setDefault('studentdownload', 1);
+        $mform->addHelpButton('studentdownload', 'studentdownload', 'webexactivity');
 
         $mform->addElement('checkbox', 'longavailability', get_string('longavailability', 'webexactivity'));
         $mform->setDefault('longavailability', 0);
+        $mform->addHelpButton('longavailability', 'longavailability', 'webexactivity');
+
+        $mform->addElement('date_time_selector', 'endtime', get_string('availabilityendtime', 'webexactivity'));
+        $mform->setDefault('endtime', (time() + (3600 * 24 * 14)));
+        $mform->addRule('starttime', null, 'required', null, 'client');
+        $mform->disabledIf('endtime', 'longavailability');
 
         $this->standard_coursemodule_elements();
 
         $this->add_action_buttons();
+    }
+
+    /**
+     * Any data processing needed before the form is displayed.
+     *
+     * @param array $defaultvalues
+     */
+    public function data_preprocessing(&$data) {
+        if (isset($data['endtime'])) {
+            $data['longavailability'] = 1;
+        } else {
+            $data['longavailability'] = 0;
+            $data['endtime'] = time() + (3600 * 24 * 14);
+        }
     }
 }

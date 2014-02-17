@@ -22,9 +22,14 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 defined('MOODLE_INTERNAL') || die;
 
+/**
+ * Runs the upgrade between versions.
+ *
+ * @param int      $oldversion Version we are starting from.
+ * @return bool    True on success, false on failure.
+ */
 function xmldb_webexactivity_upgrade($oldversion) {
     global $CFG, $DB;
 
@@ -140,6 +145,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
             if (!isset($meeting->duration)) {
                 $update->id = $meeting->id;
                 $update->duration = (($meeting->endtime - $meeting->starttime) / 60);
+                $update->endtime = null;
 
                 $DB->update_record('webexactivity', $update);
             }

@@ -71,7 +71,7 @@ class meeting {
     /** 
      * The XML generator class name to use. Can be redefined by child classes.
      **/
-    const GENERATOR = '\mod_webexactivity\xml_gen\base';
+    const GENERATOR = '\mod_webexactivity\type\base\xml_gen';
 
     /** 
      * Prefix for retrieved XML fields.
@@ -128,18 +128,13 @@ class meeting {
                     }
                 }
                 break;
-            /*case 'duration':
-                $name = 'endtime';
-                $val = ($this->starttime + ($val * 60));
-                debugging('Meeting property "duration" is depreciated.', DEBUG_DEVELOPER);
-                break;*/
             case 'xml':
             case 'guestuserid':
                 debugging('Meeting property "'.$name.'" removed.', DEBUG_DEVELOPER);
                 return false;
                 break;
             case 'status':
-                if ($val != $this->status) {
+                if (isset($this->status) && ($val != $this->status)) {
                     if ($val === \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
                         $cm = get_coursemodule_from_instance('webexactivity', $this->id);
                         $context = \context_module::instance($cm->id);
@@ -167,7 +162,6 @@ class meeting {
 
         switch ($name) {
             case 'starttime':
-            case 'endtime':
             case 'duration':
             case 'name':
             case 'intro':
@@ -187,13 +181,6 @@ class meeting {
     }
 
     public function __get($name) {
-        /*switch ($name) {
-            case 'duration':
-                $duration = (($this->meetingrecord->endtime - $this->meetingrecord->starttime) / 60);
-                return $duration;
-                break;
-        }*/
-
         if (!array_key_exists($name, $this->keys)) {
             debugging('Unknown meeting value requested "'.$name.'"', DEBUG_DEVELOPER);
             return false;
@@ -278,10 +265,21 @@ class meeting {
         return $response;
     }
 
+    /**
+     * Return the time status (upcoming, in progress, past, long past, available).
+     *
+     * @return int   Constant represents status.
+     */
     public function get_time_status() {
         $time = time();
         $grace = get_config('webexactivity', 'meetingclosegrace');
-        $endtime = $this->endtime + ($grace * 60);
+
+        if (isset($this->endtime)) {
+            $endtime = $this->endtime;
+        } else {
+            $endtime = $this->starttime + ($this->duration * 60) + ($grace * 60);
+        }
+
         $starttime = $this->starttime - (20 * 60);
 
         if ($this->status == \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
@@ -301,9 +299,14 @@ class meeting {
         }
 
         return \mod_webexactivity\webex::WEBEXACTIVITY_TIME_AVAILABLE;
-
     }
 
+    /**
+     * Return if the meeting is available to join/host.
+     *
+     * @param bool    $host Set to true if host, false if not.
+     * @return bool   True if available, false if not.
+     */
     public function is_available($host = false) {
         $status = $this->get_time_status();
 
@@ -327,6 +330,7 @@ class meeting {
      * Process a response from WebEx into the meeting. Must be overridden.
      *
      * @param array    $response XML array of the response from WebEx for meeting information.
+     * @return bool    True on success, false on failure/error.
      */
     protected function process_response($response) {
         $prefix = static::XML_PREFIX;
@@ -341,10 +345,6 @@ class meeting {
 
         if (empty($response)) {
             return true;
-        }
-
-        if (isset($response[$prefix.':sessionkey']['0']['#'])) {
-            $this->meetingkey = $response[$prefix.':sessionkey']['0']['#'];
         }
 
         if (isset($response[$prefix.':additionalInfo']['0']['#'][$prefix.':guestToken']['0']['#'])) {

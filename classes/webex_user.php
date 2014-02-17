@@ -67,7 +67,7 @@ class webex_user {
 
         $webex = new webex();
 
-        $xml = xml_gen\base::update_user_password($this);
+        $xml = type\base\xml_gen::update_user_password($this);
 
         $response = $webex->get_response($xml);
 
