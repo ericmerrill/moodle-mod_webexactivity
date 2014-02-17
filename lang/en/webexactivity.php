@@ -60,6 +60,8 @@ $string['externallinktext'] = '<p>This link is for participants who do not have 
 $string['getexternallink'] = '<a href="{$a->url}">Get external participant link</a>';
 $string['hostmeetinglink'] = '<a href="{$a->url}">Host Meeting</a>';
 $string['joinmeetinglink'] = '<a href="{$a->url}">Join Meeting</a>';
+$string['longavailability'] = 'Long Availability';
+
 $string['manageallrecordings'] = 'Manage all WebEx recordings';
 $string['manageallrecordings_help'] = 'Manage all recordings from the WebEx server, not just ones with a Moodle activity.';
 $string['meetingclosegrace'] = 'Meeting grace period';

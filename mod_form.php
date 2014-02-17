@@ -55,6 +55,12 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
         $mform->addElement('checkbox', 'studentdownload', get_string('studentdownload', 'webexactivity'));
         $mform->setDefault('studentdownload', 1);
 
+        $mform->addElement('checkbox', 'studentdownload', get_string('studentdownload', 'webexactivity'));
+        $mform->setDefault('studentdownload', 1);
+
+        $mform->addElement('checkbox', 'longavailability', get_string('longavailability', 'webexactivity'));
+        $mform->setDefault('longavailability', 0);
+
         $this->standard_coursemodule_elements();
 
         $this->add_action_buttons();

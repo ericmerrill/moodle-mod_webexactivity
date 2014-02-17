@@ -197,6 +197,10 @@ class base {
             return false;
         }
 
+        if (!isset($this->meetingrecord->$name)) {
+            return null;
+        }
+
         return $this->meetingrecord->$name;
         // TODO.
     }

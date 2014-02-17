@@ -88,27 +88,6 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Convert from duration to end time.
-        $meetings = $DB->get_recordset('webexactivity');
-
-        $update = new \stdClass();
-        foreach ($meetings as $meeting) {
-            $update->id = $meeting->id;
-            $update->endtime = ($meeting->starttime + ($meeting->duration * 60));
-
-            $DB->update_record('webexactivity', $update);
-        }
-
-        $meetings->close();
-
-        // Define field duration to be dropped from webexactivity.
-        $field = new xmldb_field('duration');
-
-        // Conditionally launch drop field duration.
-        if ($dbman->field_exists($table, $field)) {
-            $dbman->drop_field($table, $field);
-        }
-
         // Webex Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014021300, 'webexactivity');
     }
@@ -141,6 +120,35 @@ function xmldb_webexactivity_upgrade($oldversion) {
 
         // Webex Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014021302, 'webexactivity');
+    }
+
+    if ($oldversion < 2014021400) {
+
+        // Define field duration to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('duration', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'endtime');
+
+        // Conditionally launch add field duration.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $meetings = $DB->get_recordset('webexactivity');
+
+        $update = new \stdClass();
+        foreach ($meetings as $meeting) {
+            if (!isset($meeting->duration)) {
+                $update->id = $meeting->id;
+                $update->duration = (($meeting->endtime - $meeting->starttime) / 60);
+
+                $DB->update_record('webexactivity', $update);
+            }
+        }
+
+        $meetings->close();
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014021400, 'webexactivity');
     }
 
     return true;
