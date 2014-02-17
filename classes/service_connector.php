@@ -40,6 +40,12 @@ class service_connector {
     private $error = array();
     private $response = null;
 
+    /**
+     * Fetch the response for the provided XML.
+     *
+     * @param string    $xml The XML to send.
+     * @return bool     True on success, false on failure.
+     */
     public function retrieve($xml) {
         $this->clear_status();
         $handle = $this->create_curl_handle();
@@ -65,12 +71,20 @@ class service_connector {
         return $this->success;
     }
 
+    /**
+     * Clear all internal status tracking.
+     */
     private function clear_status() {
         $this->success = null;
         $this->error = array();
         $this->response = null;
     }
 
+    /**
+     * Setup a new curl handle for use.
+     *
+     * @return object    The configured curl handle.
+     */
     private function create_curl_handle() {
         $url = get_config('webexactivity', 'url');
         if ($url === false) {
@@ -90,6 +104,9 @@ class service_connector {
         return $handle;
     }
 
+    /**
+     * Update the success fields based on the response.
+     */
     private function update_success() {
         if ($this->response === null || $this->response === false) {
             $this->success = false;
@@ -124,18 +141,38 @@ class service_connector {
         }
     }
 
+    /**
+     * Get the errors from the last connection.
+     *
+     * @return array|bool    The errors array.
+     */
     public function get_errors() {
         return $this->error;
     }
 
+    /**
+     * Get the success flag from the last connection.
+     *
+     * @return bool    The last success status (true is success).
+     */
     public function get_success() {
         return $this->success;
     }
 
+    /**
+     * Get the response from the last connection.
+     *
+     * @return string|bool    The response in XML form.
+     */
     public function get_response() {
         return $this->response;
     }
 
+    /**
+     * Get the response from the last connection.
+     *
+     * @return string|bool    The response in XML form.
+     */
     public function get_response_array() {
         return xmlize($this->response);
     }

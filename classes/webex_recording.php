@@ -34,14 +34,17 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class webex_recording {
+    /** @var object The database record this object represents. */
     private $recording = null;
 
-    // Load these lazily.
-    private $webex = null;
-
-    // Track if there is a change that needs to go to WebEx.
+    /** @var bool Track if there is a change that needs to go to WebEx. */
     private $webexchange = false;
 
+    /**
+     * Builds the recording object.
+     *
+     * @param object|int    $recording Object of recording record, or id of record to load.
+     */
     public function __construct($recording) {
         global $DB;
 
@@ -59,16 +62,11 @@ class webex_recording {
         }
     }
 
-    private function load_webex() {
-        if (isset($this->webex)) {
-            return true;
-        }
-
-        $this->webex = new webex();
-
-        return true;
-    }
-
+    /**
+     * Mark this recording for deletion.
+     *
+     * @return bool    True on success, false on failure.
+     */
     public function delete() {
         global $DB;
 
@@ -78,6 +76,11 @@ class webex_recording {
         return $DB->update_record('webexactivity_recording', $update);
     }
 
+    /**
+     * Delete this recording from WebEx.
+     *
+     * @return bool    True on success, false on failure.
+     */
     public function true_delete() {
         global $DB;
 
@@ -87,7 +90,8 @@ class webex_recording {
 
         $webexuser = $this->get_recording_webex_user();
 
-        $response = $this->webex->get_response($xml, $webexuser);
+        $webex = new webex();
+        $response = $webex->get_response($xml, $webexuser);
 
         if ($response === false) {
             // TODO error handling.
@@ -99,36 +103,29 @@ class webex_recording {
         return true;
     }
 
-    /*private function set_name($name) {
-        global $DB;
-
-        $this->load_webex();
-
-        $this->recording->name = $name;
-
-        $params = new \stdClass;
-        $params->recordingid = $this->__get('recordingid');
-        $params->name = $name;
-
-        $xml = type\base\xml_gen::update_recording($params);
-
-        $webexuser = $this->get_recording_webex_user();
-
-        $response = $this->webex->get_response($xml, $webexuser);
-    }*/
-
+    /**
+     * Returns the webex_user that created this recording.
+     *
+     * @return bool|webex_user    The WebEx user. False on failure.
+     */
     public function get_recording_webex_user() {
         global $USER;
 
         if (isset($this->recording->hostid)) {
             $webexuser = new \mod_webexactivity\webex_user($this->recording->hostid);
         } else {
-            $webexuser = $this->webex->get_webex_user($USER);
+            $webex = new webex();
+            $webexuser = $webex->get_webex_user($USER);
         }
 
         return $webexuser;
     }
 
+    /**
+     * Save the recording to WebEx and Moodle as needed.
+     *
+     * @return bool    True on success, false on failure/error.
+     */
     public function save() {
         if ($this->webexchange) {
             if (!$this->save_to_webex()) {
@@ -138,6 +135,11 @@ class webex_recording {
         return $this->save_to_db();
     }
 
+    /**
+     * Save the recording to the Moodle database.
+     *
+     * @return bool    True on success, false on failure/error.
+     */
     public function save_to_db() {
         global $DB;
 
@@ -157,6 +159,11 @@ class webex_recording {
         }
     }
 
+    /**
+     * Save this recording object into WebEx.
+     *
+     * @return bool    True on success, false on failure.
+     */
     public function save_to_webex() {
         $this->load_webex();
 
@@ -168,7 +175,8 @@ class webex_recording {
 
         $webexuser = $this->get_recording_webex_user();
 
-        $response = $this->webex->get_response($xml, $webexuser);
+        $webex = new webex();
+        $response = $webex->get_response($xml, $webexuser);
 
         if ($response) {
             $this->webexchange = false;
@@ -178,10 +186,16 @@ class webex_recording {
         }
     }
 
-
     // ---------------------------------------------------
     // Magic Methods.
     // ---------------------------------------------------
+
+    /**
+     * Magic setter method for object.
+     *
+     * @param string    $name The name of the value to be set.
+     * @param mixed     $val  The value to be set.
+     */
     public function __set($name, $val) {
         switch ($name) {
             case 'name':
@@ -205,6 +219,11 @@ class webex_recording {
         $this->recording->$name = $val;
     }
 
+    /**
+     * Magic getter method for object.
+     *
+     * @param string    $name The name of the value to be retrieved.
+     */
     public function __get($name) {
         switch ($name) {
             case 'visible':
@@ -219,11 +238,25 @@ class webex_recording {
         return $this->recording->$name;
     }
 
+    /**
+     * Magic isset method for object.
+     *
+     * @param string    $name The name of the value to be checked.
+     */
     public function __isset($name) {
         switch ($name) {
             case 'record':
                 return isset($this->recording);
         }
         return isset($this->recording->$name);
+    }
+
+    /**
+     * Magic unset method for object.
+     *
+     * @param string    $name The name of the value to be unset.
+     */
+    public function __unset($name) {
+        unset($this->recording->$name);
     }
 }

@@ -81,7 +81,7 @@ class meeting {
     /**
      * Builds the meeting object.
      *
-     * @param object/int    $meeting Object of meeting record, or id of record to load.
+     * @param object|int    $meeting Object of meeting record, or id of record to load.
      */
     public function __construct($meeting = false) {
         global $DB;
@@ -571,7 +571,7 @@ class meeting {
     /**
      * Load a database object into the meeting.
      *
-     * @param object    The record to load.
+     * @param object    $meeting The record to load.
      */
     protected function load_webex_record($meeting) {
         $this->meetingrecord = $meeting;
