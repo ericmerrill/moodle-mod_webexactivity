@@ -34,10 +34,14 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class webex_user {
+    /** @var object The DB record that represents this user. */
     private $user = null;
 
-    // Load these lazily.
-
+    /**
+     * Builds the webex_user object.
+     *
+     * @param object|int|string  $user Object of user record, id of record to load, webex user name of the record to load.
+     */
     public function __construct($user = null) {
         global $DB;
 
@@ -62,6 +66,12 @@ class webex_user {
     // ---------------------------------------------------
     // User Methods.
     // ---------------------------------------------------
+    /**
+     * Set the password for the user.
+     *
+     * @param string   $password The plaintext password to set.
+     * @return bool    True on success, false on failure.
+     */
     public function update_password($password) {
         $this->user->password = self::encrypt_password($password);
 
@@ -73,12 +83,20 @@ class webex_user {
 
         if ($response !== false) {
             $this->save_to_db();
+            return true;
         } else {
             return false;
         }
 
     }
 
+    /**
+     * Get a login URL for the user.
+     *
+     * @param string   $backurl The URL to go to on failure.
+     * @param string   $fronturl The URL to go to on success.
+     * @return string|bool    The url, false on failure.
+     */
     public function get_login_url($backurl = false, $forwardurl = false) {
         $xml = \mod_webexactivity\type\base\xml_gen::get_user_login_url($this->webexid);
 
@@ -103,6 +121,12 @@ class webex_user {
         return $returnurl;
     }
 
+    /**
+     * Get a logout URL for the user.
+     *
+     * @param string   $backurl The URL to go to on failure or success.
+     * @return string    The url.
+     */
     public static function get_logout_url($backurl = false) {
         $url = webex::get_base_url();
 
@@ -137,12 +161,23 @@ class webex_user {
     // TODO create_user.
     // TODO update_user?
 
-
+    /**
+     * Encrypt the password for storage.
+     *
+     * @param string     $password The plain text password.
+     * @return string    The encrypted password.
+     */
     public static function encrypt_password($password) {
         // BOOOOOO Weak!!
         return base64_encode($password);
     }
 
+    /**
+     * Decrypt the password for use.
+     *
+     * @param string     $encrypted The encrypted password.
+     * @return string    The plain text password.
+     */
     public static function decrypt_password($encrypted) {
         // BOOOOOO Weak!!
         return base64_decode($encrypted);
@@ -151,6 +186,11 @@ class webex_user {
     // ---------------------------------------------------
     // Support Methods.
     // ---------------------------------------------------
+    /**
+     * Save this user to the database.
+     *
+     * @return bool    True if auth succeeded, false if failed.
+     */
     public function save_to_db() {
         global $DB;
 
@@ -173,6 +213,12 @@ class webex_user {
     // ---------------------------------------------------
     // Magic Methods.
     // ---------------------------------------------------
+    /**
+     * Magic setter method for object.
+     *
+     * @param string    $name The name of the value to be set.
+     * @param mixed     $val  The value to be set.
+     */
     public function __set($name, $val) {
         switch ($name) {
             case 'password':
@@ -185,6 +231,11 @@ class webex_user {
         $this->save_to_db();
     }
 
+    /**
+     * Magic getter method for object.
+     *
+     * @param string    $name The name of the value to be retrieved.
+     */
     public function __get($name) {
         switch ($name) {
             case 'password':
@@ -199,9 +250,21 @@ class webex_user {
         return $this->user->$name;
     }
 
+    /**
+     * Magic isset method for object.
+     *
+     * @param string    $name The name of the value to be checked.
+     */
     public function __isset($name) {
         return isset($this->user->$name);
     }
 
-
+    /**
+     * Magic unset method for object.
+     *
+     * @param string    $name The name of the value to be unset.
+     */
+    public function __unset($name) {
+        unset($this->user->$name);
+    }
 }
