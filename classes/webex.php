@@ -269,6 +269,11 @@ class webex {
     // ---------------------------------------------------
     // Support Functions.
     // ---------------------------------------------------
+    /**
+     * Return the base URL for the WebEx server.
+     *
+     * @return string  The base URL.
+     */
     public static function get_base_url() {
         $host = get_config('webexactivity', 'url');
 
@@ -280,6 +285,11 @@ class webex {
         return $url;
     }
 
+    /**
+     * Generate a password that will pass the WebEx requirements.
+     *
+     * @return string  The generated password.
+     */
     private static function generate_password() {
         $alphabet = "abcdefghijklmnopqrstuwxyzABCDEFGHIJKLMNOPQRSTUWXYZ0123456789";
         $pass = array();
@@ -291,7 +301,12 @@ class webex {
         return implode($pass).'!2Da';
     }
 
-    public function get_open_sessions() {
+    /**
+     * Check and update open sessions/meetings from WebEx.
+     *
+     * @return bool  True on success, false on failure.
+     */
+    public function update_open_sessions() {
         global $DB;
 
         $xml = type\base\xml_gen::list_open_sessions();
@@ -299,11 +314,6 @@ class webex {
         $response = $this->get_response($xml);
         if ($response === false) {
             return false;
-        }
-
-        // TODO WTF is this?
-        if (!is_array($response) && isset($response['ep:services'])) {
-            return true;
         }
 
         $processtime = time();
@@ -340,13 +350,17 @@ class webex {
                 $meeting->save();
             }
         }
-
     }
 
     // ---------------------------------------------------
     // Recording Functions.
     // ---------------------------------------------------
-    public function get_recordings() {
+    /**
+     * Check and update recordings from WebEx.
+     *
+     * @return bool  True on success, false on failure.
+     */
+    public function update_recordings() {
         $params = new \stdClass();
         $params->startdate = time() - (365 * 24 * 3600);
         $params->enddate = time() + (12 * 3600);
@@ -360,6 +374,12 @@ class webex {
         return $this->proccess_recording_response($response);
     }
 
+    /**
+     * Process the response of recordings from WebEx.
+     *
+     * @param array  The response array from WebEx.
+     * @return bool  True on success, false on failure.
+     */
     public function proccess_recording_response($response) {
         global $DB;
 
@@ -433,8 +453,13 @@ class webex {
 
             }
         }
+
+        return true;
     }
 
+    /**
+     * Delete 'deleted' recordings from the WebEx server.
+     */
     public function remove_deleted_recordings() {
         global $DB;
 
@@ -457,6 +482,14 @@ class webex {
     // ---------------------------------------------------
     // Connection Functions.
     // ---------------------------------------------------
+    /**
+     * Get the response from WebEx for a XML message.
+     *
+     * @param string           $xml The XML to send to WebEx.
+     * @param webex_user|bool  $webexuser The WebEx user to use for auth. False to use the API user.
+     * @param bool             $expecterror If true, and error is possibly expected. Supress error message.
+     * @return array|bool      XML response (as array). False on failure.
+     */
     public function get_response($basexml, $webexuser = false, $expecterror = false) {
         global $USER;
 
@@ -488,6 +521,16 @@ class webex {
         }
     }
 
+    /**
+     * Connects to WebEx and gets a response for the given, full, XML.
+     *
+     * To be used by get_response().
+     *
+     * @param string  $xml The XML message to retrieve.
+     * @return array  status bool    True on success, false on failure.
+     *                response array The XML response in array form.
+     *                errors array   An array of errors.
+     */
     private function fetch_response($xml) {
         $connector = new service_connector();
         $status = $connector->retrieve($xml);
