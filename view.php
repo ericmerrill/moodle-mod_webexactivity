@@ -98,7 +98,7 @@ if ($webexres['ST'] === 'FAIL') {
                 }
                 $hosturl = new moodle_url($returnurl, $params);
 
-                $logouturl = $webex->get_logout_url($hosturl->out(false));
+                $logouturl = \mod_webexactivity\webex_user::get_logout_url($hosturl->out(false));
 
                 redirect($logouturl);
                 // TODO logout and try to host again.
@@ -166,7 +166,7 @@ switch ($action) {
 
         $params = array('id' => $id, 'action' => 'hostmeetingerror');
         $failurl = new moodle_url($returnurl, $params);
-        $authurl = $webex->get_login_url($webexuser, $failurl->out(false), $hosturl);
+        $authurl = $webexuser->get_login_url($failurl->out(false), $hosturl);
 
         $webexmeeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS;
         $webexmeeting->laststatuscheck = time();

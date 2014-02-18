@@ -79,6 +79,61 @@ class webex_user {
 
     }
 
+    public function get_login_url($backurl = false, $forwardurl = false) {
+        $xml = \mod_webexactivity\type\base\xml_gen::get_user_login_url($this->webexid);
+
+        $webex = new \mod_webexactivity\webex();
+
+        if (!($response = $webex->get_response($xml, $this))) {
+            return false;
+        }
+
+        $returnurl = $response['use:userLoginURL']['0']['#'];
+
+        if ($backurl) {
+            $encoded = urlencode($backurl);
+            $returnurl = str_replace('&BU=', '&BU='.$encoded, $returnurl);
+        }
+
+        if ($forwardurl) {
+            $encoded = urlencode($forwardurl);
+            $returnurl = str_replace('&MU=GoBack', '&MU='.$encoded, $returnurl);
+        }
+
+        return $returnurl;
+    }
+
+    public static function get_logout_url($backurl = false) {
+        $url = webex::get_base_url();
+
+        $url .= '/p.php?AT=LO';
+        if ($backurl) {
+            $encoded = urlencode($backurl);
+            $url .= '&BU='.$encoded;
+        }
+
+        return $url;
+    }
+
+    /**
+     * Check if the auth credentials of the WebEx user are good.
+     *
+     * @return bool    True if auth succeeded, false if failed.
+     */
+    public function check_user_auth() {
+        $xml = type\base\xml_gen::check_user_auth($this);
+
+        $webex = new \mod_webexactivity\webex();
+
+        $response = $webex->get_response($xml);
+
+        if ($response) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     // TODO create_user.
     // TODO update_user?
 
@@ -94,7 +149,7 @@ class webex_user {
     }
 
     // ---------------------------------------------------
-    // Magic Methods.
+    // Support Methods.
     // ---------------------------------------------------
     public function save_to_db() {
         global $DB;

@@ -34,26 +34,70 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class webex {
+    /**
+     * Type that represents a Meeting Center meeting.
+     */
     const WEBEXACTIVITY_TYPE_MEETING = 1;
+
+    /**
+     * Type that represents a Training Center meeting.
+     */
     const WEBEXACTIVITY_TYPE_TRAINING = 2;
+
+    /**
+     * Type that represents a Support Center meeting.
+     */
     const WEBEXACTIVITY_TYPE_SUPPORT = 3;
 
+    /**
+     * Status that represents a meeting that has never started.
+     */
     const WEBEXACTIVITY_STATUS_NEVER_STARTED = 0;
+
+    /**
+     * Status that represents a meeting that has stopped.
+     */
     const WEBEXACTIVITY_STATUS_STOPPED = 1;
+
+    /**
+     * Status that represents a meeting that is in progress.
+     */
     const WEBEXACTIVITY_STATUS_IN_PROGRESS = 2;
 
+    /**
+     * Time status that represents a meeting that is upcoming.
+     */
     const WEBEXACTIVITY_TIME_UPCOMING = 0;
+
+    /**
+     * Time status that represents a meeting that is available.
+     */
     const WEBEXACTIVITY_TIME_AVAILABLE = 1;
+
+    /**
+     * Time status that represents a meeting that is in progress.
+     */
     const WEBEXACTIVITY_TIME_IN_PROGRESS = 2;
+
+    /**
+     * Time status that represents a meeting that is in the recent past.
+     */
     const WEBEXACTIVITY_TIME_PAST = 3;
+
+    /**
+     * Time status that represents a meeting that is in the distant past.
+     */
     const WEBEXACTIVITY_TIME_LONG_PAST = 4;
 
-
+    /** @var mixed Storage for the latest errors from a connection. */
     private $latesterrors = null;
 
-    public function __construct() {
-    }
-
+    /**
+     * Loads a meeting object of the propper type.
+     *
+     * @param object|int     $meeting Meeting record, or id of record, to load.
+     * @return bool|meeting  A meeting object or false on failure.
+     */
     public static function load_meeting($meeting) {
         global $DB;
 
@@ -86,6 +130,12 @@ class webex {
         return false;
     }
 
+    /**
+     * Create a meeting object of the propper type.
+     *
+     * @param int     $type  The type to create.
+     * @return bool|meeting  A meeting object or false on failure.
+     */
     public static function new_meeting($type) {
         switch ($type) {
             case self::WEBEXACTIVITY_TYPE_MEETING:
@@ -107,6 +157,13 @@ class webex {
     // ---------------------------------------------------
     // User Functions.
     // ---------------------------------------------------
+    /**
+     * Return a WebEx user object for a given Moodle user.
+     *
+     * @param object    $moodleuser The moodle user object to base the WebEx user off of.
+     * @param bool      $checkauth  If true, connect to WebEx and check/correct the auth of the user.
+     * @return bool|webex_user  A webex_user object, or false on failure.
+     */
     public function get_webex_user($moodleuser, $checkauth = false) {
         $webexuser = $this->get_webex_user_record($moodleuser);
 
@@ -116,7 +173,7 @@ class webex {
         }
 
         if ($checkauth) {
-            $status = $this->check_user_auth($webexuser);
+            $status = $webexuser->check_user_auth();
             if ($status) {
                 return $webexuser;
             } else {
@@ -128,7 +185,13 @@ class webex {
         }
     }
 
-    // TODO move to new webex_user object().
+    // TODO Should webex_user do all this work?
+    /**
+     * Return a WebEx user object for a given Moodle user.
+     *
+     * @param object    $moodleuser The moodle user object to base the WebEx user off of.
+     * @return bool|webex_user  A webex_user object, or false on failure.
+     */
     public function get_webex_user_record($moodleuser) {
         global $DB;
 
@@ -201,56 +264,6 @@ class webex {
         }
 
         return false;
-    }
-
-    public function check_user_auth($webexuser) {
-        $xml = type\base\xml_gen::check_user_auth($webexuser);
-
-        if (!($response = $this->get_response($xml))) {
-            return false;
-        }
-
-        $response = $this->get_response($xml);
-
-        if ($response) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public function get_login_url($webexuser, $backurl = false, $forwardurl = false) {
-        $xml = type\base\xml_gen::get_user_login_url($webexuser->webexid);
-
-        if (!($response = $this->get_response($xml, $webexuser))) {
-            return false;
-        }
-
-        $returnurl = $response['use:userLoginURL']['0']['#'];
-
-        if ($backurl) {
-            $encoded = urlencode($backurl);
-            $returnurl = str_replace('&BU=', '&BU='.$encoded, $returnurl);
-        }
-
-        if ($forwardurl) {
-            $encoded = urlencode($forwardurl);
-            $returnurl = str_replace('&MU=GoBack', '&MU='.$encoded, $returnurl);
-        }
-
-        return $returnurl;
-    }
-
-    public function get_logout_url($backurl = false) {
-        $url = self::get_base_url();
-
-        $url .= '/p.php?AT=LO';
-        if ($backurl) {
-            $encoded = urlencode($backurl);
-            $url .= '&BU='.$encoded;
-        }
-
-        return $url;
     }
 
     // ---------------------------------------------------
