@@ -138,7 +138,7 @@ class meeting {
             case 'xml':
             case 'guestuserid':
                 debugging('Meeting property "'.$name.'" removed.', DEBUG_DEVELOPER);
-                return false;
+                return;
                 break;
             case 'status':
                 if (isset($this->status) && ($val != $this->status)) {
@@ -181,10 +181,9 @@ class meeting {
         $this->meetingrecord->$name = $val;
         if (!array_key_exists($name, $this->keys)) {
             debugging('Unknown meeting value set "'.$name.'"', DEBUG_DEVELOPER);
-            return false;
+            return;
         }
-        return true;
-        // TODO.
+        return;
     }
 
     /**

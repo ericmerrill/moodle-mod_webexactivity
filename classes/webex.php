@@ -98,6 +98,7 @@ class webex {
      * @param object|int     $meeting Meeting record, or id of record, to load.
      * @return bool|meeting  A meeting object or false on failure.
      */
+    // TODO do this in meeting.
     public static function load_meeting($meeting) {
         global $DB;
 
@@ -136,6 +137,7 @@ class webex {
      * @param int     $type  The type to create.
      * @return bool|meeting  A meeting object or false on failure.
      */
+    // TODO do this in meeting.
     public static function new_meeting($type) {
         switch ($type) {
             case self::WEBEXACTIVITY_TYPE_MEETING:
