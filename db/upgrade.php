@@ -157,6 +157,21 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014021400, 'webexactivity');
     }
 
+    if ($oldversion < 2014021800) {
+
+        // Define field timemodified to be added to webexactivity_user.
+        $table = new xmldb_table('webexactivity_user');
+        $field = new xmldb_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'password');
+
+        // Conditionally launch add field timemodified.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014021800, 'webexactivity');
+    }
+
     return true;
 }
 

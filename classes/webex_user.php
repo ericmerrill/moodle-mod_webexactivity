@@ -194,7 +194,7 @@ class webex_user {
     public function save_to_db() {
         global $DB;
 
-        // TODO Time modified.
+        $this->user->timemodified = time();
 
         if (isset($this->user->id)) {
             if ($DB->update_record('webexactivity_user', $this->user)) {
