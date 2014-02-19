@@ -66,3 +66,7 @@
 #editrecording #id_name {
     width: 300px;
 }
+
+.webexrecordingdeleted {
+    color: gray;
+}

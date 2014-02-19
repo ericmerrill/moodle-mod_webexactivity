@@ -71,8 +71,22 @@ class webex_recording {
         global $DB;
 
         $update = new \stdClass();
-        $update->id = $this->recording->id;
+        $update->id = $this->id;
         $update->deleted = time();
+        return $DB->update_record('webexactivity_recording', $update);
+    }
+
+    /**
+     * Un-delete this recording.
+     *
+     * @return bool    True on success, false on failure.
+     */
+    public function undelete() {
+        global $DB;
+
+        $update = new \stdClass();
+        $update->id = $this->id;
+        $update->deleted = 0;
         return $DB->update_record('webexactivity_recording', $update);
     }
 

@@ -22,10 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->libdir.'/tablelib.php');
 
 admin_externalpage_setup('modwebexactivityrecordings');
 
@@ -33,9 +31,11 @@ $pageurl = new moodle_url('/mod/webexactivity/admin_recordings.php');
 
 $action = optional_param('action', false, PARAM_ALPHA);
 $view = optional_param('view', false, PARAM_ALPHA);
+$download = optional_param('download', '', PARAM_ALPHA);
 
 switch ($action) {
     case 'delete':
+        // Delete recording. Check for confirmation, show form is not present.
         $confirm = optional_param('confirm', 0, PARAM_INT);
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\webex_recording($recordingid);
@@ -44,89 +44,61 @@ switch ($action) {
             $view = 'deleterecording';
             break;
         } else {
-            $params = array(
-                'context' => $context,
-                'objectid' => $recordingid
-            );
-            $event = \mod_webexactivity\event\recording_deleted::create($params);
-            $event->add_record_snapshot('webexactivity_recording', $recording->record);
-            $event->trigger();
+            // TODO Log event.
 
-            //$recording->delete();
+            $recording->delete();
             redirect($pageurl->out(false));
         }
         break;
 
+    case 'undelete':
+        // Mark recording as not deleted.
+        $recordingid = required_param('recordingid', PARAM_INT);
+        $recording = new \mod_webexactivity\webex_recording($recordingid);
+
+        $recording->undelete();
+        redirect($pageurl->out(false));
+        break;
 
 }
 
+// Setup the sql table.
+$table = new \mod_webexactivity\admin_recordings_table('webexactivityadminrecordingstable');
+$table->define_baseurl($pageurl);
+
+// Content.
+$table->set_sql('*', '{webexactivity_recording}', '1=1', array());
+$table->define_columns(array('name', 'hostid', 'timecreated',
+        'duration', 'filesize', 'fileurl', 'streamurl', 'deleted', 'webexid'));
+$table->define_headers(array('Name', 'Host', 'Date', 'Length', 'Size', 'Download', 'Stream', 'Delete', 'Activity'));
+
+// Options.
+$table->sortable(true, 'timecreated', SORT_DESC);
+$table->no_sorting('fileurl');
+$table->no_sorting('streamurl');
+
+$table->is_downloadable(true);
 
 
+// Setup for downloading.
+if ($download) {
+    // Redefine headers for download.
+    $table->define_headers(array('Name', 'Host', 'Date', 'Length (sec)', 'Size (B)',
+            'Download', 'Stream', 'Deletion Time', 'Activity'));
+    $table->is_downloading($download, 'WebEx Recordings');
+    $table->out(50, false);
+    die();
+}
 
-
-
+// Standard page output.
 echo $OUTPUT->header();
 
-
-class mod_webexactivity_recordings_tables extends table_sql implements renderable {
-
-
-    public function col_duration($recording) {
-        return format_time($recording->duration);
-    }
-
-    public function col_filesize($recording) {
-        return display_size($recording->filesize);
-    }
-
-    public function col_fileurl($recording) {
-        return '<a href="'.$recording->fileurl.'">Download</a>';
-    }
-
-    public function col_streamurl($recording) {
-        return '<a href="'.$recording->streamurl.'">Stream</a>';
-    }
-
-    public function col_webexid($recording) {
-        if (isset($recording->webexid)) {
-            $cm = get_coursemodule_from_instance('webexactivity', $recording->webexid);
-            if ($cm) {
-                $returnurl = new moodle_url('/mod/webexactivity/view.php', array('id' => $cm->id));
-                return '<a href="'.$returnurl->out(false).'">Activity</a>';
-            } else {
-                return '-';
-            }
-        } else {
-            return '-';
-        }
-    }
-
-    public function col_timecreated($recording) {
-        return userdate($recording->timecreated);
-    }
-
-    public function col_delete($recording) {
-        $pageurl = new moodle_url('/mod/webexactivity/admin_recordings.php', array('action' => 'delete', 'recordingid' => $recording->id));
-        return '<a href="'.$pageurl->out(false).'">Delete</a>';
-    }
-}
-
 if (!$view) {
-    $table = new mod_webexactivity_recordings_tables('webexactivityadminrecordingstable2');
-    $table->define_baseurl($pageurl);
-
-    $table->set_sql('*', '{webexactivity_recording}', '1=1', array());
-    $table->define_columns(array('name', 'timecreated', 'duration', 'filesize', 'fileurl', 'streamurl', 'Delete', 'webexid'));
-    $table->define_headers(array('Name', 'Date', 'Length', 'Size', 'Download', 'Stream', 'Delete', 'Activity'));
-
-    $table->sortable(true, 'timecreated', SORT_DESC);
-    $table->no_sorting('fileurl');
-    $table->no_sorting('streamurl');
-
+    // By default, just print the table.
     $table->out(50, false);
 } else if ($view === 'deleterecording') {
     // Show the delete recording confirmation page.
-    $params = array('action' => 'deleterecording', 'confirm' => 1, 'recordingid' => $recordingid);
+    $params = array('action' => 'delete', 'confirm' => 1, 'recordingid' => $recordingid);
     $confirmurl = new moodle_url($pageurl, $params);
 
     $params = new stdClass();
@@ -136,8 +108,4 @@ if (!$view) {
     echo $OUTPUT->confirm($message, $confirmurl, $pageurl);
 }
 
-
-
-
 echo $OUTPUT->footer();
-

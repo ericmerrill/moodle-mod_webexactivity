@@ -22,10 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->libdir.'/tablelib.php');
 
 admin_externalpage_setup('modwebexactivityusers');
 
@@ -50,21 +48,8 @@ switch ($action) {
         break;
 }
 
-
-
-echo $OUTPUT->header();
-
-class mod_webexactivity_users_tables extends table_sql implements renderable {
-
-
-    public function col_login($user) {
-        $pageurl = new moodle_url('/mod/webexactivity/admin_users.php', array('action' => 'login', 'webexid' => $user->webexid));
-        return '<a href="'.$pageurl->out(false).'" target=_blank>Login</a>';
-    }
-
-}
-
-$table = new mod_webexactivity_users_tables('webexactivityadminrecordingstable2');
+// Setup the table for output.
+$table = new \mod_webexactivity\admin_users_table('webexactivityadminrecordingstable');
 $table->define_baseurl($pageurl);
 $table->set_sql('*', '{webexactivity_user} AS wu LEFT JOIN {user} AS u ON wu.moodleuserid = u.id', '1=1', array());
 
@@ -72,9 +57,9 @@ $table->define_columns(array('firstname', 'lastname', 'email', 'webexid', 'login
 $table->define_headers(array('First Name', 'Last Name', 'Email', 'Webex ID', ''));
 $table->no_sorting('login');
 
+echo $OUTPUT->header();
+
+// Output the table.
 $table->out(50, false);
 
-
-
 echo $OUTPUT->footer();
-
