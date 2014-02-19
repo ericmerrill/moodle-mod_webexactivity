@@ -76,10 +76,10 @@ class xml_gen {
 
         if ($user == false) {
             $outxml .= '<webExID>'.$config->apiusername.'</webExID>';
-            $outxml .= '<password>'.htmlentities($config->apipassword).'</password>';
+            $outxml .= '<password>'.self::format_text($config->apipassword).'</password>';
         } else {
             $outxml .= '<webExID>'.$user->webexid.'</webExID>';
-            $outxml .= '<password>'.htmlentities($user->password).'</password>';
+            $outxml .= '<password>'.self::format_text($user->password).'</password>';
         }
 
         $outxml .= '<siteID>'.$config->siteid.'</siteID>';
@@ -136,11 +136,11 @@ class xml_gen {
      */
     public static function create_user($data) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.CreateUser">'.
-               '<firstName>'.htmlentities($data->firstname).'</firstName>'.
-               '<lastName>'.htmlentities($data->lastname).'</lastName>'.
+               '<firstName>'.self::format_text($data->firstname, 64).'</firstName>'.
+               '<lastName>'.self::format_text($data->lastname, 64).'</lastName>'.
                '<webExId>'.$data->webexid.'</webExId>'.
                '<email>'.$data->email.'</email>'.
-               '<password>'.htmlentities($data->password).'</password>'.
+               '<password>'.self::format_text($data->password).'</password>'.
                '<privilege><host>true</host></privilege>'.
                '<active>ACTIVATED</active>'.
                '</bodyContent></body>';
@@ -330,7 +330,7 @@ class xml_gen {
 
         if (isset($data->name)) {
             $xml .= '<basic>';
-            $xml .= '<topic>'.htmlentities($data->name).'</topic>';
+            $xml .= '<topic>'.self::format_text($data->name).'</topic>';
             $xml .= '<agenda>Agenda 1</agenda>';
             $xml .= '</basic>';
         }
@@ -351,6 +351,27 @@ class xml_gen {
      */
     public static function time_to_date_string($time) {
         return date('m/d/Y H:i:s', $time);
+    }
+
+    /**
+     * Format text for sending to WebEx.
+     *
+     * @param string   $text The text to format.
+     * @param int      $limit Limit the output to this many chars. 0 for unlimited.
+     * @return string  The formatted text.
+     */
+    public static function format_text($text, $limit = 0) {
+        $text = strip_tags($text);
+
+        $text = htmlentities($text);
+
+        $text = str_replace("\n", "<br />\n\r", $text);
+
+        if ($limit) {
+            $text = substr($text, 0, $limit);
+        }
+
+        return $text;
     }
 
 }

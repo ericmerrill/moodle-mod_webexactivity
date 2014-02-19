@@ -144,9 +144,9 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
 
         if (isset($data->name)) {
             $xml .= '<metaData>';
-            $xml .= '<confName>'.htmlentities($data->name).'</confName>';
+            $xml .= '<confName>'.self::format_text($data->name, 400).'</confName>';
             if (isset($data->intro)) {
-                $xml .= '<description>'.htmlentities($data->intro).'</description>';
+                $xml .= '<description>'.self::format_text($data->intro, 2250).'</description>';
             }
             $xml .= '</metaData>';
         }
@@ -169,7 +169,7 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
                 $xml .= '<participant><person>';
 
                 if (isset($huser->firstname) && isset($huser->lastname)) {
-                    $xml .= '<name>'.$huser->firstname.' '.$huser->lastname.'</name>';
+                    $xml .= '<name>'.self::format_text($huser->firstname.' '.$huser->lastname).'</name>';
                 }
                 if (isset($huser->email)) {
                     $xml .= '<email>'.$huser->email.'</email>';
