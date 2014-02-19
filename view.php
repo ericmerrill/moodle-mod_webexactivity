@@ -68,6 +68,10 @@ if ($webexres['ST'] === 'FAIL') {
     if ($webexres['AT'] === 'JM') {
         switch ($webexres['RS']) {
             case 'MeetingNotInProgress':
+                if ($webexmeeting->status === \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+                    $webexmeeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_STOPPED;
+                    $webexmeeting->save();
+                }
             case 'InvalidMeetingKeyOrPassword':
             case 'MeetingLocked':
             case 'InvalidMeetingKey':
@@ -124,6 +128,10 @@ if ($webexres['ST'] === 'FAIL') {
 
 } else if ($webexres['ST'] === 'SUCCESS') {
     if ($webexres['AT'] === 'JM') {
+        $webexmeeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS;
+        $webexmeeting->laststatuscheck = time();
+        $webexmeeting->save();
+
         $params = array(
             'context' => $context,
             'objectid' => $webexmeeting->id
@@ -134,6 +142,10 @@ if ($webexres['ST'] === 'FAIL') {
 
         redirect($returnurl->out(false));
     } else if ($webexres['AT'] === 'HM') {
+        $webexmeeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS;
+        $webexmeeting->laststatuscheck = time();
+        $webexmeeting->save();
+
         $params = array(
             'context' => $context,
             'objectid' => $webexmeeting->id
@@ -151,7 +163,6 @@ if ($webexres['ST'] === 'FAIL') {
 // Do redirect actions here.
 switch ($action) {
     case 'hostmeeting':
-        // TODO set status based on response, not click.
         if (!$webexmeeting->is_available(true)) {
             break;
         }
@@ -168,16 +179,10 @@ switch ($action) {
         $failurl = new moodle_url($returnurl, $params);
         $authurl = $webexuser->get_login_url($failurl->out(false), $hosturl);
 
-        $webexmeeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS;
-        $webexmeeting->laststatuscheck = time();
-        $webexmeeting->save();
-
         redirect($authurl);
         break;
 
     case 'joinmeeting':
-        // TODO Get feedback and then mark as started.
-
         if (!$webexmeeting->is_available()) {
             break;
         }

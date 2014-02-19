@@ -61,7 +61,6 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_heading('recordingsettings', get_string('recordingsettings', 'mod_webexactivity'), ''));
 
-    // TODO - Impliment.
     $settings->add(new admin_setting_configtext('webexactivity/recordingtrashtime',
             get_string('recordingtrashtime', 'mod_webexactivity'),
             get_string('recordingtrashtime_help', 'mod_webexactivity'), '48'));
