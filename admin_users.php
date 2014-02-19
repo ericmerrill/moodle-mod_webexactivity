@@ -29,22 +29,52 @@ require_once($CFG->libdir.'/tablelib.php');
 
 admin_externalpage_setup('modwebexactivityusers');
 
-class mod_webexactivity_users_tables extends table_sql implements renderable {
+$pageurl = new moodle_url('/mod/webexactivity/admin_users.php');
 
+$action = optional_param('action', false, PARAM_ALPHA);
+
+switch ($action) {
+    case 'login':
+        // First log the user out (in case they are logged in, then bring back to logintrue.
+        $webexid = required_param('webexid', PARAM_ALPHAEXT);
+        $returnurl = new moodle_url($pageurl, array('action' => 'logintrue', 'webexid' => $webexid));
+        redirect(\mod_webexactivity\webex_user::get_logout_url($returnurl->out(false)));
+        break;
+
+    case 'logintrue':
+        // Actually log the user in.
+        $webexid = required_param('webexid', PARAM_ALPHAEXT);
+        $webexuser = new \mod_webexactivity\webex_user($webexid);
+
+        redirect($webexuser->get_login_url());
+        break;
 }
 
 
 
-
 echo $OUTPUT->header();
-$table = new mod_webexactivity_users_tables('blah');
 
-$table->set_sql('*', '{webexactivity_user}', '1=1', array());
+class mod_webexactivity_users_tables extends table_sql implements renderable {
 
-$table->define_columns(array('id', 'webexuserid', 'webexid'));
-$table->define_headers(array('id', 'webexuserid', 'webexid'));
 
-$table->out(100, false);
+    public function col_login($user) {
+        $pageurl = new moodle_url('/mod/webexactivity/admin_users.php', array('action' => 'login', 'webexid' => $user->webexid));
+        return '<a href="'.$pageurl->out(false).'" target=_blank>Login</a>';
+    }
+
+}
+
+$table = new mod_webexactivity_users_tables('webexactivityadminrecordingstable2');
+$table->define_baseurl($pageurl);
+$table->set_sql('*', '{webexactivity_user} AS wu LEFT JOIN {user} AS u ON wu.moodleuserid = u.id', '1=1', array());
+
+$table->define_columns(array('firstname', 'lastname', 'email', 'webexid', 'login'));
+$table->define_headers(array('First Name', 'Last Name', 'Email', 'Webex ID', ''));
+$table->no_sorting('login');
+
+$table->out(50, false);
+
+
 
 echo $OUTPUT->footer();
 
