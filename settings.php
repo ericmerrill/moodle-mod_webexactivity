@@ -24,14 +24,15 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-
+// Create and add a folder/category.
 $ADMIN->add('modsettings', new admin_category('modwebexactivityfolder', new lang_string('pluginname', 'mod_webexactivity'),
         $module->is_enabled() === false));
 
+// Create a settings page object to add to.
 $settings = new admin_settingpage($section, get_string('settings', 'mod_webexactivity'), 'moodle/site:config',
         $module->is_enabled() === false);
 
-
+// Build up the full settings page if we need it.
 if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_heading('apisettings', get_string('apisettings', 'mod_webexactivity'), ''));
 
@@ -70,8 +71,10 @@ if ($ADMIN->fulltree) {
             get_string('manageallrecordings_help', 'mod_webexactivity'), 0));
 }
 
+// Add the settings to a the folder.
 $ADMIN->add('modwebexactivityfolder', $settings);
 
+// Add reports.
 $ADMIN->add("modwebexactivityfolder", new admin_externalpage('modwebexactivityrecordings',
         get_string('page_managerecordings', 'mod_webexactivity'),
         "$CFG->wwwroot/mod/webexactivity/admin_recordings.php", "moodle/role:manage"));

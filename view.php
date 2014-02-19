@@ -40,9 +40,6 @@ $webexres['ST'] = optional_param('ST', false, PARAM_ALPHA);
 $webexres['RS'] = optional_param('RS', false, PARAM_ALPHA);
 
 
-
-
-
 $cm = get_coursemodule_from_id('webexactivity', $id, 0, false, MUST_EXIST);
 $webexrecord = $DB->get_record('webexactivity', array('id' => $cm->instance), '*', MUST_EXIST);
 $webexmeeting = \mod_webexactivity\webex::load_meeting($webexrecord);
@@ -50,6 +47,7 @@ $webex = new \mod_webexactivity\webex();
 
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
+// Basic completion tracking.
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
@@ -60,14 +58,16 @@ require_capability('mod/webexactivity:view', $context);
 $canhost = has_capability('mod/webexactivity:hostmeeting', $context);
 
 $returnurl = new moodle_url('/mod/webexactivity/view.php', array('id' => $id));
-$PAGE->set_url('/mod/webexactivity/view.php', array('id' => $cm->id));
+$PAGE->set_url($returnurl);
 
+// Errors from the WebEx URL API docs.
 if ($webexres['ST'] === 'FAIL') {
     $error = true;
 
     if ($webexres['AT'] === 'JM') {
         switch ($webexres['RS']) {
             case 'MeetingNotInProgress':
+                // If running, mark meeting as stopped, WebEx wouldn't let us join.
                 if ($webexmeeting->status === \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
                     $webexmeeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_STOPPED;
                     $webexmeeting->save();
@@ -105,7 +105,6 @@ if ($webexres['ST'] === 'FAIL') {
                 $logouturl = \mod_webexactivity\webex_user::get_logout_url($hosturl->out(false));
 
                 redirect($logouturl);
-                // TODO logout and try to host again.
                 break;
             case 'AccessDenied':
             case 'AccountLocked':
@@ -128,6 +127,7 @@ if ($webexres['ST'] === 'FAIL') {
 
 } else if ($webexres['ST'] === 'SUCCESS') {
     if ($webexres['AT'] === 'JM') {
+        // Mark the meeting as running, we were able to join it.
         $webexmeeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS;
         $webexmeeting->laststatuscheck = time();
         $webexmeeting->save();
@@ -142,6 +142,7 @@ if ($webexres['ST'] === 'FAIL') {
 
         redirect($returnurl->out(false));
     } else if ($webexres['AT'] === 'HM') {
+        // Mark the meeting as running, we started it.
         $webexmeeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS;
         $webexmeeting->laststatuscheck = time();
         $webexmeeting->save();
@@ -291,6 +292,7 @@ switch ($action) {
             break;
         }
 
+        // Load the form for recording editing.
         $mform = new \mod_webexactivity\editrecording_form();
 
         if ($mform->is_cancelled()) {
@@ -315,7 +317,6 @@ switch ($action) {
             $data->visible = $recording->visible;
             $mform->set_data($data);
             break;
-
         }
 
         break;
@@ -335,6 +336,7 @@ switch ($action) {
 
         $confirm = optional_param('confirm', 0, PARAM_INT);
 
+        // If not confirmed, display form below.
         if (!$confirm) {
             $view = 'deleterecording';
             break;
@@ -354,18 +356,19 @@ switch ($action) {
 
 }
 
+// Record that the page was viewed.
 add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webexmeeting->id, $cm->id);
 
-
-
+// Basic page setup.
 $PAGE->set_title($course->shortname.': '.$webexmeeting->name);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($webexrecord);
 
-
+// Start output.
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($webexmeeting->name), 2);
 
+// Display any errors.
 if ($error !== false) {
     echo $OUTPUT->box_start('webexerror');
 
@@ -379,6 +382,7 @@ if ($error !== false) {
 echo $OUTPUT->box_start();
 
 if (!$view) {
+    // The standard view.
     echo '<table align="center" cellpadding="5">' . "\n";
 
     $formelements = array(
@@ -420,6 +424,7 @@ if (!$view) {
         echo '</td></tr>';
     }
 
+    // View "external guest link" link.
     if ($canhost && $webexmeeting->is_available(true)) {
         echo '<tr><td colspan=2 align="center">';
         $urlobj = new moodle_url('/mod/webexactivity/view.php', array('id' => $id, 'view' => 'guest'));
@@ -430,11 +435,7 @@ if (!$view) {
 
     echo '</table>';
 
-    $params = array('webexid' => $webexmeeting->id);
-    if (!$canhost) {
-        $params['visible'] = 1;
-    }
-
+    // Get and display recordings.
     if ($recordings = $webexmeeting->get_recordings()) {
         $candownload = $webexmeeting->studentdownload;
         $candownload = $candownload || $canhost;

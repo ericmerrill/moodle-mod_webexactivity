@@ -28,11 +28,13 @@ require('../../config.php');
 
 $id = optional_param('id', 0, PARAM_INT); // Course ID.
 $course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
-require_login($course);
 
+// Security.
+require_login($course);
 $context = context_course::instance($course->id);
 require_capability('mod/webexactivity:view', $context);
 
+// Page setup.
 $returnurl = new moodle_url('/mod/webexactivity/index.php', array('id' => $id));
 $PAGE->set_url($returnurl);
 $PAGE->set_pagelayout('incourse');
