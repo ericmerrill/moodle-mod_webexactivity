@@ -291,9 +291,7 @@ switch ($action) {
             break;
         }
 
-        require_once('editrecording_form.php');
-
-        $mform = new editrecording_form();
+        $mform = new \mod_webexactivity\editrecording_form();
 
         if ($mform->is_cancelled()) {
             $action = false;

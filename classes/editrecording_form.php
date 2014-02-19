@@ -22,9 +22,23 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_webexactivity;
+
+defined('MOODLE_INTERNAL') || die();
+
 require_once("$CFG->libdir/formslib.php");
 
-class editrecording_form extends moodleform {
+/**
+ * Extends moodleform to create a form for recording editing.
+ *
+ * @package    mod_webexactvity
+ * @copyright  2014 Eric Merrill (merrill@oakland.edu)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class editrecording_form extends \moodleform {
+    /**
+     * Define the layout and content of the form.
+     */
     public function definition() {
         global $CFG;
 
@@ -50,6 +64,13 @@ class editrecording_form extends moodleform {
         $mform->addElement('html', '</div>');
     }
 
+    /**
+     * Perform minimal validation on the settings form.
+     * 
+     * @param array  $data Array of data from the form.
+     * @param array  $files Array of files from the form.
+     * @return array  Validation errors.
+     */
     public function validation($data, $files) {
         return array();
     }
