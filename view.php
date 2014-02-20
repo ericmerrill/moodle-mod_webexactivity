@@ -167,10 +167,8 @@ switch ($action) {
         if (!$webexmeeting->is_available(true)) {
             break;
         }
-        if (!$canhost) {
-            // TODO Error here.
-            break;
-        }
+
+        require_capability('mod/webexactivity:hostmeeting', $context);
 
         $webexuser = $webex->get_webex_user($USER);
         $webexmeeting->add_webexuser_host($webexuser);
@@ -196,12 +194,11 @@ switch ($action) {
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\webex_recording($recordingid);
         $recwebexid = $recording->webexid;
-        if ((!$canhost) && (!$recording->visible)) {
-            // TODO Error here.
-            break;
+        if (!$recording->visible) {
+            require_capability('mod/webexactivity:hostmeeting', $context);
         }
         if ($recwebexid !== $cm->instance) {
-            // TODO Error here.
+            throw new invalid_parameter_exception('Recording ID does not match instance.');
             break;
         }
 
@@ -220,12 +217,11 @@ switch ($action) {
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\webex_recording($recordingid);
         $recwebexid = $recording->webexid;
-        if ((!$canhost) && (!$recording->visible)) {
-            // TODO Error here.
-            break;
+        if (!$recording->visible) {
+            require_capability('mod/webexactivity:hostmeeting', $context);
         }
         if ($recwebexid !== $cm->instance) {
-            // TODO Error here.
+            throw new invalid_parameter_exception('Recording ID does not match instance.');
             break;
         }
 
@@ -241,15 +237,13 @@ switch ($action) {
         break;
 
     case 'hiderecording':
-        if (!$canhost) {
-            // TODO Error here.
-            break;
-        }
+        require_capability('mod/webexactivity:hostmeeting', $context);
+
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\webex_recording($recordingid);
         $recwebexid = $recording->webexid;
         if ($recwebexid !== $cm->instance) {
-            // TODO Error here.
+            throw new invalid_parameter_exception('Recording ID does not match instance.');
             break;
         }
 
@@ -260,15 +254,13 @@ switch ($action) {
         break;
 
     case 'showrecording':
-        if (!$canhost) {
-            // TODO Error here.
-            break;
-        }
+        require_capability('mod/webexactivity:hostmeeting', $context);
+
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\webex_recording($recordingid);
         $recwebexid = $recording->webexid;
         if ($recwebexid !== $cm->instance) {
-            // TODO Error here.
+            throw new invalid_parameter_exception('Recording ID does not match instance.');
             break;
         }
 
@@ -279,16 +271,13 @@ switch ($action) {
         break;
 
     case 'editrecording':
-        if (!$canhost) {
-            // TODO Error here.
-            break;
-        }
+        require_capability('mod/webexactivity:hostmeeting', $context);
 
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\webex_recording($recordingid);
         $recwebexid = $recording->webexid;
         if ($recwebexid !== $cm->instance) {
-            // TODO Error here.
+            throw new invalid_parameter_exception('Recording ID does not match instance.');
             break;
         }
 
@@ -321,16 +310,13 @@ switch ($action) {
 
         break;
     case 'deleterecording':
-        if (!$canhost) {
-            // TODO Error here.
-            break;
-        }
+        require_capability('mod/webexactivity:hostmeeting', $context);
 
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\webex_recording($recordingid);
         $recwebexid = $recording->webexid;
         if ($recwebexid !== $cm->instance) {
-            // TODO Error here.
+            throw new invalid_parameter_exception('Recording ID does not match instance.');
             break;
         }
 
