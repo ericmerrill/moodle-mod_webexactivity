@@ -299,7 +299,7 @@ class webex {
         $rs = $DB->get_recordset_select('webexactivity_recording', 'deleted > 0 AND deleted < :time', $params);
 
         foreach ($rs as $record) {
-            $recording = new webex_recording($record);
+            $recording = new recording($record);
             print 'Deleting: '.$recording->name."\n";
             $recording->true_delete();
         }

@@ -38,7 +38,7 @@ switch ($action) {
         // Delete recording. Check for confirmation, show form is not present.
         $confirm = optional_param('confirm', 0, PARAM_INT);
         $recordingid = required_param('recordingid', PARAM_INT);
-        $recording = new \mod_webexactivity\webex_recording($recordingid);
+        $recording = new \mod_webexactivity\recording($recordingid);
 
         if (!$confirm) {
             $view = 'deleterecording';
@@ -54,7 +54,7 @@ switch ($action) {
     case 'undelete':
         // Mark recording as not deleted.
         $recordingid = required_param('recordingid', PARAM_INT);
-        $recording = new \mod_webexactivity\webex_recording($recordingid);
+        $recording = new \mod_webexactivity\recording($recordingid);
 
         $recording->undelete();
         redirect($pageurl->out(false));

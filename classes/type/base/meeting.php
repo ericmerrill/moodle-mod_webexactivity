@@ -467,7 +467,7 @@ class meeting {
     /**
      * Get all the recording objects for this meeting.
      *
-     * @return array    Array of webex_recording objects.
+     * @return array    Array of recording objects.
      */
     public function get_recordings() {
         global $DB;
@@ -481,7 +481,7 @@ class meeting {
         $out = array();
 
         foreach ($recordingrecords as $record) {
-            $out[] = new \mod_webexactivity\webex_recording($record);
+            $out[] = new \mod_webexactivity\recording($record);
         }
 
         return $out;

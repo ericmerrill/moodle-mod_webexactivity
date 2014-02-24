@@ -192,7 +192,7 @@ switch ($action) {
 
     case 'viewrecording':
         $recordingid = required_param('recordingid', PARAM_INT);
-        $recording = new \mod_webexactivity\webex_recording($recordingid);
+        $recording = new \mod_webexactivity\recording($recordingid);
         $recwebexid = $recording->webexid;
         if (!$recording->visible) {
             require_capability('mod/webexactivity:hostmeeting', $context);
@@ -215,7 +215,7 @@ switch ($action) {
 
     case 'downloadrecording';
         $recordingid = required_param('recordingid', PARAM_INT);
-        $recording = new \mod_webexactivity\webex_recording($recordingid);
+        $recording = new \mod_webexactivity\recording($recordingid);
         $recwebexid = $recording->webexid;
         if (!$recording->visible) {
             require_capability('mod/webexactivity:hostmeeting', $context);
@@ -240,7 +240,7 @@ switch ($action) {
         require_capability('mod/webexactivity:hostmeeting', $context);
 
         $recordingid = required_param('recordingid', PARAM_INT);
-        $recording = new \mod_webexactivity\webex_recording($recordingid);
+        $recording = new \mod_webexactivity\recording($recordingid);
         $recwebexid = $recording->webexid;
         if ($recwebexid !== $cm->instance) {
             throw new invalid_parameter_exception('Recording ID does not match instance.');
@@ -257,7 +257,7 @@ switch ($action) {
         require_capability('mod/webexactivity:hostmeeting', $context);
 
         $recordingid = required_param('recordingid', PARAM_INT);
-        $recording = new \mod_webexactivity\webex_recording($recordingid);
+        $recording = new \mod_webexactivity\recording($recordingid);
         $recwebexid = $recording->webexid;
         if ($recwebexid !== $cm->instance) {
             throw new invalid_parameter_exception('Recording ID does not match instance.');
@@ -274,7 +274,7 @@ switch ($action) {
         require_capability('mod/webexactivity:hostmeeting', $context);
 
         $recordingid = required_param('recordingid', PARAM_INT);
-        $recording = new \mod_webexactivity\webex_recording($recordingid);
+        $recording = new \mod_webexactivity\recording($recordingid);
         $recwebexid = $recording->webexid;
         if ($recwebexid !== $cm->instance) {
             throw new invalid_parameter_exception('Recording ID does not match instance.');
@@ -313,7 +313,7 @@ switch ($action) {
         require_capability('mod/webexactivity:hostmeeting', $context);
 
         $recordingid = required_param('recordingid', PARAM_INT);
-        $recording = new \mod_webexactivity\webex_recording($recordingid);
+        $recording = new \mod_webexactivity\recording($recordingid);
         $recwebexid = $recording->webexid;
         if ($recwebexid !== $cm->instance) {
             throw new invalid_parameter_exception('Recording ID does not match instance.');
@@ -524,7 +524,7 @@ if (!$view) {
 } else if ($view === 'deleterecording') {
     // Show the delete recording confirmation page.
     $recordingid = required_param('recordingid', PARAM_INT);
-    $recording = new \mod_webexactivity\webex_recording($recordingid);
+    $recording = new \mod_webexactivity\recording($recordingid);
 
     $params = array('id' => $id, 'action' => 'deleterecording', 'confirm' => 1, 'recordingid' => $recordingid);
     $confirmurl = new moodle_url($returnurl, $params);
@@ -536,7 +536,6 @@ if (!$view) {
     echo $OUTPUT->confirm($message, $confirmurl, $returnurl);
 }
 
-\mod_webexactivity\user::search_webex_for_email('merrill@oakland.edu');
 echo $OUTPUT->box_end();
 
 echo $OUTPUT->footer();
