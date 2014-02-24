@@ -98,8 +98,8 @@ class webex {
      * @param object|int     $meeting Meeting record, or id of record, to load.
      * @return bool|meeting  A meeting object or false on failure.
      */
-    // TODO do this in meeting.
-    public static function load_meeting($meeting) {
+    // TODO Delete.
+    /*public static function load_meeting($meeting) {
         global $DB;
 
         if (is_numeric($meeting)) {
@@ -129,7 +129,7 @@ class webex {
         }
 
         return false;
-    }
+    }*/
 
     /**
      * Create a meeting object of the propper type.
@@ -138,7 +138,7 @@ class webex {
      * @return bool|meeting  A meeting object or false on failure.
      */
     // TODO do this in meeting.
-    public static function new_meeting($type) {
+    /*public static function new_meeting($type) {
         switch ($type) {
             case self::WEBEXACTIVITY_TYPE_MEETING:
                 return new type\meeting_center\meeting();
@@ -154,7 +154,7 @@ class webex {
         }
 
         return false;
-    }
+    }*/
 
     // ---------------------------------------------------
     // User Functions.
@@ -329,7 +329,7 @@ class webex {
                     $meetingkey = $session['ep:sessionKey'][0]['#'];
                     if ($meetingrecord = $DB->get_record('webexactivity', array('meetingkey' => $meetingkey))) {
                         if ($meetingrecord->status !== self::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
-                            $meeting = $this->load_meeting($meetingrecord);
+                            $meeting = meeting::load($meetingrecord);
 
                             $meeting->status = self::WEBEXACTIVITY_STATUS_IN_PROGRESS;
                             $meeting->laststatuscheck = $processtime;
@@ -345,7 +345,7 @@ class webex {
 
         if ($meetings = $DB->get_records_select('webexactivity', $select, $params)) {
             foreach ($meetings as $meetingrecord) {
-                $meeting = $this->load_meeting($meetingrecord);
+                $meeting = meeting::load($meetingrecord);
 
                 $meeting->status = self::WEBEXACTIVITY_STATUS_STOPPED;
                 $meeting->laststatuscheck = $processtime;

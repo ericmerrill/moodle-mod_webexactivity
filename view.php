@@ -42,7 +42,7 @@ $webexres['RS'] = optional_param('RS', false, PARAM_ALPHA);
 
 $cm = get_coursemodule_from_id('webexactivity', $id, 0, false, MUST_EXIST);
 $webexrecord = $DB->get_record('webexactivity', array('id' => $cm->instance), '*', MUST_EXIST);
-$webexmeeting = \mod_webexactivity\webex::load_meeting($webexrecord);
+$webexmeeting = \mod_webexactivity\meeting::load($webexrecord);
 $webex = new \mod_webexactivity\webex();
 
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);

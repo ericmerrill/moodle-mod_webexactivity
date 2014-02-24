@@ -67,7 +67,7 @@ function webexactivity_supports($feature) {
  */
 function webexactivity_add_instance($data, $mform) {
 
-    $meeting = \mod_webexactivity\webex::new_meeting(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING);
+    $meeting = \mod_webexactivity\meeting::create_new(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING);
     $meeting->starttime = $data->starttime;
     $meeting->duration = $data->duration;
     if (isset($data->longavailability)) {
@@ -103,7 +103,7 @@ function webexactivity_add_instance($data, $mform) {
 function webexactivity_update_instance($data, $mform) {
     $cmid = $data->coursemodule;
     $cm = get_coursemodule_from_id('webexactivity', $cmid, 0, false, MUST_EXIST);
-    $meeting = \mod_webexactivity\webex::load_meeting($cm->instance);
+    $meeting = \mod_webexactivity\meeting::load($cm->instance);
 
     $meeting->starttime = $data->starttime;
     $meeting->duration = $data->duration;
@@ -133,7 +133,7 @@ function webexactivity_update_instance($data, $mform) {
  * @return bool
  */
 function webexactivity_delete_instance($id) {
-    $meeting = \mod_webexactivity\webex::load_meeting($id);
+    $meeting = \mod_webexactivity\meeting::load($id);
     return $meeting->delete();
 }
 
