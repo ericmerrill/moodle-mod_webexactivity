@@ -27,7 +27,7 @@ namespace mod_webexactivity;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * A class that provides general WebEx services.
+ * A class that provides general WebEx services and constants.
  *
  * @package    mod_webexactvity
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)

@@ -203,6 +203,50 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014022400, 'webexactivity');
     }
 
+    if ($oldversion < 2014022402) {
+
+        // Define field creatorwebexid to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('creatorwebexid', XMLDB_TYPE_CHAR, '100', null, null, null, null, 'creatorwebexuser');
+
+        // Conditionally launch add field creatorwebexid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $meetings = $DB->get_recordset('webexactivity');
+
+        $update = new \stdClass();
+        foreach ($meetings as $meeting) {
+            $user = $DB->get_record('webexactivity_user', array('id' => $meeting->creatorwebexuser));
+            $update->id = $meeting->id;
+            if ($user) {
+                $update->creatorwebexid = $user->webexid;
+                $DB->update_record('webexactivity', $update);
+            }
+        }
+
+        $meetings->close();
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014022402, 'webexactivity');
+    }
+
+    if ($oldversion < 2014022403) {
+
+        // Define field creatorwebexuser to be dropped from webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('creatorwebexuser');
+
+        // Conditionally launch drop field creatorwebexuser.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014022403, 'webexactivity');
+    }
+
     return true;
 }
 

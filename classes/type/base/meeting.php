@@ -46,7 +46,7 @@ class meeting {
             'name' => '',
             'intro' => null,
             'introformat' => 0,
-            'creatorwebexuser' => null,
+            'creatorwebexid' => null,
             'type' => null,
             'meetingkey' => null,
             'guestkey' => null,
@@ -237,7 +237,7 @@ class meeting {
         } else {
             // Creating meeting.
             $xml = $gen::create_meeting($data);
-            $this->meetingrecord->creatorwebexuser = $webexuser->id;
+            $this->meetingrecord->creatorwebexid = $webexuser->webexid;
         }
 
         $response = $this->webex->get_response($xml, $webexuser);
@@ -554,15 +554,10 @@ class meeting {
         global $USER;
 
         $webexuser = false;
-        if (isset($this->creatorwebexuser)) {
+        if (isset($this->creatorwebexid)) {
             try {
                 // Try and load the user for this meetings user.
-                if (is_numeric($this->creatorwebexuser)) {
-                    // TODO - Depreciated, remove when creatorwebexuser is moved to webExId.
-                    $webexuser = \mod_webexactivity\user::load_record($this->creatorwebexuser);
-                } else {
-                    $webexuser = \mod_webexactivity\user::load_webex_id($this->creatorwebexuser);
-                }
+                $webexuser = \mod_webexactivity\user::load_webex_id($this->creatorwebexid);
             } catch (\coding_exception $e) {
                 // Try and just load this users record.
                 $webexuser = \mod_webexactivity\user::load_for_user($USER);
