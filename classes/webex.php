@@ -92,181 +92,9 @@ class webex {
     /** @var mixed Storage for the latest errors from a connection. */
     private $latesterrors = null;
 
-    /**
-     * Loads a meeting object of the propper type.
-     *
-     * @param object|int     $meeting Meeting record, or id of record, to load.
-     * @return bool|meeting  A meeting object or false on failure.
-     */
-    // TODO Delete.
-    /*public static function load_meeting($meeting) {
-        global $DB;
-
-        if (is_numeric($meeting)) {
-            $record = $DB->get_record('webexactivity', array('id' => $meeting));
-        } else if (is_object($meeting)) {
-            $record = $meeting;
-        } else {
-            debugging('Unable to load meeting', DEBUG_DEVELOPER);
-            return false;
-        }
-
-        switch ($record->type) {
-            case self::WEBEXACTIVITY_TYPE_MEETING:
-                $meeting = new type\meeting_center\meeting($record);
-                return $meeting;
-                break;
-            case self::WEBEXACTIVITY_TYPE_TRAINING:
-                $meeting = new type\training_center\meeting($record);
-                return $meeting;
-                break;
-            case self::WEBEXACTIVITY_TYPE_SUPPORT:
-                debugging('Support center not yet supported', DEBUG_DEVELOPER);
-                break;
-            default:
-                debugging('Unknown Type', DEBUG_DEVELOPER);
-
-        }
-
-        return false;
-    }*/
-
-    /**
-     * Create a meeting object of the propper type.
-     *
-     * @param int     $type  The type to create.
-     * @return bool|meeting  A meeting object or false on failure.
-     */
-    // TODO do this in meeting.
-    /*public static function new_meeting($type) {
-        switch ($type) {
-            case self::WEBEXACTIVITY_TYPE_MEETING:
-                return new type\meeting_center\meeting();
-                break;
-            case self::WEBEXACTIVITY_TYPE_TRAINING:
-                return new type\training_center\meeting();
-                break;
-            case self::WEBEXACTIVITY_TYPE_SUPPORT:
-                debugging('Support center not yet supported', DEBUG_DEVELOPER);
-                break;
-            default:
-                debugging('Unknown Type', DEBUG_DEVELOPER);
-        }
-
-        return false;
-    }*/
-
     // ---------------------------------------------------
     // User Functions.
     // ---------------------------------------------------
-    /**
-     * Return a WebEx user object for a given Moodle user.
-     *
-     * @param object    $moodleuser The moodle user object to base the WebEx user off of.
-     * @param bool      $checkauth  If true, connect to WebEx and check/correct the auth of the user.
-     * @return bool|webex_user  A webex_user object, or false on failure.
-     */
-    public function get_webex_user($moodleuser, $checkauth = false) {
-        $webexuser = $this->get_webex_user_record($moodleuser);
-
-        // User not in table, make.
-        if ($webexuser === false) {
-            return false;
-        }
-
-        if ($checkauth) {
-            $status = $webexuser->check_user_auth();
-            if ($status) {
-                return $webexuser;
-            } else {
-                $webexuser->update_password(self::generate_password());
-                return $webexuser;
-            }
-        } else {
-            return $webexuser;
-        }
-    }
-
-    // TODO Should webex_user do all this work?
-    /**
-     * Return a WebEx user object for a given Moodle user.
-     *
-     * @param object    $moodleuser The moodle user object to base the WebEx user off of.
-     * @return bool|webex_user  A webex_user object, or false on failure.
-     */
-    public function get_webex_user_record($moodleuser) {
-        global $DB;
-
-        if (!is_object($moodleuser) || !isset($moodleuser->id)) {
-            return false;
-        }
-
-        $webexuser = $DB->get_record('webexactivity_user', array('moodleuserid' => $moodleuser->id));
-
-        if ($webexuser !== false) {
-            return new \mod_webexactivity\webex_user($webexuser);
-        }
-
-        $prefix = get_config('webexactivity', 'prefix');
-
-        $data = new \stdClass();
-        $data->firstname = $moodleuser->firstname;
-        $data->lastname = $moodleuser->lastname;
-        $data->webexid = $prefix.$moodleuser->username;
-        $data->email = $moodleuser->email;
-        $data->password = self::generate_password();
-
-        $xml = type\base\xml_gen::create_user($data);
-
-        $response = $this->get_response($xml, false, true);
-
-        if ($response) {
-            if (isset($response['use:userId']['0']['#'])) {
-                $webexuser = new \mod_webexactivity\webex_user();
-                $webexuser->moodleuserid = $moodleuser->id;
-                $webexuser->webexuserid = $response['use:userId']['0']['#'];
-                $webexuser->webexid = $data->webexid;
-                $webexuser->password = $data->password;
-                if ($webexuser->save_to_db()) {
-                    return $webexuser;
-                } else {
-                    return false;
-                }
-            }
-        } else {
-            // Failure creating user. Check to see if exists.
-            if (!isset($this->latesterrors['exception'])) {
-                // No info, just end here.
-                return false;
-            }
-            $exception = $this->latesterrors['exception'];
-            // User already exists with this username or email.
-
-            if ((stripos($exception, '030004') !== false) || (stripos($exception, '030005') === false)) {
-                $xml = type\base\xml_gen::get_user_info($data->webexid);
-
-                if (!($response = $this->get_response($xml))) {
-                    return false;
-                }
-
-                if (strcasecmp($data->email, $response['use:email']['0']['#']) === 0) {
-                    $newwebexuser = new \mod_webexactivity\webex_user();
-                    $newwebexuser->moodleuserid = $moodleuser->id;
-                    $newwebexuser->webexid = $data->webexid;
-                    $newwebexuser->webexuserid = $response['use:userId']['0']['#'];
-                    $newwebexuser->password = '';
-                    if ($newwebexuser->save_to_db()) {
-                        $newwebexuser->update_password(self::generate_password());
-                        return $newwebexuser;
-                    } else {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
 
     // ---------------------------------------------------
     // Support Functions.
@@ -292,7 +120,7 @@ class webex {
      *
      * @return string  The generated password.
      */
-    private static function generate_password() {
+    public static function generate_password() {
         $alphabet = "abcdefghijklmnopqrstuwxyzABCDEFGHIJKLMNOPQRSTUWXYZ0123456789";
         $pass = array();
         $length = strlen($alphabet) - 1;
@@ -480,17 +308,16 @@ class webex {
     }
 
 
-
     // ---------------------------------------------------
     // Connection Functions.
     // ---------------------------------------------------
     /**
      * Get the response from WebEx for a XML message.
      *
-     * @param string           $xml The XML to send to WebEx.
-     * @param webex_user|bool  $webexuser The WebEx user to use for auth. False to use the API user.
-     * @param bool             $expecterror If true, and error is possibly expected. Supress error message.
-     * @return array|bool      XML response (as array). False on failure.
+     * @param string         $xml The XML to send to WebEx.
+     * @param user|bool      $webexuser The WebEx user to use for auth. False to use the API user.
+     * @param bool           $expecterror If true, and error is possibly expected. Supress error message.
+     * @return array|bool    XML response (as array). False on failure.
      */
     public function get_response($basexml, $webexuser = false, $expecterror = false) {
         global $USER;
@@ -552,5 +379,14 @@ class webex {
         $this->latesterrors = $errors;
 
         return array($status, $response, $errors);
+    }
+
+    /**
+     * Expose latesterrors to the outside world for use.
+     *
+     * @return array  The latest errors.
+     */
+    public function get_latest_errors() {
+        return $this->latesterrors;
     }
 }

@@ -36,13 +36,13 @@ switch ($action) {
         // First log the user out (in case they are logged in, then bring back to logintrue.
         $webexid = required_param('webexid', PARAM_ALPHAEXT);
         $returnurl = new moodle_url($pageurl, array('action' => 'logintrue', 'webexid' => $webexid));
-        redirect(\mod_webexactivity\webex_user::get_logout_url($returnurl->out(false)));
+        redirect(\mod_webexactivity\user::get_logout_url($returnurl->out(false)));
         break;
 
     case 'logintrue':
         // Actually log the user in.
         $webexid = required_param('webexid', PARAM_ALPHAEXT);
-        $webexuser = new \mod_webexactivity\webex_user($webexid);
+        $webexuser = \mod_webexactivity\user::load_webex_id($webexid);
 
         redirect($webexuser->get_login_url());
         break;

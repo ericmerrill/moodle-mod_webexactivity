@@ -172,6 +172,37 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014021800, 'webexactivity');
     }
 
+    if ($oldversion < 2014022400) {
+
+        // Define field firstname to be added to webexactivity_user.
+        $table = new xmldb_table('webexactivity_user');
+        $field = new xmldb_field('firstname', XMLDB_TYPE_CHAR, '100', null, null, null, null, 'password');
+
+        // Conditionally launch add field firstname.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field lastname to be added to webexactivity_user.
+        $field = new xmldb_field('lastname', XMLDB_TYPE_CHAR, '100', null, null, null, null, 'firstname');
+
+        // Conditionally launch add field lastname.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field email to be added to webexactivity_user.
+        $field = new xmldb_field('email', XMLDB_TYPE_CHAR, '100', null, null, null, null, 'lastname');
+
+        // Conditionally launch add field email.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014022400, 'webexactivity');
+    }
+
     return true;
 }
 

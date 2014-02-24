@@ -407,10 +407,10 @@ class meeting {
     }
 
     /**
-     * Add a webexuser as a host to the meeting.
+     * Add a webex user as a host to the meeting.
      *
-     * @param webex_user    $webexuser The user object to add.
-     * @return bool         True on success, false on failure/error.
+     * @param user    $webexuser The user object to add.
+     * @return bool   True on success, false on failure/error.
      */
     public function add_webexuser_host($webexuser) {
         global $DB;
@@ -546,22 +546,33 @@ class meeting {
     // Support Functions.
     // ---------------------------------------------------
     /**
-     * Returns the webex_user that created this meeting.
+     * Returns the webex user that created this meeting.
      *
-     * @return bool|webex_user    The WebEx user. False on failure.
+     * @return bool|user    The WebEx user. False on failure.
      */
     public function get_meeting_webex_user() {
-        global $DB, $USER;
+        global $USER;
 
+        $webexuser = false;
         if (isset($this->creatorwebexuser)) {
-            $webexuser = $DB->get_record('webexactivity_user', array('id' => $this->creatorwebexuser));
-            if ($webexuser) {
-                return new \mod_webexactivity\webex_user($webexuser);
-            } else {
-                $webexuser = $this->webex->get_webex_user($USER);
+            try {
+                // Try and load the user for this meetings user.
+                if (is_numeric($this->creatorwebexuser)) {
+                    // TODO - Depreciated, remove when creatorwebexuser is moved to webExId.
+                    $webexuser = \mod_webexactivity\user::load_record($this->creatorwebexuser);
+                } else {
+                    $webexuser = \mod_webexactivity\user::load_webex_id($this->creatorwebexuser);
+                }
+            } catch (\coding_exception $e) {
+                // Try and just load this users record.
+                $webexuser = \mod_webexactivity\user::load_for_user($USER);
+                return $webexuser;
             }
-        } else {
-            $webexuser = $this->webex->get_webex_user($USER);
+        }
+
+        // If we haven't set it, try and set it to the current user.
+        if (!$webexuser) {
+            $webexuser = \mod_webexactivity\user::load_for_user($USER);
         }
 
         return $webexuser;

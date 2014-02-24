@@ -102,7 +102,7 @@ if ($webexres['ST'] === 'FAIL') {
                 }
                 $hosturl = new moodle_url($returnurl, $params);
 
-                $logouturl = \mod_webexactivity\webex_user::get_logout_url($hosturl->out(false));
+                $logouturl = \mod_webexactivity\user::get_logout_url($hosturl->out(false));
 
                 redirect($logouturl);
                 break;
@@ -170,7 +170,7 @@ switch ($action) {
 
         require_capability('mod/webexactivity:hostmeeting', $context);
 
-        $webexuser = $webex->get_webex_user($USER);
+        $webexuser = \mod_webexactivity\user::load_for_user($USER);
         $webexmeeting->add_webexuser_host($webexuser);
         $hosturl = $webexmeeting->get_host_url($returnurl);
 
@@ -536,6 +536,7 @@ if (!$view) {
     echo $OUTPUT->confirm($message, $confirmurl, $returnurl);
 }
 
+\mod_webexactivity\user::search_webex_for_email('merrill@oakland.edu');
 echo $OUTPUT->box_end();
 
 echo $OUTPUT->footer();

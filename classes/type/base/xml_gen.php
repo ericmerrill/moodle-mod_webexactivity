@@ -37,9 +37,9 @@ class xml_gen {
     /**
      * Wraps given XML in the propper authentication headers.
      *
-     * @param string            $xml The PHP type is followed by the variable name.
-     * @param webex_user|bool   $user The user to use. Use admin if not provided.
-     * @return string           The wrapped XML.
+     * @param string       $xml The PHP type is followed by the variable name.
+     * @param user|bool    $user The user to use. Use admin if not provided.
+     * @return string      The wrapped XML.
      */
     public static function auth_wrap($xml, $user = false) {
         return self::standard_wrap(self::get_auth_header($user).$xml);
@@ -64,8 +64,8 @@ class xml_gen {
     /**
      * Wraps given XML in the propper authentication headers.
      *
-     * @param webex_user|bool   $user The user to use. Use admin if false or not provided.
-     * @return string           The authentication block.
+     * @param user|bool   $user The user to use. Use admin if false or not provided.
+     * @return string     The authentication block.
      */
     private static function get_auth_header($user = false) {
         global $CFG;
@@ -151,13 +151,13 @@ class xml_gen {
     /**
      * Provide the xml to send a new password for a user.
      *
-     * @param webex_user    $webexuser A webex user.
-     * @return string       The XML.
+     * @param user      $webexuser A webex user.
+     * @return string   The XML.
      */
     public static function update_user_password($webexuser) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.SetUser">'.
                '<webExId>'.$webexuser->webexid.'</webExId>'.
-               '<password>'.$webexuser->password.'</password>'.
+               '<password>'.self::format_text($webexuser->password, 64).'</password>'.
                '<active>ACTIVATED</active>'.
                '</bodyContent></body>';
 
@@ -165,14 +165,56 @@ class xml_gen {
     }
 
     /**
+     * Provide the xml to update a webex User.
+     *
+     * @param user        $webexuser A webex user.
+     * @return string     The XML.
+     */
+    public static function update_user($webexuser) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.SetUser">'.
+               '<webExId>'.$webexuser->webexid.'</webExId>';
+
+        if (isset($webexuser->newwebexid)) {
+            $xml .= '<newWebExId>'.$webexuser->webexid.'</newWebExId>';
+        }
+
+        $xml .= '<password>'.self::format_text($webexuser->password, 64).'</password>'.
+                '<firstName>'.self::format_text($webexuser->firstname, 64).'</firstName>'.
+                '<lastName>'.self::format_text($webexuser->lastname, 64).'</lastName>'.
+                '<email>'.$webexuser->email.'</email>'.
+                '<active>ACTIVATED</active>'.
+                '</bodyContent></body>';
+
+        return $xml;
+    }
+
+    /**
      * Provide the xml to check the authentication of a user.
      *
-     * @param webex_user    $webexuser A webex user.
-     * @return string       The XML.
+     * @param user       $webexuser A webex user.
+     * @return string    The XML.
      */
     public static function check_user_auth($webexuser) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.GetUser">'.
                '<webExId>'.$webexuser->webexid.'</webExId>'.
+               '</bodyContent></body>';
+
+        return $xml;
+    }
+
+    /**
+     * Provide the xml to retrieve a user based on email.
+     *
+     * @param string    $username The username of the user to lookup.
+     * @return string   The XML.
+     */
+    public static function get_user_for_email($email) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.LstsummaryUser">'.
+               '<listControl>'.
+               '<serv:startFrom>1</serv:startFrom>'.
+               '<serv:maximumNum>1</serv:maximumNum>'.
+               '</listControl>'.
+               '<email>'.$email.'</email>'.
                '</bodyContent></body>';
 
         return $xml;

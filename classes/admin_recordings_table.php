@@ -138,7 +138,7 @@ class admin_recordings_table extends \table_sql implements \renderable {
                 $timeleft = $recording->deleted - (time() - ($holdtime * 3600));
                 // TODO Strings.
                 $out .= 'Delete in<br />'.format_time($timeleft).'<br />';
-                
+
                 $params = array('action' => 'undelete', 'recordingid' => $recording->id);
                 $pageurl = new \moodle_url('/mod/webexactivity/admin_recordings.php', $params);
 

@@ -98,8 +98,6 @@ class webex_recording {
     public function true_delete() {
         global $DB;
 
-        $this->load_webex();
-
         $xml = type\base\xml_gen::delete_recording($this->__get('recordingid'));
 
         $webexuser = $this->get_recording_webex_user();
@@ -118,18 +116,21 @@ class webex_recording {
     }
 
     /**
-     * Returns the webex_user that created this recording.
+     * Returns the WebEx user that created this recording.
      *
-     * @return bool|webex_user    The WebEx user. False on failure.
+     * @return bool|user    The WebEx user. False on failure.
      */
     public function get_recording_webex_user() {
         global $USER;
 
-        if (isset($this->recording->hostid)) {
-            $webexuser = new \mod_webexactivity\webex_user($this->recording->hostid);
-        } else {
-            $webex = new webex();
-            $webexuser = $webex->get_webex_user($USER);
+        $webexuser = false;
+        if (isset($this->hostid)) {
+            $webexuser = user::load_webex_id($this->hostid);
+        }
+
+        // If we haven't set it, try and set it to the current user.
+        if (!$webexuser) {
+            $webexuser = user::load_for_user($USER);
         }
 
         return $webexuser;
@@ -179,8 +180,6 @@ class webex_recording {
      * @return bool    True on success, false on failure.
      */
     public function save_to_webex() {
-        $this->load_webex();
-
         $params = new \stdClass;
         $params->recordingid = $this->__get('recordingid');
         $params->name = $this->recording->name;
