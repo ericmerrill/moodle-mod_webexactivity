@@ -247,6 +247,28 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014022403, 'webexactivity');
     }
 
+    if ($oldversion < 2014022500) {
+
+        $webexusers = $DB->get_recordset('webexactivity_user');
+
+        $update = new \stdClass();
+        foreach ($webexusers as $webexuser) {
+            $user = $DB->get_record('user', array('id' => $webexuser->moodleuserid));
+            $update->id = $webexuser->id;
+            if ($user) {
+                $update->firstname = $user->firstname;
+                $update->lastname = $user->lastname;
+                $update->email = $user->email;
+                $DB->update_record('webexactivity_user', $update);
+            }
+        }
+
+        $webexusers->close();
+
+        // Webex Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014022500, 'webexactivity');
+    }
+
     return true;
 }
 

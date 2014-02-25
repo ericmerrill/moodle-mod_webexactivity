@@ -51,7 +51,7 @@ switch ($action) {
 // Setup the table for output.
 $table = new \mod_webexactivity\admin_users_table('webexactivityadminrecordingstable');
 $table->define_baseurl($pageurl);
-$table->set_sql('*', '{webexactivity_user} AS wu LEFT JOIN {user} AS u ON wu.moodleuserid = u.id', '1=1', array());
+$table->set_sql('*', '{webexactivity_user}', '1=1', array());
 
 $table->define_columns(array('firstname', 'lastname', 'email', 'webexid', 'login'));
 $table->define_headers(array('First Name', 'Last Name', 'Email', 'Webex ID', ''));
