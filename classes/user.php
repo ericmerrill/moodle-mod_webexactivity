@@ -34,13 +34,15 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class user {
+    // TODO Cleaner handling of user changes to webex. Support for userid changes.
     /** @var stdClass The DB record that represents this user. */
     private $user = null;
 
     /**
      * Builds the user object.
      *
-     * @param stdClass|int|string  $user Object of user record, id of record to load, webex user name of the record to load.
+     * @param stdClass|int|string  $user Object of user record, id of record to load.
+     * @throws coding_exception when bad parameter received.
      */
     private function __construct($user = null) {
         global $DB;
@@ -49,18 +51,13 @@ class user {
             $this->user = new \stdClass();
         } else if (is_object($user)) {
             $this->user = $user;
-        } else if (is_numeric($user)) {
-            $this->user = $DB->get_record('webexactivity_user', array('id' => $user));
-        } else if (is_string($user)) {
-            $this->user = $DB->get_record('webexactivity_user', array('webexid' => $user));
-        } else {
-            debugging('User constructor passed unknown type.', DEBUG_DEVELOPER);
         }
 
-        if (!$this->user) {
-            // TODO Throw exception.
-            return false;
+        if ($this->user) {
+            return;
         }
+
+        throw new \coding_exception('Unexpected parameter type passed to user constructor.');
     }
 
     // ---------------------------------------------------
@@ -71,7 +68,7 @@ class user {
      *
      * @param stdClass|int   $muser Object of user record, id of record to load.
      * @return user|bool     The user object, false on failure.
-     * @throws coding_expection when Moodle user not found, or unknown parameter type.
+     * @throws coding_exception when Moodle user not found, or unknown parameter type.
      */
     public static function load_for_user($muser) {
         global $DB;
@@ -84,7 +81,7 @@ class user {
                 throw new \coding_exception('Moodle user not found.');
             }
         } else {
-            throw new \coding_expection('Unexpected paramater passed to load_for_user.');
+            throw new \coding_exception('Unexpected paramater passed to load_for_user.');
         }
 
         $record = $DB->get_record('webexactivity_user', array('moodleuserid' => $moodleuser->id));
@@ -130,7 +127,7 @@ class user {
         } else if (is_string($webexid)) {
             $params = array('webexid' => $webexid);
         } else {
-            throw new \coding_expection('Unexpected paramater passed to load_webex_id.');
+            throw new \coding_exception('Unexpected paramater passed to load_webex_id.');
         }
 
         $record = $DB->get_record('webexactivity_user', $params);
@@ -162,7 +159,7 @@ class user {
                 throw new \coding_exception('WebEx user not found.');
             }
         } else {
-            throw new \coding_expection('Unexpected paramater passed to load_record.');
+            throw new \coding_exception('Unexpected paramater passed to load_record.');
         }
 
         return new user($record);
@@ -272,9 +269,6 @@ class user {
         }
     }
 
-    // TODO create_user.
-    // TODO update_user?
-
     /**
      * Encrypt the password for storage.
      *
@@ -329,7 +323,7 @@ class user {
      *
      * @return bool    True if auth succeeded, false if failed.
      * @throws invalid_response_exception for unexpected WebEx response.
-     * @throws coding_expection.
+     * @throws coding_exception.
      */
     public function save_to_webex() {
         $webex = new webex();

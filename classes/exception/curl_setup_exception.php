@@ -33,13 +33,13 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class curl_setup_exception extends \moodle_exception {
+class curl_setup_exception extends webexactivity_exception {
     /**
      * Constructor
      *
      * @param string $debuginfo Additional info about the error.
      */
     public function __construct($debuginfo=null) {
-        parent::__construct('curlsetupexception', 'mod_webexactivity', '', null, $debuginfo);
+        parent::__construct('curlsetupexception', '', null, $debuginfo);
     }
 }

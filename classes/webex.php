@@ -300,8 +300,13 @@ class webex {
 
         foreach ($rs as $record) {
             $recording = new recording($record);
-            print 'Deleting: '.$recording->name."\n";
-            $recording->true_delete();
+            print 'Deleting: '.$recording->name;
+            try {
+                $recording->true_delete();
+                print "\n";
+            } catch (\Exception $e) {
+                print " : Exception Error\n";
+            }
         }
 
         $rs->close();

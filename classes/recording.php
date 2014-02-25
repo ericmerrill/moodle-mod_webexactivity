@@ -44,6 +44,7 @@ class recording {
      * Builds the recording object.
      *
      * @param stdClass|int    $recording Object of recording record, or id of record to load.
+     * @throws coding_exception when bad parameter received.
      */
     public function __construct($recording) {
         global $DB;
@@ -52,14 +53,13 @@ class recording {
             $this->recording = $recording;
         } else if (is_numeric($recording)) {
             $this->recording = $DB->get_record('webexactivity_recording', array('id' => $recording));
-        } else {
-            debugging('Recording constructor passed unknown type.', DEBUG_DEVELOPER);
         }
 
-        if (!$this->recording) {
-            // TODO Throw exception.
-            return false;
+        if ($this->recording) {
+            return;
         }
+
+        throw new \coding_exception('Unexpected parameter type passed to recording constructor.');
     }
 
     /**
@@ -94,6 +94,7 @@ class recording {
      * Delete this recording from WebEx.
      *
      * @return bool    True on success, false on failure.
+     * @throws webexactivity_exception on error.
      */
     public function true_delete() {
         global $DB;
@@ -106,8 +107,7 @@ class recording {
         $response = $webex->get_response($xml, $webexuser);
 
         if ($response === false) {
-            // TODO error handling.
-            return false;
+            throw new exception\webexactivity_exception('errordeletingrecording');
         }
 
         $DB->delete_records('webexactivity_recording', array('id' => $this->__get('id')));

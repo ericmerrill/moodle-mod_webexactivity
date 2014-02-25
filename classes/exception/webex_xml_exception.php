@@ -27,13 +27,13 @@ namespace mod_webexactivity\exception;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * mod_webexactiviy meeting ended event.
+ * Exception for WebEx XML processing error.
  *
  * @package    mod_webexactvity
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class webex_xml_exception extends \moodle_exception {
+class webex_xml_exception extends webexactivity_exception {
     /**
      * Constructor
      *
@@ -43,6 +43,6 @@ class webex_xml_exception extends \moodle_exception {
      */
     public function __construct($code, $errormsg, $debuginfo=null) {
         $params = array('errorcode' => (string)$code, 'error' => (string)$errormsg);
-        parent::__construct('webexxmlexception', 'mod_webexactivity', '', $params, $debuginfo);
+        parent::__construct('webexxmlexception', '', $params, $debuginfo);
     }
 }
