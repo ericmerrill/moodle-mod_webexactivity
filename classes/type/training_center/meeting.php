@@ -48,7 +48,7 @@ class meeting extends \mod_webexactivity\type\base\meeting {
     /**
      * Builds the meeting object.
      *
-     * @param object|int    $meeting Object of meeting record, or id of record to load.
+     * @param stdClass|int    $meeting Object of meeting record, or id of record to load.
      */
     public function __construct($meeting = false) {
         parent::__construct($meeting);

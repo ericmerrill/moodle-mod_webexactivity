@@ -39,8 +39,8 @@ class meeting {
     /**
      * Loads a meeting object of the propper type.
      *
-     * @param object|int     $meeting Meeting record, or id of record, to load.
-     * @return bool|meeting  A meeting object or false on failure.
+     * @param stdClass|int     $meeting Meeting record, or id of record, to load.
+     * @return bool|meeting    A meeting object or false on failure.
      */
     public static function load($meeting) {
         global $DB;
@@ -98,4 +98,3 @@ class meeting {
         return false;
     }
 }
-

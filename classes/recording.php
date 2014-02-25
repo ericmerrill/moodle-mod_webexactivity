@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class recording {
-    /** @var object The database record this object represents. */
+    /** @var stdClass The database record this object represents. */
     private $recording = null;
 
     /** @var bool Track if there is a change that needs to go to WebEx. */
@@ -43,7 +43,7 @@ class recording {
     /**
      * Builds the recording object.
      *
-     * @param object|int    $recording Object of recording record, or id of record to load.
+     * @param stdClass|int    $recording Object of recording record, or id of record to load.
      */
     public function __construct($recording) {
         global $DB;

@@ -39,8 +39,8 @@ class admin_recordings_table extends \table_sql implements \renderable {
     /**
      * Determine output for the name column.
      *
-     * @param object   $recording The recording row being worked on.
-     * @return string  The output to display.
+     * @param stdClass   $recording The recording row being worked on.
+     * @return string    The output to display.
      */
     public function col_name($recording) {
         if (\core_text::strlen($recording->name) > 60) {
@@ -52,8 +52,8 @@ class admin_recordings_table extends \table_sql implements \renderable {
     /**
      * Determine output for the timecreated column.
      *
-     * @param object   $recording The recording row being worked on.
-     * @return string  The output to display.
+     * @param stdClass   $recording The recording row being worked on.
+     * @return string    The output to display.
      */
     public function col_timecreated($recording) {
         $format = get_string('strftimedatetimeshort', 'langconfig');
@@ -63,8 +63,8 @@ class admin_recordings_table extends \table_sql implements \renderable {
     /**
      * Determine output for the duration column.
      *
-     * @param object   $recording The recording row being worked on.
-     * @return string  The output to display.
+     * @param stdClass   $recording The recording row being worked on.
+     * @return string    The output to display.
      */
     public function col_duration($recording) {
         if ($this->is_downloading()) {
@@ -77,8 +77,8 @@ class admin_recordings_table extends \table_sql implements \renderable {
     /**
      * Determine output for the filesize column.
      *
-     * @param object   $recording The recording row being worked on.
-     * @return string  The output to display.
+     * @param stdClass   $recording The recording row being worked on.
+     * @return string    The output to display.
      */
     public function col_filesize($recording) {
         if ($this->is_downloading()) {
@@ -91,8 +91,8 @@ class admin_recordings_table extends \table_sql implements \renderable {
     /**
      * Determine output for the fileurl column.
      *
-     * @param object   $recording The recording row being worked on.
-     * @return string  The output to display.
+     * @param stdClass   $recording The recording row being worked on.
+     * @return string    The output to display.
      */
     public function col_fileurl($recording) {
         if ($this->is_downloading()) {
@@ -105,8 +105,8 @@ class admin_recordings_table extends \table_sql implements \renderable {
     /**
      * Determine output for the streamurl column.
      *
-     * @param object   $recording The recording row being worked on.
-     * @return string  The output to display.
+     * @param stdClass   $recording The recording row being worked on.
+     * @return string    The output to display.
      */
     public function col_streamurl($recording) {
         if ($this->is_downloading()) {
@@ -119,8 +119,8 @@ class admin_recordings_table extends \table_sql implements \renderable {
     /**
      * Determine output for the deletion column.
      *
-     * @param object   $recording The recording row being worked on.
-     * @return string  The output to display.
+     * @param stdClass   $recording The recording row being worked on.
+     * @return string    The output to display.
      */
     public function col_deleted($recording) {
         if ($this->is_downloading()) {
@@ -136,6 +136,9 @@ class admin_recordings_table extends \table_sql implements \renderable {
                 $holdtime = get_config('webexactivity', 'recordingtrashtime');
 
                 $timeleft = $recording->deleted - (time() - ($holdtime * 3600));
+                if ($timeleft < 0) {
+                    $timeleft = 0;
+                }
                 // TODO Strings.
                 $out .= 'Delete in<br />'.format_time($timeleft).'<br />';
 
@@ -151,8 +154,8 @@ class admin_recordings_table extends \table_sql implements \renderable {
     /**
      * Determine output for the webexid column.
      *
-     * @param object   $recording The recording row being worked on.
-     * @return string  The output to display.
+     * @param stdClass   $recording The recording row being worked on.
+     * @return string    The output to display.
      */
     public function col_webexid($recording) {
         if (isset($recording->webexid)) {
@@ -175,8 +178,8 @@ class admin_recordings_table extends \table_sql implements \renderable {
     /**
      * Get any extra classes names to add to this row in the HTML.
      *
-     * @param $row object The data for this row.
-     * @return string added to the class="" attribute of the tr.
+     * @param $row stdClass The data for this row.
+     * @return string       Class added to the class="" attribute of the tr.
      */
     public function get_row_class($row) {
         if ($row->deleted == 0) {

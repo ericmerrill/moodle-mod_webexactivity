@@ -34,13 +34,13 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class user {
-    /** @var object The DB record that represents this user. */
+    /** @var stdClass The DB record that represents this user. */
     private $user = null;
 
     /**
      * Builds the user object.
      *
-     * @param object|int|string  $user Object of user record, id of record to load, webex user name of the record to load.
+     * @param stdClass|int|string  $user Object of user record, id of record to load, webex user name of the record to load.
      */
     private function __construct($user = null) {
         global $DB;
@@ -69,8 +69,8 @@ class user {
     /**
      * Load the webex user for a given moodle user.
      *
-     * @param object|int   $muser Object of user record, id of record to load.
-     * @return user|bool  The user object, false on failure.
+     * @param stdClass|int   $muser Object of user record, id of record to load.
+     * @return user|bool     The user object, false on failure.
      * @throws coding_expection when Moodle user not found, or unknown parameter type.
      */
     public static function load_for_user($muser) {
@@ -147,8 +147,8 @@ class user {
     /**
      * Load the webex user for a given moodle user.
      *
-     * @param object|int   $webexid WebEx record or id.
-     * @return user|bool  The user object, false on failure.
+     * @param stdClass|int   $webexid WebEx record or id.
+     * @return user|bool     The user object, false on failure.
      * @throws coding_exception for unknown parameter type.
      */
     public static function load_record($rec) {
@@ -438,7 +438,7 @@ class user {
      * Load user info from WebEx. Guaranteed to return webexid and userid if exists.
      *
      * @param string       $webexid WebEx ID (username) to search for.
-     * @return object|bool  array of user info, false if failed.
+     * @return stdClass|bool  array of user info, false if failed.
      */
     public static function search_webex_for_webexid($webexid) {
         $webex = new webex();
@@ -477,7 +477,7 @@ class user {
      * Load user info from WebEx.
      *
      * @param string       $webexid Email address to search for.
-     * @return object|bool  array of user info, false if failed.
+     * @return stdClass|bool  array of user info, false if failed.
      */
     public static function search_webex_for_email($email) {
         $webex = new webex();

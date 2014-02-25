@@ -60,7 +60,7 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
      * 1/ intro - Meeting description.
      * 2/ hostusers - Array of users to add as hosts.
      *
-     * @param object    $data Meeting data to make.
+     * @param stdClass  $data Meeting data to make.
      * @return string   The XML.
      */
     public static function create_meeting($data) {
@@ -88,7 +88,7 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
      * 4/ intro - Meeting description.
      * 5/ hostusers - Array of users to add as hosts.
      *
-     * @param object    $data Meeting data to make.
+     * @param stdClass  $data Meeting data to make.
      * @return string   The XML.
      */
     public static function update_meeting($data) {
@@ -114,7 +114,7 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
      * 5/ intro - Meeting description.
      * 6/ hostusers - Array of users to add as hosts.
      *
-     * @param object    $data Meeting data to make.
+     * @param stdClass  $data Meeting data to make.
      * @return string   The XML.
      */
     private static function meeting_xml($data) {

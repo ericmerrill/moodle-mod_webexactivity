@@ -39,8 +39,8 @@ class admin_users_table extends \table_sql implements \renderable {
     /**
      * Determine output for the login column.
      *
-     * @param object   $user The user row being worked on.
-     * @return string  The output to display.
+     * @param stdClass   $user The user row being worked on.
+     * @return string    The output to display.
      */
     public function col_login($user) {
         $pageurl = new \moodle_url('/mod/webexactivity/admin_users.php', array('action' => 'login', 'webexid' => $user->webexid));

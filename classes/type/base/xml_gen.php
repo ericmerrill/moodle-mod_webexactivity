@@ -131,7 +131,7 @@ class xml_gen {
      * 4/ email - Email address of the user
      * 5/ password - Plain text password to get
      *
-     * @param object    $data Data object to use.
+     * @param stdClass  $data Data object to use.
      * @return string   The XML.
      */
     public static function create_user($data) {
@@ -245,7 +245,7 @@ class xml_gen {
      * 1/ intro - Meeting description.
      * 2/ hostusers - Array of users to add as hosts.
      *
-     * @param object    $data Meeting data to make.
+     * @param stdClass  $data Meeting data to make.
      * @return string   The XML.
      */
     public static function create_meeting($data) {
@@ -265,7 +265,7 @@ class xml_gen {
      * 4/ intro - Meeting description.
      * 5/ hostusers - Array of users to add as hosts.
      *
-     * @param object    $data Meeting data to make.
+     * @param stdClass  $data Meeting data to make.
      * @return string   The XML.
      */
     public static function update_meeting($data) {
@@ -305,7 +305,7 @@ class xml_gen {
      * 2/ startdate - Start time range.
      * 3/ enddate - End time range.
      *
-     * @param object    $data Data object to use.
+     * @param stdClass  $data Data object to use.
      * @return string   The XML.
      */
     public static function list_recordings($data) {
@@ -363,7 +363,7 @@ class xml_gen {
      * Optional keys in $data are:
      * 1/ name - The name to set.
      *
-     * @param $object    $data Data object.
+     * @param stdClass   $data Data object.
      * @return string    The XML.
      */
     public static function update_recording($data) {

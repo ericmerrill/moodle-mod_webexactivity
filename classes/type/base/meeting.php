@@ -36,7 +36,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class meeting {
-    /** @var object Record object containing the information about the meeting. */
+    /** @var stdClass Record object containing the information about the meeting. */
     protected $meetingrecord = null;
 
     /** @var array An array of expected keys. */
@@ -62,7 +62,7 @@ class meeting {
             'status' => \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_NEVER_STARTED,
             'timemodified' => 0);
 
-    /** @var object A webex object to do network connections and other support services. */
+    /** @var webex A webex object to do network connections and other support services. */
     protected $webex;
 
     /** @var bool Track if there is a change that needs to go to WebEx. */
@@ -81,7 +81,7 @@ class meeting {
     /**
      * Builds the meeting object.
      *
-     * @param object|int    $meeting Object of meeting record, or id of record to load.
+     * @param stdClass|int    $meeting Object of meeting record, or id of record to load.
      */
     public function __construct($meeting = false) {
         global $DB;
@@ -509,7 +509,7 @@ class meeting {
     /**
      * Get the link for a moodle user to join the meeting.
      *
-     * @param object     $user Moodle user record.
+     * @param stdClass   $user Moodle user record.
      * @param string     $returnurl The url to return the use to.
      * @return string    The moodle join url.
      */
@@ -576,7 +576,7 @@ class meeting {
     /**
      * Load a database object into the meeting.
      *
-     * @param object    $meeting The record to load.
+     * @param stdClass   $meeting The record to load.
      */
     protected function load_webex_record($meeting) {
         $this->meetingrecord = $meeting;
