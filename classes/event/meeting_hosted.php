@@ -30,6 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * mod_webexactiviy meeting hosted event.
  *
  * @package    mod_webexactvity
+ * @category   events
  * @copyright  2014 Eric Merrill (merrill@oakland.edu)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
