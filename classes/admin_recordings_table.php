@@ -128,8 +128,9 @@ class admin_recordings_table extends \table_sql implements \renderable {
         } else {
             if ($recording->deleted == 0) {
                 $params = array('action' => 'delete', 'recordingid' => $recording->id);
-                $pageurl = new \moodle_url('/mod/webexactivity/admin_recordings.php', $params);
-                return '<a href="'.$pageurl->out(false).'">Delete</a>';
+                $urlobj = new \moodle_url($this->baseurl, $params);
+                $params = array('url' => $urlobj->out(false));
+                return get_string('deletelink', 'mod_webexactivity', $params);
             } else {
                 $out = '';
 
@@ -139,13 +140,19 @@ class admin_recordings_table extends \table_sql implements \renderable {
                 if ($timeleft < 0) {
                     $timeleft = 0;
                 }
-                // TODO Strings.
-                $out .= 'Delete in<br />'.format_time($timeleft).'<br />';
+
+                if ($timeleft > 0) {
+                    $params = array('time' => format_time($timeleft));
+                    $out .= get_string('deletionin', 'mod_webexactivity', $params);
+                } else {
+                    $out .= get_string('deletionsoon', 'mod_webexactivity');
+                }
 
                 $params = array('action' => 'undelete', 'recordingid' => $recording->id);
-                $pageurl = new \moodle_url('/mod/webexactivity/admin_recordings.php', $params);
+                $urlobj = new \moodle_url($this->baseurl, $params);
+                $params = array('url' => $urlobj->out(false));
+                $out .= get_string('undeletelink', 'mod_webexactivity', $params);
 
-                $out .= '<a href="'.$pageurl->out(false).'">Undelete</a>';
                 return $out;
             }
         }
