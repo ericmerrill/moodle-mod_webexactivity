@@ -46,10 +46,12 @@ class recording {
      * @param stdClass|int    $recording Object of recording record, or id of record to load.
      * @throws coding_exception when bad parameter received.
      */
-    public function __construct($recording) {
+    public function __construct($recording = null) {
         global $DB;
 
-        if (is_object($recording)) {
+        if (is_null($recording)) {
+            $this->recording = new \stdClass();
+        } else if (is_object($recording)) {
             $this->recording = $recording;
         } else if (is_numeric($recording)) {
             $this->recording = $DB->get_record('webexactivity_recording', array('id' => $recording));

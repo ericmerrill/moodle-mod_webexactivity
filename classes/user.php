@@ -45,8 +45,6 @@ class user {
      * @throws coding_exception when bad parameter received.
      */
     private function __construct($user = null) {
-        global $DB;
-
         if (is_null($user)) {
             $this->user = new \stdClass();
         } else if (is_object($user)) {
