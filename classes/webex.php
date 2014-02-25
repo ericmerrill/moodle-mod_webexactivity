@@ -316,10 +316,10 @@ class webex {
      *
      * @param string         $xml The XML to send to WebEx.
      * @param user|bool      $webexuser The WebEx user to use for auth. False to use the API user.
-     * @param bool           $expecterror If true, and error is possibly expected. Supress error message.
      * @return array|bool    XML response (as array). False on failure.
+     * @throws webex_xml_exception on XML parse error.
      */
-    public function get_response($basexml, $webexuser = false, $expecterror = false) {
+    public function get_response($basexml, $webexuser = false) {
         global $USER;
 
         $xml = type\base\xml_gen::auth_wrap($basexml, $webexuser);
@@ -338,15 +338,13 @@ class webex {
                     return $response;
                 }
             }
+
             if ((isset($errors['exception'])) && ($errors['exception'] === '000015')) {
+                // No records found (000015), which is not really a failure, return empty array.
                 return array();
             }
 
-            if (!$expecterror && debugging('Error when processing XML', DEBUG_DEVELOPER)) {
-                var_dump($errors);
-            }
-
-            return false;
+            throw new exception\webex_xml_exception($errors['exception'], $errors['message'], $xml);
         }
     }
 

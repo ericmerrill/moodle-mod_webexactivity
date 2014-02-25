@@ -337,7 +337,11 @@ class user {
         if (isset($this->webexuserid)) {
             // The user has already been saved to WebEx, update.
             $xml = type\base\xml_gen::update_user($this);
-            $response = $webex->get_response($xml, false, true);
+            try {
+                $response = $webex->get_response($xml);
+            } catch (\mod_webexactivity\exception\webex_xml_exception $e) {
+                $response = false;
+            }
 
             if ($response) {
                 return true;
@@ -347,7 +351,11 @@ class user {
         } else {
             // Creating a new user.
             $xml = type\base\xml_gen::create_user($this);
-            $response = $webex->get_response($xml, false, true);
+            try {
+                $response = $webex->get_response($xml);
+            } catch (\mod_webexactivity\exception\webex_xml_exception $e) {
+                $response = false;
+            }
 
             if ($response) {
                 if (isset($response['use:userId']['0']['#'])) {

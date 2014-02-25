@@ -45,15 +45,15 @@ class service_connector {
      *
      * @param string    $xml The XML to send.
      * @return bool     True on success, false on failure.
+     * @throws curl_setup_exception on curl setup failure.
+     * @throws connection_exception on connection failure.
      */
     public function retrieve($xml) {
         $this->clear_status();
         $handle = $this->create_curl_handle();
 
         if (!$handle) {
-            $this->sucess = false;
-            $this->error['message'] = 'Bad curl setup';
-            return false;
+            throw new exception\curl_setup_exception();
         }
 
         curl_setopt($handle, CURLOPT_POSTFIELDS, $xml);
@@ -61,8 +61,8 @@ class service_connector {
         $this->response = curl_exec($handle);
 
         if ($this->response === false) {
-            $this->error[] = curl_errno($handle) .':'. curl_error($handle);
-            return false;
+            $error = curl_errno($handle) .':'. curl_error($handle);
+            throw new exception\connection_exception($error);
         }
         curl_close($handle);
 
