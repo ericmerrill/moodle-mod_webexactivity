@@ -17,9 +17,10 @@
 /**
  * An activity to interface with WebEx.
  *
- * @package   mod_webexactvity
- * @copyright Eric Merrill (merrill@oakland.edu)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace mod_webexactivity;
@@ -32,7 +33,8 @@ require_once("$CFG->libdir/formslib.php");
  * Extends moodleform to create a form for recording editing.
  *
  * @package    mod_webexactvity
- * @copyright  2014 Eric Merrill (merrill@oakland.edu)
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class editrecording_form extends \moodleform {

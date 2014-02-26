@@ -17,9 +17,10 @@
 /**
  * An activity to interface with WebEx.
  *
- * @package   mod_webexactvity
- * @copyright Eric Merrill (merrill@oakland.edu)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace mod_webexactivity\exception;
@@ -30,7 +31,8 @@ defined('MOODLE_INTERNAL') || die();
  * Parent for all webexactivity exceptions.
  *
  * @package    mod_webexactvity
- * @copyright  2014 Eric Merrill (merrill@oakland.edu)
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class webexactivity_exception extends \moodle_exception {

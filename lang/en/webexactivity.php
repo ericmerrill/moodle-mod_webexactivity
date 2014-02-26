@@ -17,8 +17,9 @@
 /**
  * Strings for component 'WebEx Activity', language 'en'
  *
- * @package    mod_webexactivity
- * @copyright  Eric Merrill (merrill@oakland.edu)
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
