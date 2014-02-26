@@ -272,13 +272,17 @@ class meeting {
 
         $xml = $gen::delete_meeting($this->meetingkey);
 
-        $response = $this->webex->get_response($xml, $webexuser);
-
-        if (empty($response)) {
-            return true;
+        try {
+            $response = $this->webex->get_response($xml, $webexuser);
+        } catch (\mod_webexactivity\exception\webex_xml_exception $e) {
+            if (strpos($e->getMessage(), '060001') !== false) {
+                // If the code is 060001, meeting was not found in WebEx.
+                return true;
+            }
+            throw $e;
         }
 
-        return false;
+        return true;
     }
 
     /**
