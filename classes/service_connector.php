@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir.'/xmlize.php');
 
 /**
- * Provides the low level connection to the Webex server.
+ * Provides the low level connection to the WebEx server.
  *
  * @package    mod_webexactvity
  * @author     Eric Merrill <merrill@oakland.edu>

@@ -53,7 +53,7 @@ if ($ADMIN->fulltree) {
             get_string('apipassword', 'mod_webexactivity'), get_string('apipassword_help', 'mod_webexactivity'), ''));
 
     $settings->add(new admin_setting_configtext('webexactivity/prefix', get_string('prefix', 'mod_webexactivity'),
-            get_string('prefix_help', 'mod_webexactivity'), ''));
+            get_string('prefix_help', 'mod_webexactivity'), 'mdl_'));
 
     $settings->add(new admin_setting_heading('meetingsettings', get_string('meetingsettings', 'mod_webexactivity'), ''));
 

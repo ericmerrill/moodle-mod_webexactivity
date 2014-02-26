@@ -34,7 +34,7 @@ $view = optional_param('view', false, PARAM_ALPHA);
 
 $error = false;
 
-// Webex codes.
+// WebEx response codes.
 $webexres = array();
 $webexres['AT'] = optional_param('AT', false, PARAM_ALPHA);
 $webexres['ST'] = optional_param('ST', false, PARAM_ALPHA);

@@ -55,7 +55,7 @@ $table->define_baseurl($pageurl);
 $table->set_sql('*', '{webexactivity_user}', '1=1', array());
 
 $table->define_columns(array('firstname', 'lastname', 'email', 'webexid', 'login'));
-$table->define_headers(array('First Name', 'Last Name', 'Email', 'Webex ID', ''));
+$table->define_headers(array('First Name', 'Last Name', 'Email', 'WebEx ID', ''));
 $table->no_sorting('login');
 
 echo $OUTPUT->header();
