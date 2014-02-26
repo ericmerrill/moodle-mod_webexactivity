@@ -170,8 +170,10 @@ class meeting {
         }
 
         switch ($name) {
-            case 'starttime':
             case 'duration':
+                // Need to change type to match type from db.
+                $val = (string)$val;
+            case 'starttime':
             case 'name':
             case 'intro':
                 if (!isset($this->$name) || ($this->$name !== $val)) {
