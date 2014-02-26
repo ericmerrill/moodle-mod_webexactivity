@@ -17,9 +17,10 @@
 /**
  * An activity to interface with WebEx.
  *
- * @package   mod_webexactvity
- * @copyright Eric Merrill (merrill@oakland.edu)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 // Code to view the passed webex.
@@ -33,7 +34,7 @@ $view = optional_param('view', false, PARAM_ALPHA);
 
 $error = false;
 
-// Webex codes.
+// WebEx response codes.
 $webexres = array();
 $webexres['AT'] = optional_param('AT', false, PARAM_ALPHA);
 $webexres['ST'] = optional_param('ST', false, PARAM_ALPHA);

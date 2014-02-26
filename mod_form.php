@@ -17,9 +17,10 @@
 /**
  * An activity to interface with WebEx.
  *
- * @package   mod_webexactvity
- * @copyright Eric Merrill (merrill@oakland.edu)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -30,7 +31,8 @@ require_once($CFG->dirroot.'/course/moodleform_mod.php');
  * Class the creates the mod_form.
  *
  * @package    mod_webexactvity
- * @copyright  2014 Eric Merrill (merrill@oakland.edu)
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_webexactivity_mod_form extends \moodleform_mod {
@@ -45,6 +47,25 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
         $mform =& $this->_form;
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
+
+        // Types cannot be changed. Check if it's already set.
+        if (!empty($this->current->id)) {
+            $typename = \mod_webexactivity\meeting::get_meeting_type_name($this->current->type);
+            $mform->addElement('static', 'typestatic', get_string('meetingtype', 'webexactivity'), $typename);
+        } else {
+            $meetingtypes = \mod_webexactivity\meeting::get_available_types($this->context);
+            if (count($meetingtypes) == 0) {
+                throw new \coding_exception('There are no valid meeting types for this user. Admin must fix.');
+            } else if (count($meetingtypes) == 1) {
+                $keys = array_keys($meetingtypes);
+                $type = array_pop($keys);
+                $mform->addElement('static', 'typestatic', get_string('meetingtype', 'webexactivity'), $meetingtypes[$type]);
+                $mform->addElement('hidden', 'type', $type);
+            } else {
+                $mform->addElement('select', 'type', get_string('meetingtype', 'webexactivity'), $meetingtypes);
+            }
+            $mform->setType('type', PARAM_INT);
+        }
 
         $mform->addElement('text', 'name', get_string('webexactivityname', 'webexactivity'), array('size' => '64'));
         $mform->setType('name', PARAM_TEXT);
@@ -97,5 +118,24 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
             $data['longavailability'] = 0;
             $data['endtime'] = time() + (3600 * 24 * 14);
         }
+    }
+
+    /**
+     * Perform minimal validation on the settings form.
+     *
+     * @param array $data
+     * @param array $files
+     */
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+
+        if ($data['instance'] == 0) {
+            // Check that the passed type is valid.
+            if (!isset($data['type']) || (!\mod_webexactivity\meeting::is_valid_type($data['type'], $this->context))) {
+                $errors['type'] = get_string('invalidtype', 'webexactivity');
+            }
+        }
+
+        return $errors;
     }
 }

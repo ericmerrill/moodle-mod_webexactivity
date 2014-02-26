@@ -17,9 +17,10 @@
 /**
  * An activity to interface with WebEx.
  *
- * @package   mod_webexactvity
- * @copyright Eric Merrill (merrill@oakland.edu)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -67,7 +68,7 @@ function webexactivity_supports($feature) {
  */
 function webexactivity_add_instance($data, $mform) {
 
-    $meeting = \mod_webexactivity\meeting::create_new(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING);
+    $meeting = \mod_webexactivity\meeting::create_new($data->type);
     $meeting->starttime = $data->starttime;
     $meeting->duration = $data->duration;
     if (isset($data->longavailability)) {

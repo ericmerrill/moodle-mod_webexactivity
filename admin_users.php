@@ -17,9 +17,10 @@
 /**
  * An activity to interface with WebEx.
  *
- * @package   mod_webexactvity
- * @copyright Eric Merrill (merrill@oakland.edu)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
@@ -54,7 +55,7 @@ $table->define_baseurl($pageurl);
 $table->set_sql('*', '{webexactivity_user}', '1=1', array());
 
 $table->define_columns(array('firstname', 'lastname', 'email', 'webexid', 'login'));
-$table->define_headers(array('First Name', 'Last Name', 'Email', 'Webex ID', ''));
+$table->define_headers(array('First Name', 'Last Name', 'Email', 'WebEx ID', ''));
 $table->no_sorting('login');
 
 echo $OUTPUT->header();

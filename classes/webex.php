@@ -17,9 +17,10 @@
 /**
  * An activity to interface with WebEx.
  *
- * @package   mod_webexactvity
- * @copyright Eric Merrill (merrill@oakland.edu)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace mod_webexactivity;
@@ -30,7 +31,8 @@ defined('MOODLE_INTERNAL') || die();
  * A class that provides general WebEx services and constants.
  *
  * @package    mod_webexactvity
- * @copyright  2014 Eric Merrill (merrill@oakland.edu)
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class webex {
@@ -88,6 +90,16 @@ class webex {
      * Time status that represents a meeting that is in the distant past.
      */
     const WEBEXACTIVITY_TIME_LONG_PAST = 4;
+
+    /**
+     * The flag for Available for meeting types.
+     */
+    const WEBEXACTIVITY_TYPE_INSTALLED = 'inst';
+
+    /**
+     * The flag for Available to all setting for meeting types.
+     */
+    const WEBEXACTIVITY_TYPE_ALL = 'all';
 
     /** @var mixed Storage for the latest errors from a connection. */
     private $latesterrors = null;

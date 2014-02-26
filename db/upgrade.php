@@ -17,9 +17,10 @@
 /**
  * An activity to interface with WebEx.
  *
- * @package   mod_webexactvity
- * @copyright Eric Merrill (merrill@oakland.edu)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
@@ -48,7 +49,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
         // Set the introformat to 1 (html).
         $DB->execute('UPDATE {webexactivity} SET introformat = 1');
 
-        // Webex Activity savepoint reached.
+        // WebEx Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014020401, 'webexactivity');
     }
 
@@ -63,7 +64,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Webex Activity savepoint reached.
+        // WebEx Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014020403, 'webexactivity');
     }
 
@@ -78,7 +79,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Webex Activity savepoint reached.
+        // WebEx Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014020404, 'webexactivity');
     }
 
@@ -93,7 +94,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Webex Activity savepoint reached.
+        // WebEx Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014021300, 'webexactivity');
     }
 
@@ -108,7 +109,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->drop_field($table, $field);
         }
 
-        // Webex Activity savepoint reached.
+        // WebEx Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014021301, 'webexactivity');
     }
 
@@ -123,7 +124,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->drop_field($table, $field);
         }
 
-        // Webex Activity savepoint reached.
+        // WebEx Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014021302, 'webexactivity');
     }
 
@@ -153,7 +154,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $meetings->close();
         }
 
-        // Webex Activity savepoint reached.
+        // WebEx Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014021400, 'webexactivity');
     }
 
@@ -168,7 +169,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Webex Activity savepoint reached.
+        // WebEx Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014021800, 'webexactivity');
     }
 
@@ -199,7 +200,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Webex Activity savepoint reached.
+        // WebEx Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014022400, 'webexactivity');
     }
 
@@ -228,7 +229,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
 
         $meetings->close();
 
-        // Webex Activity savepoint reached.
+        // WebEx Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014022402, 'webexactivity');
     }
 
@@ -243,7 +244,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->drop_field($table, $field);
         }
 
-        // Webex Activity savepoint reached.
+        // WebEx Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014022403, 'webexactivity');
     }
 
@@ -265,7 +266,7 @@ function xmldb_webexactivity_upgrade($oldversion) {
 
         $webexusers->close();
 
-        // Webex Activity savepoint reached.
+        // WebEx Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014022500, 'webexactivity');
     }
 

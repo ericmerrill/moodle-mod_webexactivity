@@ -17,9 +17,10 @@
 /**
  * An activity to interface with WebEx.
  *
- * @package   mod_webexactvity
- * @copyright Eric Merrill (merrill@oakland.edu)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -34,6 +35,9 @@ $settings = new admin_settingpage($section, get_string('settings', 'mod_webexact
 
 // Build up the full settings page if we need it.
 if ($ADMIN->fulltree) {
+    // ---------------------------------------------------
+    // API Settings.
+    // ---------------------------------------------------
     $settings->add(new admin_setting_heading('apisettings', get_string('apisettings', 'mod_webexactivity'), ''));
 
     $settings->add(new admin_setting_configtext('webexactivity/url', get_string('url', 'mod_webexactivity'),
@@ -52,14 +56,43 @@ if ($ADMIN->fulltree) {
             get_string('apipassword', 'mod_webexactivity'), get_string('apipassword_help', 'mod_webexactivity'), ''));
 
     $settings->add(new admin_setting_configtext('webexactivity/prefix', get_string('prefix', 'mod_webexactivity'),
-            get_string('prefix_help', 'mod_webexactivity'), ''));
+            get_string('prefix_help', 'mod_webexactivity'), 'mdl_'));
 
+    // ---------------------------------------------------
+    // Meeting Types.
+    // ---------------------------------------------------
+    $settings->add(new admin_setting_heading('meetingtypes', get_string('meetingtypes', 'mod_webexactivity'),
+            get_string('meetingtypes_desc', 'mod_webexactivity')));
+
+    $typeopts = array(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_INSTALLED => get_string('typeinstalled', 'mod_webexactivity'),
+                    \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_ALL => get_string('typeforall', 'mod_webexactivity'));
+
+    $setting = new admin_setting_configmulticheckbox('webexactivity/typemeetingcenter',
+            get_string('typemeetingcenter', 'mod_webexactivity'),
+            get_string('typemeetingcenter_desc', 'mod_webexactivity'),
+            array(),
+            $typeopts);
+    $settings->add($setting);
+
+    $setting = new admin_setting_configmulticheckbox('webexactivity/typetrainingcenter',
+            get_string('typetrainingcenter', 'mod_webexactivity'),
+            get_string('typetrainingcenter_desc', 'mod_webexactivity'),
+            array(),
+            $typeopts);
+    $settings->add($setting);
+
+    // ---------------------------------------------------
+    // Meeting Settings.
+    // ---------------------------------------------------
     $settings->add(new admin_setting_heading('meetingsettings', get_string('meetingsettings', 'mod_webexactivity'), ''));
 
     $settings->add(new admin_setting_configtext('webexactivity/meetingclosegrace',
             get_string('meetingclosegrace', 'mod_webexactivity'),
             get_string('meetingclosegrace_help', 'mod_webexactivity'), '120'));
 
+    // ---------------------------------------------------
+    // Recording Settings.
+    // ---------------------------------------------------
     $settings->add(new admin_setting_heading('recordingsettings', get_string('recordingsettings', 'mod_webexactivity'), ''));
 
     $settings->add(new admin_setting_configtext('webexactivity/recordingtrashtime',

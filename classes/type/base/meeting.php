@@ -17,9 +17,10 @@
 /**
  * An activity to interface with WebEx.
  *
- * @package   mod_webexactvity
- * @copyright 2014 Eric Merrill (merrill@oakland.edu)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace mod_webexactivity\type\base;
@@ -32,7 +33,8 @@ defined('MOODLE_INTERNAL') || die();
  * This should be extended by classes that represent specific meeting types.
  *
  * @package    mod_webexactvity
- * @copyright  2014 Eric Merrill (merrill@oakland.edu)
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class meeting {
@@ -168,8 +170,10 @@ class meeting {
         }
 
         switch ($name) {
-            case 'starttime':
             case 'duration':
+                // Need to change type to match type from db.
+                $val = (string)$val;
+            case 'starttime':
             case 'name':
             case 'intro':
                 if (!isset($this->$name) || ($this->$name !== $val)) {
@@ -268,13 +272,17 @@ class meeting {
 
         $xml = $gen::delete_meeting($this->meetingkey);
 
-        $response = $this->webex->get_response($xml, $webexuser);
-
-        if (empty($response)) {
-            return true;
+        try {
+            $response = $this->webex->get_response($xml, $webexuser);
+        } catch (\mod_webexactivity\exception\webex_xml_exception $e) {
+            if (strpos($e->getMessage(), '060001') !== false) {
+                // If the code is 060001, meeting was not found in WebEx.
+                return true;
+            }
+            throw $e;
         }
 
-        return false;
+        return true;
     }
 
     /**

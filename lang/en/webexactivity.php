@@ -17,8 +17,9 @@
 /**
  * Strings for component 'WebEx Activity', language 'en'
  *
- * @package    mod_webexactivity
- * @copyright  Eric Merrill (merrill@oakland.edu)
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -37,10 +38,10 @@ $string['pluginadministration'] = 'WebEx Activity administration';
 $string['additionalsettings'] = 'Additional meeting settings';
 $string['allchat'] = 'Participants can chat with other participants';
 $string['apipassword'] = 'WebEx Admin password';
-$string['apipassword_help'] = '';
+$string['apipassword_help'] = 'The password for an admin account on your site.';
 $string['apisettings'] = 'API Settings';
 $string['apiusername'] = 'WebEx Admin username';
-$string['apiusername_help'] = '';
+$string['apiusername_help'] = 'The username for an admin account on your site. This should be an accounted dedicated for Moodle for security reasons.';
 $string['availabilityendtime'] = 'Extended availability end time';
 $string['confirmrecordingdelete'] = 'Are you sure you want to delete the recording <b>{$a->name}</b>, with a length of {$a->time}? This cannot be undone.';
 $string['connectionexception'] = 'An error occurred while trying to connect: {$a->error}';
@@ -67,6 +68,7 @@ $string['error_'] = '';
 $string['externallinktext'] = '<p>This link is for participants who do not have a Oakland University NetID account, or who are not participants in this course. Students in the course will not need to be emailed this link, as they can just click on the Join meeting link on the previous page. This link should be distributed carefully - anybody with this link will be able to access this meeting.  To invite others to the meeting, copy the URL below and send it to them.  If this is a public meeting, this link can also be placed on a web site.</p>';
 $string['getexternallink'] = '<a href="{$a->url}">Get external participant link</a>';
 $string['hostmeetinglink'] = '<a href="{$a->url}">Host Meeting</a>';
+$string['invalidtype'] = 'Invalid type';
 $string['joinmeetinglink'] = '<a href="{$a->url}">Join Meeting</a>';
 $string['longavailability'] = 'Extended Availability';
 $string['longavailability_help'] = 'Setting this option will leave the meeting available to host until the Extended availability end time. Allows reusable meetings for things like office hours.';
@@ -75,14 +77,17 @@ $string['manageallrecordings_help'] = 'Manage all recordings from the WebEx serv
 $string['meetingclosegrace'] = 'Meeting grace period';
 $string['meetingclosegrace_help'] = 'The number of minutes after the start time plus duration after which the meeting will be considered complete.';
 $string['meetingpast'] = 'This meeting has past.';
-$string['meetingsettings'] = 'Meeting settings';
+$string['meetingsettings'] = 'Meeting Settings';
+$string['meetingtype'] = 'Meeting type';
+$string['meetingtypes'] = 'Meeting Types';
+$string['meetingtypes_desc'] = 'These are WebEx meeting types supported by this module. For each type, you can select if it is "Available" (you have a license for it in WebEx, and you want it to be able for use it from Moodle), and if you want it to be "Available to all users". Types that are "Available", but not "Available to all users" will only be selectable by people with the mod/webexactivity:allavailabletypes permission.';
 $string['meetingupcoming'] = 'This meeting is not yet available to join.';
 $string['page_managerecordings'] = 'Manage Recordings';
 $string['page_manageusers'] = 'Manage Users';
 $string['partnerid'] = 'Partner ID';
-$string['partnerid_help'] = '';
+$string['partnerid_help'] = 'This is provided by you Cisco account representative.';
 $string['prefix'] = 'Username Prefix';
-$string['prefix_help'] = '';
+$string['prefix_help'] = 'This string will be prefixed to all usernames created by this module.';
 $string['recordingfileurl'] = 'Download';
 $string['recordinglength'] = '({$a->time}, {$a->size})';
 $string['recordingname'] = 'Recording name';
@@ -93,12 +98,18 @@ $string['recordingtrashtime'] = 'Recording trash time';
 $string['recordingtrashtime_help'] = 'Number of hours a recording will be held before being deleted permanently.';
 $string['settings'] = 'WebEx Activity settings';
 $string['siteid'] = 'Site ID';
-$string['siteid_help'] = '';
+$string['siteid_help'] = 'This is provided by you Cisco account representative.';
 $string['starttime'] = 'Meeting start time';
 $string['studentdownload'] = 'Allow students to download recordings';
 $string['studentdownload_help'] = 'Allow students access to the download link for recordings.';
 $string['studentvisible'] = 'Visible to students';
+$string['typeinstalled'] = 'Available';
+$string['typeforall'] = 'Available to all users';
+$string['typemeetingcenter'] = 'Meeting Center';
+$string['typemeetingcenter_desc'] = '';
+$string['typetrainingcenter'] = 'Training Center';
+$string['typetrainingcenter_desc'] = '';
 $string['undeletelink'] = '<a href="{$a->url}">Undelete</a>';
-$string['url'] = 'Site URL';
-$string['url_help'] = '';
+$string['url'] = 'Site Name';
+$string['url_help'] = 'The url part before .webex.com. If your site url was "https://example.webex.com", you would enter "example" above.';
 $string['webexxmlexception'] = 'An error occurred in WebEx while processing XML: {$a->errorcode} {$a->error}';
