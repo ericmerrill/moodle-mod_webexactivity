@@ -122,7 +122,7 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
     private static function meeting_xml($data) {
         $xml = '';
         if (isset($data->meetingkey)) {
-            $xml .= '<meetingKey>'.$data->meetingkey.'</meetingKey>';
+            $xml .= '<meetingkey>'.$data->meetingkey.'</meetingkey>';
         }
 
         $xml .= '<accessControl><listToPublic>false</listToPublic></accessControl>';

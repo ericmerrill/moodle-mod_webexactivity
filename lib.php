@@ -68,7 +68,7 @@ function webexactivity_supports($feature) {
  */
 function webexactivity_add_instance($data, $mform) {
 
-    $meeting = \mod_webexactivity\meeting::create_new(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING);
+    $meeting = \mod_webexactivity\meeting::create_new($data->type);
     $meeting->starttime = $data->starttime;
     $meeting->duration = $data->duration;
     if (isset($data->longavailability)) {

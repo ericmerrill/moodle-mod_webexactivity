@@ -23,5 +23,3 @@ Documentation
 =============
 For Requirements, Installation information, and the Change Log, please visit:
 https://github.com/merrill-oakland/mod_webexactivity/wiki
-
-

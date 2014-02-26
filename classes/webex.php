@@ -91,6 +91,16 @@ class webex {
      */
     const WEBEXACTIVITY_TIME_LONG_PAST = 4;
 
+    /**
+     * The flag for Available for meeting types.
+     */
+    const WEBEXACTIVITY_TYPE_INSTALLED = 'inst';
+
+    /**
+     * The flag for Available to all setting for meeting types.
+     */
+    const WEBEXACTIVITY_TYPE_ALL = 'all';
+
     /** @var mixed Storage for the latest errors from a connection. */
     private $latesterrors = null;
 

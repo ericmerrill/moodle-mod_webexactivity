@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir.'/xmlize.php');
 
 /**
- * Static factories to build meetings of the correct types.
+ * Static factories to build meetings of the correct types, and get other info.
  *
  * @package    mod_webexactvity
  * @author     Eric Merrill <merrill@oakland.edu>
@@ -98,5 +98,97 @@ class meeting {
         }
 
         return false;
+    }
+
+    /**
+     * Returns an array for available meeting types and names.
+     *
+     * @param context   $context A Moodle context object.
+     * @return array    An array of typeconst=>lang_string.
+     */
+    public static function get_available_types($context = null) {
+        if (is_null($context)) {
+            $all = false;
+        } else {
+            $all = has_capability('mod/webexactivity:allavailabletypes', $context);
+        }
+        $out = array();
+
+        $setting = get_config('webexactivity', 'typemeetingcenter');
+        if (stripos($setting, webex::WEBEXACTIVITY_TYPE_INSTALLED) !== false) {
+            if ($all || (stripos($setting, webex::WEBEXACTIVITY_TYPE_ALL) !== false)) {
+                $name = self::get_meeting_type_name(webex::WEBEXACTIVITY_TYPE_MEETING);
+                $out[webex::WEBEXACTIVITY_TYPE_MEETING] = $name;
+            }
+        }
+
+        $setting = get_config('webexactivity', 'typetrainingcenter');
+        if (stripos($setting, webex::WEBEXACTIVITY_TYPE_INSTALLED) !== false) {
+            if ($all || (stripos($setting, webex::WEBEXACTIVITY_TYPE_ALL) !== false)) {
+                $name = self::get_meeting_type_name(webex::WEBEXACTIVITY_TYPE_TRAINING);
+                $out[webex::WEBEXACTIVITY_TYPE_TRAINING] = $name;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Checks if the passed type is valid for the user. 
+     *
+     * @param int       $type A meeting type constant.
+     * @param context   $context A Moodle context object.
+     * @return bool     True if it is valid, false if not.
+     * @throws coding_exception on type error.
+     */
+    public static function is_valid_type($type, $context) {
+        if (is_null($context)) {
+            $all = false;
+        } else {
+            $all = has_capability('mod/webexactivity:allavailabletypes', $context);
+        }
+
+        switch ($type) {
+            case webex::WEBEXACTIVITY_TYPE_MEETING:
+                $setting = get_config('webexactivity', 'typemeetingcenter');
+                break;
+            case webex::WEBEXACTIVITY_TYPE_TRAINING:
+                $setting = get_config('webexactivity', 'typetrainingcenter');
+                break;
+            default:
+                throw new \coding_exception('Unknown meeting type passed to is_valid_type.');
+                break;
+        }
+
+        if (stripos($setting, webex::WEBEXACTIVITY_TYPE_INSTALLED) !== false) {
+            if ($all) {
+                return true;
+            }
+            if (stripos($setting, webex::WEBEXACTIVITY_TYPE_ALL) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the name of a meeting type.
+     *
+     * @param int           $type A meeting type constant.
+     * @return lang_string  True if it is valid, false if not.
+     * @throws coding_exception on type error.
+     */
+    public static function get_meeting_type_name($type) {
+        switch ($type) {
+            case webex::WEBEXACTIVITY_TYPE_MEETING:
+                return get_string('typemeetingcenter', 'mod_webexactivity', null, true);
+                break;
+            case webex::WEBEXACTIVITY_TYPE_TRAINING:
+                return get_string('typetrainingcenter', 'mod_webexactivity', null, true);
+                break;
+            default:
+                throw new \coding_exception('Unknown meeting type passed to get_meeting_name.');
+                break;
+        }
     }
 }

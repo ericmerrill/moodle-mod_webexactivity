@@ -48,6 +48,25 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
+        // Types cannot be changed. Check if it's already set.
+        if (!empty($this->current->id)) {
+            $typename = \mod_webexactivity\meeting::get_meeting_type_name($this->current->type);
+            $mform->addElement('static', 'typestatic', get_string('meetingtype', 'webexactivity'), $typename);
+        } else {
+            $meetingtypes = \mod_webexactivity\meeting::get_available_types($this->context);
+            if (count($meetingtypes) == 0) {
+                throw new \coding_exception('There are no valid meeting types for this user. Admin must fix.');
+            } else if (count($meetingtypes) == 1) {
+                $keys = array_keys($meetingtypes);
+                $type = array_pop($keys);
+                $mform->addElement('static', 'typestatic', get_string('meetingtype', 'webexactivity'), $meetingtypes[$type]);
+                $mform->addElement('hidden', 'type', $type);
+            } else {
+                $mform->addElement('select', 'type', get_string('meetingtype', 'webexactivity'), $meetingtypes);
+            }
+            $mform->setType('type', PARAM_INT);
+        }
+
         $mform->addElement('text', 'name', get_string('webexactivityname', 'webexactivity'), array('size' => '64'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
@@ -99,5 +118,24 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
             $data['longavailability'] = 0;
             $data['endtime'] = time() + (3600 * 24 * 14);
         }
+    }
+
+    /**
+     * Perform minimal validation on the settings form.
+     *
+     * @param array $data
+     * @param array $files
+     */
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+
+        if ($data['instance'] == 0) {
+            // Check that the passed type is valid.
+            if (!isset($data['type']) || (!\mod_webexactivity\meeting::is_valid_type($data['type'], $this->context))) {
+                $errors['type'] = get_string('invalidtype', 'webexactivity');
+            }
+        }
+
+        return $errors;
     }
 }
