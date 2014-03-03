@@ -36,6 +36,26 @@ require_once($CFG->dirroot.'/course/moodleform_mod.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_webexactivity_mod_form extends \moodleform_mod {
+
+    // TODO doc.
+    public function __construct($current, $section, $cm, $course) {
+        global $PAGE, $USER;
+
+        if (isset($current->add)) {
+            try {
+                $webexuser = \mod_webexactivity\user::load_for_user($USER);
+            } catch (\mod_webexactivity\exception\webexactivity_exception $e) {
+                $webexuser = false;
+            }
+
+            if (!$webexuser) {
+                \mod_webexactivity\user::password_redirect($PAGE->url);
+            }
+        }
+
+        parent::__construct($current, $section, $cm, $course);
+    }
+
     /**
      * Called to define this moodle form
      *

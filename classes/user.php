@@ -61,16 +61,48 @@ class user {
     }
 
     // ---------------------------------------------------
+    // Redirect methods.
+    // TODO - move to webex?
+    // ---------------------------------------------------
+
+    // TODO doc.
+    public static function password_redirect($url) {
+        global $SESSION;
+
+        $SESSION->mod_webexactivity_password_redirect = $url;
+
+        $redirurl = new \moodle_url('/mod/webexactivity/useredit.php', array('action' => 'useredit'));
+        redirect($redirurl);
+    }
+
+    public static function password_return_redirect($home = false) {
+        global $SESSION;
+
+        $url = false;
+        if (isset($SESSION->mod_webexactivity_password_redirect)) {
+            $url = $SESSION->mod_webexactivity_password_redirect;
+            unset($SESSION->mod_webexactivity_password_redirect);
+        }
+
+        if (!$url or $home) {
+            $url = new \moodle_url('/');
+        }
+
+        redirect($url);
+    }
+
+    // ---------------------------------------------------
     // Static Factories.
     // ---------------------------------------------------
     /**
      * Load the webex user for a given moodle user.
      *
      * @param stdClass|int   $muser Object of user record, id of record to load.
+     * @param bool           $create If true, try to create user if it doesn't exist.
      * @return user|bool     The user object, false on failure.
      * @throws coding_exception when Moodle user not found, or unknown parameter type.
      */
-    public static function load_for_user($muser) {
+    public static function load_for_user($muser, $create = true) {
         global $DB;
 
         if (is_object($muser)) {
@@ -90,6 +122,9 @@ class user {
             // Record found, just load it up.
             $webexuser = new user($record);
         } else {
+            if (!$create) {
+                return false;
+            }
             // Creating a new user.
             $webexuser = self::create();
 
@@ -184,6 +219,10 @@ class user {
      * @return bool    True on success, false on failure.
      */
     public function update_password($password) {
+        if ($this->manual) {
+            return false;
+        }
+
         $this->user->password = self::encrypt_password($password);
 
         $webex = new webex();
@@ -256,11 +295,18 @@ class user {
      * @return bool    True if auth succeeded, false if failed.
      */
     public function check_user_auth() {
+        if (!isset($this->password)) {
+            return false;
+        }
         $xml = type\base\xml_gen::check_user_auth($this);
 
         $webex = new \mod_webexactivity\webex();
 
-        $response = $webex->get_response($xml);
+        try {
+            $response = $webex->get_response($xml, $this);
+        } catch (exception\bad_password_exception $e) {
+            return false;
+        }
 
         if ($response) {
             return true;
@@ -369,14 +415,14 @@ class user {
                 $exception = $errors['exception'];
 
                 // Expection for username or email already exists.
-                if ((stripos($exception, '030004') !== false) || (stripos($exception, '030005') === false)) {
+                if ((stripos($exception, '030004') !== false) || (stripos($exception, '030005') !== false)) {
                     // Try to update from WebEx.
                     if ($this->update_from_webex()) {
                         return true;
                     }
 
                     // Can't use this user.
-                    throw new \coding_exception('Unresolvable email address or username collision.');
+                    throw new exception\webex_user_collision();
                 }
 
                 throw new \coding_exception('WebEx exception '.$exception.' when creating new user.');
@@ -389,14 +435,18 @@ class user {
     /**
      * Load user info from WebEx.
      *
+     * @param bool     $force If true, ignore username prefix restriction.
      * @return bool    True if auth succeeded, false if failed.
      */
-    public function update_from_webex() {
-        $info = self::search_webex_for_webexid($this->webexid);
+    public function update_from_webex($force = false) {
+        $info = false;
+        if (isset($this->webexid)) {
+            $info = self::search_webex_for_webexid($this->webexid);
+        }
 
         if (!$info && isset($this->email)) {
             // WebEx ID lookup failed, try email address.
-            $info = self::search_webex_for_webexid($this->email);
+            $info = self::search_webex_for_email($this->email);
         }
 
         if (!$info) {
@@ -411,8 +461,12 @@ class user {
 
         $prefix = get_config('webexactivity', 'prefix');
         if (strpos($info->webexid, $prefix) !== 0) {
-            // Not the same username prefix, can't load.
-            return false;
+            // Not the same username prefix.
+            if (!$force) {
+                return false;
+            } else {
+                $this->manual = 1;
+            }
         }
 
         $this->webexid = $info->webexid;
@@ -529,8 +583,12 @@ class user {
     public function __get($name) {
         switch ($name) {
             case 'password':
-                $pass = self::decrypt_password($this->user->password);
-                return $pass;
+                if (isset($this->user->password)) {
+                    $pass = self::decrypt_password($this->user->password);
+                    return $pass;
+                } else {
+                    return '';
+                }
                 break;
             case 'record':
                 return $this->user;

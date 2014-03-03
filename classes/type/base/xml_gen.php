@@ -216,7 +216,7 @@ class xml_gen {
                '<serv:startFrom>1</serv:startFrom>'.
                '<serv:maximumNum>1</serv:maximumNum>'.
                '</listControl>'.
-               '<email>'.$email.'</email>'.
+               '<email>'.self::format_text($email).'</email>'.
                '</bodyContent></body>';
 
         return $xml;

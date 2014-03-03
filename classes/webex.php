@@ -348,17 +348,30 @@ class webex {
         } else {
             // Bad user password, reset it and try again.
             if ($webexuser && (isset($errors['exception'])) && ($errors['exception'] === '030002')) {
-                $webexuser->update_password(self::generate_password());
-                $xml = type\base\xml_gen::auth_wrap($basexml, $webexuser);
-                list($status, $response, $errors) = $this->fetch_response($xml);
-                if ($status) {
-                    return $response;
+                if ($webexuser->update_password(self::generate_password())) {
+                    $xml = type\base\xml_gen::auth_wrap($basexml, $webexuser);
+                    list($status, $response, $errors) = $this->fetch_response($xml);
+                    if ($status) {
+                        return $response;
+                    }
                 }
+
+                throw new exception\bad_password_exception();
             }
 
             if ((isset($errors['exception'])) && ($errors['exception'] === '000015')) {
                 // No records found (000015), which is not really a failure, return empty array.
                 return array();
+            }
+
+            if ((isset($errors['exception'])) && ($errors['exception'] === '030001')) {
+                // No user found (030001), which is not really a failure, return empty array.
+                return array();
+            }
+
+            if ((isset($errors['exception'])) && (($errors['exception'] === '030004') || ($errors['exception'] === '030005'))) {
+                // Username or email already exists.
+                throw new exception\webex_xml_exception($errors['exception'], $errors['message'], $xml);
             }
 
             throw new exception\webex_xml_exception($errors['exception'], $errors['message'], $xml);

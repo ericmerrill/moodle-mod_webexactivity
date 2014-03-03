@@ -23,11 +23,25 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_webexactivity\exception;
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014030300;
-$plugin->requires  = 2013051400; // See http://docs.moodle.org/dev/Moodle_Versions.
-$plugin->cron      = 1;
-$plugin->component = 'mod_webexactivity';
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.0.1 Alpha';
+/**
+ * Exception for WebEx bad password error.
+ *
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class bad_password_exception extends webexactivity_exception {
+    /**
+     * Constructor
+     *
+     * @param string $debuginfo Additional info about the error.
+     */
+    public function __construct($debuginfo=null) {
+        parent::__construct('badpasswordexception', '', null, $debuginfo);
+    }
+}

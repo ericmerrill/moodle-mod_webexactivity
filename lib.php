@@ -87,8 +87,24 @@ function webexactivity_add_instance($data, $mform) {
         $meeting->studentdownload = 0;
     }
 
-    if ($meeting->save()) {
-        return $meeting->id;
+    try {
+        if ($meeting->save()) {
+            return $meeting->id;
+        }
+    } catch (Exception $e) {
+        /*$collision = ($e instanceof \mod_webexactivity\exception\webex_user_collision);
+        $password = ($e instanceof \mod_webexactivity\exception\bad_password_exception);
+        if ($collision || $password) {
+            if (!$meeting->save_to_db()) {
+                // TODO better response?
+                throw $e;
+            }
+
+            \mod_webexactivity\user::password_redirect($data);
+        } else {
+            throw $e;
+        }*/
+        throw $e;
     }
 
     return false;

@@ -43,5 +43,20 @@ function xmldb_webexactivity_upgrade($oldversion) {
         return false;
     }
 
+    if ($oldversion < 2014030300) {
+
+        // Define field manual to be added to webexactivity_user.
+        $table = new xmldb_table('webexactivity_user');
+        $field = new xmldb_field('manual', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'webexuserid');
+
+        // Conditionally launch add field manual.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // WebEx Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014030300, 'webexactivity');
+    }
+
     return true;
 }
