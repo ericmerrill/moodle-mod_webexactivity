@@ -237,6 +237,7 @@ class meeting {
         if (isset($this->meetingkey)) {
             // Updating meeting.
             $xml = $gen::update_meeting($data);
+            $webexuser = false;
         } else {
             // Creating meeting.
             // Only use this use when creating - prevents problems with usernames and passwords.
@@ -244,8 +245,9 @@ class meeting {
             $webexuser = $this->get_meeting_webex_user();
 
             $this->meetingrecord->creatorwebexid = $webexuser->webexid;
-            $response = $this->webex->get_response($xml, $webexuser);
         }
+
+        $response = $this->webex->get_response($xml, $webexuser);
 
         $status = $this->process_response($response);
 
