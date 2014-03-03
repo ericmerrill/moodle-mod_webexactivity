@@ -525,8 +525,10 @@ class meeting {
     public function get_moodle_join_url($user, $returnurl = false) {
         $baseurl = \mod_webexactivity\webex::get_base_url();
 
+        $email = str_replace('+', '%2B', $user->email);
+
         $url = $baseurl.'/m.php?AT=JM&MK='.$this->meetingkey;
-        $url .= '&AE='.$user->email.'&AN='.$user->firstname.'%20'.$user->lastname;
+        $url .= '&AE='.$email.'&AN='.$user->firstname.'%20'.$user->lastname;
         if ($returnurl) {
             $url .= '&BU='.urlencode($returnurl);
         }

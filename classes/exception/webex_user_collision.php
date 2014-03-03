@@ -28,7 +28,7 @@ namespace mod_webexactivity\exception;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Exception for WebEx username or password collision.
+ * Exception for WebEx username or email collision.
  *
  * @package    mod_webexactvity
  * @author     Eric Merrill <merrill@oakland.edu>
