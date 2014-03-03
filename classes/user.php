@@ -61,37 +61,6 @@ class user {
     }
 
     // ---------------------------------------------------
-    // Redirect methods.
-    // TODO - move to webex?
-    // ---------------------------------------------------
-
-    // TODO doc.
-    public static function password_redirect($url) {
-        global $SESSION;
-
-        $SESSION->mod_webexactivity_password_redirect = $url;
-
-        $redirurl = new \moodle_url('/mod/webexactivity/useredit.php', array('action' => 'useredit'));
-        redirect($redirurl);
-    }
-
-    public static function password_return_redirect($home = false) {
-        global $SESSION;
-
-        $url = false;
-        if (isset($SESSION->mod_webexactivity_password_redirect)) {
-            $url = $SESSION->mod_webexactivity_password_redirect;
-            unset($SESSION->mod_webexactivity_password_redirect);
-        }
-
-        if (!$url or $home) {
-            $url = new \moodle_url('/');
-        }
-
-        redirect($url);
-    }
-
-    // ---------------------------------------------------
     // Static Factories.
     // ---------------------------------------------------
     /**
@@ -440,13 +409,14 @@ class user {
      */
     public function update_from_webex($force = false) {
         $info = false;
-        if (isset($this->webexid)) {
-            $info = self::search_webex_for_webexid($this->webexid);
+
+        if (isset($this->email)) {
+            $info = self::search_webex_for_email($this->email);
         }
 
-        if (!$info && isset($this->email)) {
-            // WebEx ID lookup failed, try email address.
-            $info = self::search_webex_for_email($this->email);
+        if (!$info && isset($this->webexid)) {
+            // WebEx email lookup failed, try WebEx ID.
+            $info = self::search_webex_for_webexid($this->webexid);
         }
 
         if (!$info) {

@@ -195,6 +195,48 @@ class webex {
     }
 
     // ---------------------------------------------------
+    // Redirect methods.
+    // ---------------------------------------------------
+    /**
+     * Stores the passed URL and redirects to user edit form.
+     *
+     * @param moodle_url   $url URL object to return to when done.
+     */
+    public static function password_redirect($url = false) {
+        global $SESSION;
+
+        if (!$url) {
+            $url = new \moodle_url('/');
+        }
+
+        $SESSION->mod_webexactivity_password_redirect = $url;
+
+        $redirurl = new \moodle_url('/mod/webexactivity/useredit.php', array('action' => 'useredit'));
+        redirect($redirurl);
+    }
+
+    /**
+     * Redirects back to the url stored in the session.
+     *
+     * @param bool   $home If true, send to / instead of wherever we were.
+     */
+    public static function password_return_redirect($home = false) {
+        global $SESSION;
+
+        $url = false;
+        if (isset($SESSION->mod_webexactivity_password_redirect)) {
+            $url = $SESSION->mod_webexactivity_password_redirect;
+            unset($SESSION->mod_webexactivity_password_redirect);
+        }
+
+        if (!$url or $home) {
+            $url = new \moodle_url('/');
+        }
+
+        redirect($url);
+    }
+
+    // ---------------------------------------------------
     // Recording Functions.
     // ---------------------------------------------------
     /**

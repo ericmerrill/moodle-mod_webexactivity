@@ -233,18 +233,19 @@ class meeting {
     public function save_to_webex() {
         $data = $this->meetingrecord;
         $gen = static::GENERATOR;
-        $webexuser = $this->get_meeting_webex_user();
 
         if (isset($this->meetingkey)) {
             // Updating meeting.
             $xml = $gen::update_meeting($data);
         } else {
             // Creating meeting.
+            // Only use this use when creating - prevents problems with usernames and passwords.
             $xml = $gen::create_meeting($data);
-            $this->meetingrecord->creatorwebexid = $webexuser->webexid;
-        }
+            $webexuser = $this->get_meeting_webex_user();
 
-        $response = $this->webex->get_response($xml, $webexuser);
+            $this->meetingrecord->creatorwebexid = $webexuser->webexid;
+            $response = $this->webex->get_response($xml, $webexuser);
+        }
 
         $status = $this->process_response($response);
 
@@ -268,12 +269,11 @@ class meeting {
         }
 
         $gen = static::GENERATOR;
-        $webexuser = $this->get_meeting_webex_user();
 
         $xml = $gen::delete_meeting($this->meetingkey);
 
         try {
-            $response = $this->webex->get_response($xml, $webexuser);
+            $response = $this->webex->get_response($xml);
         } catch (\mod_webexactivity\exception\webex_xml_exception $e) {
             if (strpos($e->getMessage(), '060001') !== false) {
                 // If the code is 060001, meeting was not found in WebEx.
@@ -297,11 +297,10 @@ class meeting {
         }
 
         $gen = static::GENERATOR;
-        $webexuser = $this->get_meeting_webex_user();
 
         $xml = $gen::get_meeting_info($this->meetingkey);
 
-        if (!$response = $this->webex->get_response($xml, $webexuser)) {
+        if (!$response = $this->webex->get_response($xml)) {
             return false;
         }
 
@@ -442,7 +441,7 @@ class meeting {
         $gen = static::GENERATOR;
         $xml = $gen::update_meeting($data);
 
-        if (!($response = $this->webex->get_response($xml, $creator))) {
+        if (!($response = $this->webex->get_response($xml))) {
             return false;
         }
 

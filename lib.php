@@ -67,6 +67,7 @@ function webexactivity_supports($feature) {
  * @return int The instance id of the new assignment
  */
 function webexactivity_add_instance($data, $mform) {
+    global $PAGE;
 
     $meeting = \mod_webexactivity\meeting::create_new($data->type);
     $meeting->starttime = $data->starttime;
@@ -92,18 +93,13 @@ function webexactivity_add_instance($data, $mform) {
             return $meeting->id;
         }
     } catch (Exception $e) {
-        /*$collision = ($e instanceof \mod_webexactivity\exception\webex_user_collision);
+        $collision = ($e instanceof \mod_webexactivity\exception\webex_user_collision);
         $password = ($e instanceof \mod_webexactivity\exception\bad_password_exception);
         if ($collision || $password) {
-            if (!$meeting->save_to_db()) {
-                // TODO better response?
-                throw $e;
-            }
-
-            \mod_webexactivity\user::password_redirect($data);
+            \mod_webexactivity\webex::password_redirect($PAGE->url);
         } else {
             throw $e;
-        }*/
+        }
         throw $e;
     }
 
@@ -118,6 +114,8 @@ function webexactivity_add_instance($data, $mform) {
  * @return bool                 If the update passed (true) or failed
  */
 function webexactivity_update_instance($data, $mform) {
+    global $PAGE;
+
     $cmid = $data->coursemodule;
     $cm = get_coursemodule_from_id('webexactivity', $cmid, 0, false, MUST_EXIST);
     $meeting = \mod_webexactivity\meeting::load($cm->instance);
@@ -140,7 +138,18 @@ function webexactivity_update_instance($data, $mform) {
         $meeting->studentdownload = 0;
     }
 
-    return $meeting->save();
+    try {
+        return $meeting->save();
+    } catch (Exception $e) {
+        $collision = ($e instanceof \mod_webexactivity\exception\webex_user_collision);
+        $password = ($e instanceof \mod_webexactivity\exception\bad_password_exception);
+        if ($collision || $password) {
+            \mod_webexactivity\webex::password_redirect($PAGE->url);
+        } else {
+            throw $e;
+        }
+        throw $e;
+    }
 }
 
 /**

@@ -180,8 +180,7 @@ class xml_gen {
             $xml .= '<newWebExId>'.$webexuser->webexid.'</newWebExId>';
         }
 
-        $xml .= '<password>'.self::format_text($webexuser->password, 64).'</password>'.
-                '<firstName>'.self::format_text($webexuser->firstname, 64).'</firstName>'.
+        $xml .= '<firstName>'.self::format_text($webexuser->firstname, 64).'</firstName>'.
                 '<lastName>'.self::format_text($webexuser->lastname, 64).'</lastName>'.
                 '<email>'.$webexuser->email.'</email>'.
                 '<active>ACTIVATED</active>'.

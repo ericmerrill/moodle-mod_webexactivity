@@ -72,15 +72,15 @@ class useredit_form extends \moodleform {
 
         $errors = parent::validation($data, $files);
 
+        // We are going to check the user authentication.
         $user = $DB->get_record('user', array('id' => $data['id']));
-
         $webexuser = user::load_for_user($user, false);
         if (!$webexuser) {
             throw new \coding_exception('An unknown error occurred while trying to reload the user');
         }
         $webexuser->password = $data['password'];
         if (!$webexuser->check_user_auth()) {
-            $errors['password'] = 'Bad username and password combination'; // TODO.
+            $errors['password'] = get_string('badpassword', 'webexactivity');
         }
 
         return $errors;

@@ -41,16 +41,17 @@ $returnurl = new moodle_url('/mod/webexactivity/index.php', array('id' => $id));
 $PAGE->set_url($returnurl);
 $PAGE->set_pagelayout('incourse');
 $PAGE->set_context($context);
-$PAGE->set_title('USER'); // TODO Change string.
+$PAGE->set_title(get_string('modulename', 'webexactivity')); // TODO Change string.
 
 switch($action) {
     case 'useredit':
         $view = 'useredit';
+
         // Load the form for recording editing.
         $mform = new \mod_webexactivity\useredit_form();
 
         if ($mform->is_cancelled()) {
-            \mod_webexactivity\user::password_return_redirect(true);
+            \mod_webexactivity\webex::password_return_redirect();
         } else if ($fromform = $mform->get_data()) {
             $webexuser = \mod_webexactivity\user::load_for_user($user, false);
             if (!$webexuser) {
@@ -59,7 +60,7 @@ switch($action) {
             $webexuser->password = $fromform->password;
             $webexuser->save_to_db();
 
-            \mod_webexactivity\user::password_return_redirect();
+            \mod_webexactivity\webex::password_return_redirect();
         } else {
             $webexuser = false;
             try {
@@ -86,6 +87,8 @@ switch($action) {
                 }
 
                 $mform->set_data($data);
+            } else {
+                print_error('usereditunabletoload', 'webexactivity');
             }
             break;
         }
@@ -94,31 +97,20 @@ switch($action) {
 }
 
 
-
-
-
-
-
-
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string(get_string('modulenameplural', 'webexactivity')));
 
 if (!isset($webexuser) || !$webexuser) {
-    // TODO.
-    print "Error";
+    print_error('usereditbad', 'webexactivity');
 } else if (!$webexuser->manual) {
-    print "TODO Show stuff for internal management.";
+    print_error('usereditauto', 'webexactivity');
 } else if ($view === 'useredit') {
-    if (!$webexuser->manual) {
-        print "this user cannot be edited.";
-    } else {
-        $params = array('email' => $webexuser->email, 'username' => $webexuser->webexid);
-        echo get_string('userexistsexplanation', 'webexactivity', $params);
-        $mform->display();
-    }
+    $params = array('email' => $webexuser->email, 'username' => $webexuser->webexid);
+    echo get_string('userexistsexplanation', 'webexactivity', $params);
+    $mform->display();
 } else {
     // Could not load any user.
-    print "There was an unknown error.";
+    print_error('usereditbad', 'webexactivity');
 }
 
 echo $OUTPUT->footer();
