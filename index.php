@@ -27,28 +27,93 @@
 
 require('../../config.php');
 
-$id = optional_param('id', 0, PARAM_INT); // Course ID.
+$id = required_param('id', PARAM_INT); // Course ID.
 $course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
 
-// Security.
 require_login($course);
-$context = context_course::instance($course->id);
-require_capability('mod/webexactivity:view', $context);
+$actvitiesstring = get_string("modulenameplural", "webexactivity");
 
 // Page setup.
 $returnurl = new moodle_url('/mod/webexactivity/index.php', array('id' => $id));
 $PAGE->set_url($returnurl);
 $PAGE->set_pagelayout('incourse');
-$PAGE->set_context($context);
-$PAGE->set_title($course->shortname.': WebEx Activies'); // TODO Change string.
+$PAGE->set_title($course->shortname.': '.$actvitiesstring);
 
-
+// Security.
+require_capability('mod/webexactivity:view', $PAGE->context);
 
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string(get_string("modulenameplural", "webexactivity")));
+echo $OUTPUT->heading(format_string($actvitiesstring));
 
+// Get all the appropriate data.
+if (!$webexs = get_all_instances_in_course("webexactivity", $course)) {
+    notice(get_string('thereareno', 'moodle', $actvitiesstring), "../../course/view.php?id=$course->id");
+    die;
+}
 
+// Setup headings.
+$headings = array(get_string('name'), get_string('starttime', 'webexactivity'), get_string('recordings', 'webexactivity'));
 
+if (course_format_uses_sections($course->format)) {
+    array_unshift($headings, get_string('sectionname', 'format_'.$course->format));
+} else {
+    array_unshift($headings, '');
+}
+
+$table = new html_table();
+$table->head = $headings;
+
+// Build the table.
+$currentsection = '';
+foreach ($webexs as $webex) {
+    $cm = get_coursemodule_from_instance('webexactivity', $webex->id);
+    $context = context_module::instance($cm->id);
+    $canhost = has_capability('mod/webexactivity:hostmeeting', $context);
+    $data = array();
+
+    // Section number/name if necessary.
+    $strsection = '';
+    if ($webex->section != $currentsection) {
+        if ($webex->section) {
+            $strsection = $webex->section;
+            $strsection = get_section_name($course, $webex->section);
+        }
+        if ($currentsection) {
+            $learningtable->data[] = 'hr';
+        }
+        $currentsection = $webex->section;
+    }
+    $data[] = $strsection;
+
+    // Set the class for hidden.
+    $class = '';
+    if (!$webex->visible) {
+        $class = ' class="dimmed"';
+    }
+
+    $data[] = "<a$class href=\"view.php?id=$webex->coursemodule\">" .
+            format_string($webex->name, true) . '</a>';
+
+    $data[] = userdate($webex->starttime);
+
+    $params = array('webexid' => $webex->id);
+    if (!$canhost) {
+        $params['visible'] = '1';
+    }
+    $count = $DB->count_records('webexactivity_recording', $params);
+
+    if ($count) {
+        $countstr = (string)$count;
+    } else {
+        $countstr = '-';
+    }
+    $data[] = $countstr;
+
+    $table->data[] = $data;
+}
+
+// Display the table.
+echo html_writer::table($table);
 
 echo $OUTPUT->footer();
