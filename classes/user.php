@@ -275,7 +275,7 @@ class user {
 
         try {
             $response = $webex->get_response($xml, $this);
-        } catch (exception\bad_password_exception $e) {
+        } catch (exception\bad_password $e) {
             return false;
         }
 

@@ -398,7 +398,7 @@ class webex {
                     }
                 }
 
-                throw new exception\bad_password_exception();
+                throw new exception\bad_password();
             }
 
             if ((isset($errors['exception'])) && ($errors['exception'] === '000015')) {

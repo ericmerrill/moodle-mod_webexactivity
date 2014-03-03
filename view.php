@@ -171,7 +171,18 @@ switch ($action) {
 
         require_capability('mod/webexactivity:hostmeeting', $context);
 
-        $webexuser = \mod_webexactivity\user::load_for_user($USER);
+        try {
+            $webexuser = \mod_webexactivity\user::load_for_user($USER);
+        } catch (Exception $e) {
+            $collision = ($e instanceof \mod_webexactivity\exception\webex_user_collision);
+            $password = ($e instanceof \mod_webexactivity\exception\bad_password);
+            if ($collision || $password) {
+                \mod_webexactivity\webex::password_redirect($returnurl);
+            } else {
+                throw $e;
+            }
+            throw $e;
+        }
         $webexmeeting->add_webexuser_host($webexuser);
         $hosturl = $webexmeeting->get_host_url($returnurl);
 

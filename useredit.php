@@ -41,7 +41,7 @@ $returnurl = new moodle_url('/mod/webexactivity/index.php', array('id' => $id));
 $PAGE->set_url($returnurl);
 $PAGE->set_pagelayout('incourse');
 $PAGE->set_context($context);
-$PAGE->set_title(get_string('modulename', 'webexactivity')); // TODO Change string.
+$PAGE->set_title(get_string('modulename', 'webexactivity'));
 
 switch($action) {
     case 'useredit':

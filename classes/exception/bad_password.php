@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class bad_password_exception extends webexactivity_exception {
+class bad_password extends webexactivity_exception {
     /**
      * Constructor
      *
