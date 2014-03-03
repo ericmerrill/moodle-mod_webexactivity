@@ -366,6 +366,14 @@ class user {
                 $response = $webex->get_response($xml);
             } catch (\mod_webexactivity\exception\webex_xml_exception $e) {
                 $response = false;
+            } catch (\mod_webexactivity\exception\webex_user_collision $e) {
+                // Expection for username or email already exists.
+                if ($this->update_from_webex()) {
+                    return true;
+                }
+
+                // Can't use this user.
+                throw $e;
             }
 
             if ($response) {
@@ -384,17 +392,6 @@ class user {
                 }
 
                 $exception = $errors['exception'];
-
-                // Expection for username or email already exists.
-                if ((stripos($exception, '030004') !== false) || (stripos($exception, '030005') !== false)) {
-                    // Try to update from WebEx.
-                    if ($this->update_from_webex()) {
-                        return true;
-                    }
-
-                    // Can't use this user.
-                    throw new exception\webex_user_collision();
-                }
 
                 throw new \coding_exception('WebEx exception '.$exception.' when creating new user.');
             }

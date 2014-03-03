@@ -45,6 +45,12 @@ class webex_xml_exception extends webexactivity_exception {
      */
     public function __construct($code, $errormsg, $debuginfo=null) {
         $params = array('errorcode' => (string)$code, 'error' => (string)$errormsg);
+
+        if (isset($debuginfo)) {
+            // Strip any password field out of the debug info.
+            $debuginfo = preg_replace('{<password>(.*?)</password>}is', '<password>*****</password>', $debuginfo);
+        }
+
         parent::__construct('webexxmlexception', '', $params, $debuginfo);
     }
 }

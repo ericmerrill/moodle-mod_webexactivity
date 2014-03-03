@@ -413,7 +413,7 @@ class webex {
 
             if ((isset($errors['exception'])) && (($errors['exception'] === '030004') || ($errors['exception'] === '030005'))) {
                 // Username or email already exists.
-                throw new exception\webex_xml_exception($errors['exception'], $errors['message'], $xml);
+                throw new exception\webex_user_collision();
             }
 
             throw new exception\webex_xml_exception($errors['exception'], $errors['message'], $xml);
