@@ -227,6 +227,8 @@ class user {
 
         $returnurl = $response['use:userLoginURL']['0']['#'];
 
+        $returnurl = str_replace('+', '%2B', $returnurl);
+
         if ($backurl) {
             $encoded = urlencode($backurl);
             $returnurl = str_replace('&BU=', '&BU='.$encoded, $returnurl);
