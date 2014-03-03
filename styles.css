@@ -1,0 +1,72 @@
+#recordings {
+    clear: both;
+    width: 100%;
+    text-align: center;
+}
+
+#recordings .recording {
+    /*border: 1px solid black;*/
+    margin-bottom: 20px;
+}
+
+#recordings #recordingsheader {
+    font-weight: bold;
+    font-size: 110%;
+    margin-bottom: 10px;
+}
+
+#recordings .hiddenrecording .details {
+    color: gray;
+}
+
+#recordings .hiddenrecording .details .name {
+    /*text-decoration: line-through;*/
+}
+
+#recordings .recording .recordingblock {
+    vertical-align: top;
+    display: inline-block;
+    /*border: 1px solid black;*/
+}
+
+#recordings .recording .buttons {
+    /*border: 1px solid black;*/
+    /*width: 200px;*/
+    text-align: right;
+    /*padding-right: 15px;*/
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+#recordings .recording .buttons .play {
+    display: inline-block;
+}
+
+#recordings .recording .buttons .download {
+    display: inline-block;
+}
+
+#recordings .recording .details {
+    max-width: 400px;
+    text-align: left;
+}
+
+#recordings .recording .details .name {
+    font-weight: bold;
+}
+
+.webexerror {
+    /*background-color: #ffb4b4;*/
+    padding: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 110%;
+}
+
+#editrecording #id_name {
+    width: 300px;
+}
+
+.webexrecordingdeleted {
+    color: gray;
+}
