@@ -60,7 +60,7 @@ function webexactivity_supports($feature) {
 }
 
 /**
- * Adds an WebEx Activity instance.
+ * Adds an WebEx Meeting instance.
  *
  * @param stdClass              $data Form data
  * @param mod_assign_mod_form   $form The form
@@ -107,7 +107,7 @@ function webexactivity_add_instance($data, $mform) {
 }
 
 /**
- * Update an WebEx Activity instance.
+ * Update an WebEx Meeting instance.
  *
  * @param stdClass              $data Form data
  * @param mod_assign_mod_form   $form The form

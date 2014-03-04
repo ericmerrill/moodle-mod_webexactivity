@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'WebEx Activity', language 'en'
+ * Strings for component 'WebEx Meeting', language 'en'
  *
  * @package    mod_webexactvity
  * @author     Eric Merrill <merrill@oakland.edu>
@@ -23,17 +23,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'WebEx Activity';
-$string['pluginnamepural'] = 'WebEx Activities';
-$string['modulename'] = 'WebEx Activity';
-$string['modulename_help'] = 'The WebEx activity allows instructors to schedule meetings into the WebEx web conferencing system*.
+$string['pluginname'] = 'WebEx Meeting';
+$string['pluginnamepural'] = 'WebEx Meetings';
+$string['modulename'] = 'WebEx Meeting';
+$string['modulename_help'] = 'The WebEx Meeting activity allows instructors to schedule meetings into the WebEx web conferencing system*.
 
-When you add the WebEx meeting activity, you define the date and time of the meeting, as well a number of other optional parameters (such as expected duration, a description, etc). Participants (enrolled students) are then able to enter the WebEx meeting by clicking on a "join meeting" link under the activity in Moodle (teachers will see a link that says "host meeting"). If the meeting is recorded, students will be able to view the recording after the meeting is over.
+When you add the WebEx Meeting activity, you define the date and time of the meeting, as well a number of other optional parameters (such as expected duration, a description, etc). Participants (enrolled students) are then able to enter the WebEx meeting by clicking on a "join meeting" link under the activity in Moodle (teachers will see a link that says "host meeting"). If the meeting is recorded, students will be able to view the recording after the meeting is over.
 
 * WebEx is a web conferencing system that allows students and teachers to synchronously collaborate. It transmits real-time audio and video, and includes tools such as whiteboard, chat, and desktop sharing.';
-$string['modulenameplural'] = 'WebEx Activities';
+$string['modulenameplural'] = 'WebEx Meetings';
 $string['webexactivityname'] = 'Meeting name';
-$string['pluginadministration'] = 'WebEx Activity administration';
+$string['pluginadministration'] = 'WebEx Meeting administration';
 
 $string['additionalsettings'] = 'Additional meeting settings';
 $string['allchat'] = 'Participants can chat with other participants';
@@ -98,7 +98,7 @@ $string['recordingsettings'] = 'Recordings Settings';
 $string['recordingstreamurl'] = 'Play';
 $string['recordingtrashtime'] = 'Recording trash time';
 $string['recordingtrashtime_help'] = 'Number of hours a recording will be held before being deleted permanently.';
-$string['settings'] = 'WebEx Activity settings';
+$string['settings'] = 'WebEx Meeting settings';
 $string['siteid'] = 'Site ID';
 $string['siteid_help'] = 'This is provided by you Cisco account representative.';
 $string['starttime'] = 'Meeting start time';
