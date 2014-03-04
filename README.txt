@@ -9,7 +9,7 @@ A Moodle activity module for Cisco WebEx.
 
 Disclaimer
 ==========
-WebEx, Cisco WebEx, Cisco and releated logos are Registered Trademarks of Cisco.
+WebEx, Cisco WebEx, Cisco and the WebEx Ball logo are Registered Trademarks of Cisco.
 This module is in no way affiliated with, endorsed by, or approved by Cisco. 
 As specified in GNU GPL v3, this software is provided as is, without any warranty.
 
