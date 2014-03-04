@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $module->version   = 2014030301;
-$module->requires  = 2013051400; // See http://docs.moodle.org/dev/Moodle_Versions.
+$module->requires  = 2013101800; // See http://docs.moodle.org/dev/Moodle_Versions.
 $module->cron      = 1;
 $module->component = 'mod_webexactivity';
 $module->maturity  = MATURITY_BETA;
