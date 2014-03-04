@@ -162,9 +162,9 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
         $xml .= '</enableOptions>';
 
         if (isset($data->hostusers)) {
-            $xml .= '<presenters><participants>';
+            $xml .= '<participants><attendees>';
             foreach ($data->hostusers as $huser) {
-                $xml .= '<participant><person>';
+                $xml .= '<attendee><person>';
 
                 if (isset($huser->firstname) && isset($huser->lastname)) {
                     $xml .= '<name>'.self::format_text($huser->firstname.' '.$huser->lastname).'</name>';
@@ -176,9 +176,9 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
                     $xml .= '<webExId>'.$huser->webexid.'</webExId>';
                 }
                 $xml .= '<type>MEMBER</type></person>'.
-                        '<role>HOST</role></participant>';
+                        '<role>HOST</role></attendee>';
             }
-            $xml .= '</participants></presenters>';
+            $xml .= '</attendees></participants>';
         }
 
         // TODO Expand.

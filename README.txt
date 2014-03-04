@@ -1,4 +1,4 @@
-WebEx Acitivity (mod_webexactivity)
+WebEx Meeting activity (mod_webexactivity)
 
 Maintainer  Eric Merrill (merrill@oakland.edu)
 Copyright   2014 Oakland University
@@ -9,6 +9,7 @@ A Moodle activity module for Cisco WebEx.
 
 Disclaimer
 ==========
+WebEx, Cisco WebEx, Cisco and releated logos are Registered Trademarks of Cisco.
 This module is in no way affiliated with, endorsed by, or approved by Cisco. 
 As specified in GNU GPL v3, this software is provided as is, without any warranty.
 
@@ -16,7 +17,7 @@ As specified in GNU GPL v3, this software is provided as is, without any warrant
 Current Limitations
 ===================
 As this software is in beta, you should see the Limitations and Bugs list at:
-https://github.com/merrill-oakland/mod_webexactivity/wiki/Limitations-and-Bugs
+https://github.com/merrill-oakland/moodle-mod_webexactivity/wiki/Limitations-and-Bugs
 
 Highlights for this release:
 - Backup and restore does not work.
@@ -32,4 +33,4 @@ Highlights for this release:
 Documentation
 =============
 For Requirements, Installation information, and the Change Log, please visit:
-https://github.com/merrill-oakland/mod_webexactivity/wiki
+https://github.com/merrill-oakland/moodle-mod_webexactivity/wiki
