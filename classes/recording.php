@@ -190,10 +190,8 @@ class recording {
 
         $xml = type\base\xml_gen::update_recording($params);
 
-        $webexuser = $this->get_recording_webex_user();
-
         $webex = new webex();
-        $response = $webex->get_response($xml, $webexuser);
+        $response = $webex->get_response($xml);
 
         if ($response) {
             $this->webexchange = false;
