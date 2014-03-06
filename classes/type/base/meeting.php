@@ -300,8 +300,9 @@ class meeting {
         $gen = static::GENERATOR;
 
         $xml = $gen::get_meeting_info($this->meetingkey);
+        $webexuser = $this->get_meeting_webex_user();
 
-        if (!$response = $this->webex->get_response($xml)) {
+        if (!$response = $this->webex->get_response($xml, $webexuser)) {
             return false;
         }
 
