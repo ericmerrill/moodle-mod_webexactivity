@@ -234,16 +234,14 @@ class meeting {
         $data = $this->meetingrecord;
         $gen = static::GENERATOR;
 
+        $webexuser = $this->get_meeting_webex_user();
+
         if (isset($this->meetingkey)) {
             // Updating meeting.
             $xml = $gen::update_meeting($data);
-            $webexuser = false;
         } else {
             // Creating meeting.
-            // Only use this use when creating - prevents problems with usernames and passwords.
             $xml = $gen::create_meeting($data);
-            $webexuser = $this->get_meeting_webex_user();
-
             $this->meetingrecord->creatorwebexid = $webexuser->webexid;
         }
 
@@ -273,9 +271,10 @@ class meeting {
         $gen = static::GENERATOR;
 
         $xml = $gen::delete_meeting($this->meetingkey);
+        $webexuser = $this->get_meeting_webex_user();
 
         try {
-            $response = $this->webex->get_response($xml);
+            $response = $this->webex->get_response($xml, $webexuser);
         } catch (\mod_webexactivity\exception\webex_xml_exception $e) {
             if (strpos($e->getMessage(), '060001') !== false) {
                 // If the code is 060001, meeting was not found in WebEx.
@@ -301,8 +300,9 @@ class meeting {
         $gen = static::GENERATOR;
 
         $xml = $gen::get_meeting_info($this->meetingkey);
+        $webexuser = $this->get_meeting_webex_user();
 
-        if (!$response = $this->webex->get_response($xml)) {
+        if (!$response = $this->webex->get_response($xml, $webexuser)) {
             return false;
         }
 
