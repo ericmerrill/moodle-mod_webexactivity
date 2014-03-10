@@ -23,7 +23,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\type\base;
+namespace mod_webexactivity\local\type\base;
+
+use \mod_webexactivity\local\exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -73,7 +75,7 @@ class meeting {
     /** 
      * The XML generator class name to use. Can be redefined by child classes.
      **/
-    const GENERATOR = '\mod_webexactivity\type\base\xml_gen';
+    const GENERATOR = '\mod_webexactivity\local\type\base\xml_gen';
 
     /** 
      * Prefix for retrieved XML fields.
@@ -275,7 +277,7 @@ class meeting {
 
         try {
             $response = $this->webex->get_response($xml, $webexuser);
-        } catch (\mod_webexactivity\exception\webex_xml_exception $e) {
+        } catch (exception\webex_xml_exception $e) {
             if (strpos($e->getMessage(), '060001') !== false) {
                 // If the code is 060001, meeting was not found in WebEx.
                 return true;

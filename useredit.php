@@ -65,7 +65,7 @@ switch($action) {
             $webexuser = false;
             try {
                 $webexuser = \mod_webexactivity\user::load_for_user($user);
-            } catch (\mod_webexactivity\exception\webexactivity_exception $e) {
+            } catch (\mod_webexactivity\local\exception\webexactivity_exception $e) {
                 $webexuser = \mod_webexactivity\user::create();
                 $webexuser->moodleuserid = $id;
                 $webexuser->email = $user->email;

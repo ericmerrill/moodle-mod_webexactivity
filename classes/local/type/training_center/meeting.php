@@ -23,40 +23,40 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\type\meeting_center;
+namespace mod_webexactivity\local\type\training_center;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Class that represents and controls a Meeting Center instance.
+ * Class that represents and controls a Training Center meeting instance.
  *
  * @package    mod_webexactvity
  * @author     Eric Merrill <merrill@oakland.edu>
  * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class meeting extends \mod_webexactivity\type\base\meeting {
+class meeting extends \mod_webexactivity\local\type\base\meeting {
 
     /** 
      * The XML generator class name to use.
      **/
-    const GENERATOR = '\mod_webexactivity\type\meeting_center\xml_gen';
+    const GENERATOR = '\mod_webexactivity\local\type\training_center\xml_gen';
 
     /** 
      * Prefix for retrieved XML fields.
      **/
-    const XML_PREFIX = 'meet';
+    const XML_PREFIX = 'train';
 
     /**
      * Builds the meeting object.
      *
-     * @param stdClass|int  $meeting Object of meeting record, or id of record to load.
+     * @param stdClass|int    $meeting Object of meeting record, or id of record to load.
      */
     public function __construct($meeting = false) {
         parent::__construct($meeting);
 
         if (!isset($this->type)) {
-            $this->type = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_MEETING;
+            $this->type = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING;
         }
     }
 
@@ -77,8 +77,8 @@ class meeting extends \mod_webexactivity\type\base\meeting {
         $prefix = static::XML_PREFIX;
 
         // Type specific code goes here.
-        if (isset($response[$prefix.':meetingkey']['0']['#'])) {
-            $this->meetingkey = $response[$prefix.':meetingkey']['0']['#'];
+        if (isset($response[$prefix.':sessionkey']['0']['#'])) {
+            $this->meetingkey = $response[$prefix.':sessionkey']['0']['#'];
         }
 
         return true;

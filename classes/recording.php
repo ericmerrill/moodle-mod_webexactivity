@@ -25,6 +25,8 @@
 
 namespace mod_webexactivity;
 
+use \mod_webexactivity\local\exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**

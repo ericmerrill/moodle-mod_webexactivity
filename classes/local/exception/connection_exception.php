@@ -23,29 +23,27 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\exception;
+namespace mod_webexactivity\local\exception;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Parent for all webexactivity exceptions.
+ * Exception for a curl connection error.
  *
  * @package    mod_webexactvity
  * @author     Eric Merrill <merrill@oakland.edu>
  * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class webexactivity_exception extends \moodle_exception {
+class connection_exception extends webexactivity_exception {
     /**
      * Constructor
      *
-     * @param string $errorcode The name of the string to print.
-     * @param string $link The url where the user will be prompted to continue.
-     *                  If no url is provided the user will be directed to the site index page.
-     * @param mixed $a Extra words and phrases that might be required in the error string.
-     * @param string $debuginfo optional debugging information.
+     * @param string $errormsg Error message.
+     * @param string $debuginfo Additional info about the error.
      */
-    public function __construct($errorcode, $link='', $a=null, $debuginfo=null) {
-        parent::__construct($errorcode, 'mod_webexactivity', $link, $a, $debuginfo);
+    public function __construct($errormsg, $debuginfo=null) {
+        $params = array('error' => (string)$errormsg);
+        parent::__construct('connectionexception', '', $params, $debuginfo);
     }
 }

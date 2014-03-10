@@ -93,8 +93,8 @@ function webexactivity_add_instance($data, $mform) {
             return $meeting->id;
         }
     } catch (Exception $e) {
-        $collision = ($e instanceof \mod_webexactivity\exception\webex_user_collision);
-        $password = ($e instanceof \mod_webexactivity\exception\bad_password);
+        $collision = ($e instanceof \mod_webexactivity\local\exception\webex_user_collision);
+        $password = ($e instanceof \mod_webexactivity\local\exception\bad_password);
         if ($collision || $password) {
             \mod_webexactivity\webex::password_redirect($PAGE->url);
         } else {
@@ -141,8 +141,8 @@ function webexactivity_update_instance($data, $mform) {
     try {
         return $meeting->save();
     } catch (Exception $e) {
-        $collision = ($e instanceof \mod_webexactivity\exception\webex_user_collision);
-        $password = ($e instanceof \mod_webexactivity\exception\bad_password);
+        $collision = ($e instanceof \mod_webexactivity\local\exception\webex_user_collision);
+        $password = ($e instanceof \mod_webexactivity\local\exception\bad_password);
         if ($collision || $password) {
             \mod_webexactivity\webex::password_redirect($PAGE->url);
         } else {

@@ -174,8 +174,8 @@ switch ($action) {
         try {
             $webexuser = \mod_webexactivity\user::load_for_user($USER);
         } catch (Exception $e) {
-            $collision = ($e instanceof \mod_webexactivity\exception\webex_user_collision);
-            $password = ($e instanceof \mod_webexactivity\exception\bad_password);
+            $collision = ($e instanceof \mod_webexactivity\local\exception\webex_user_collision);
+            $password = ($e instanceof \mod_webexactivity\local\exception\bad_password);
             if ($collision || $password) {
                 \mod_webexactivity\webex::password_redirect($returnurl);
             } else {

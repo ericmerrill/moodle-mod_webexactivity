@@ -23,34 +23,25 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\exception;
+namespace mod_webexactivity\local\exception;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Exception for WebEx XML processing error.
+ * Exception for WebEx username or email collision.
  *
  * @package    mod_webexactvity
  * @author     Eric Merrill <merrill@oakland.edu>
  * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class webex_xml_exception extends webexactivity_exception {
+class webex_user_collision extends webexactivity_exception {
     /**
      * Constructor
      *
-     * @param string $code Error code from WebEx.
-     * @param string $errormsg Error message from WebEx.
      * @param string $debuginfo Additional info about the error.
      */
-    public function __construct($code, $errormsg, $debuginfo=null) {
-        $params = array('errorcode' => (string)$code, 'error' => (string)$errormsg);
-
-        if (isset($debuginfo)) {
-            // Strip any password field out of the debug info.
-            $debuginfo = preg_replace('{<password>(.*?)</password>}is', '<password>*****</password>', $debuginfo);
-        }
-
-        parent::__construct('webexxmlexception', '', $params, $debuginfo);
+    public function __construct($debuginfo=null) {
+        parent::__construct('webexusercollision', '', null, $debuginfo);
     }
 }

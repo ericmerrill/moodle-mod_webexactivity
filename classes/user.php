@@ -25,6 +25,9 @@
 
 namespace mod_webexactivity;
 
+use \mod_webexactivity\local\exception;
+use \mod_webexactivity\local\type\base\xml_gen;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -196,7 +199,7 @@ class user {
 
         $webex = new webex();
 
-        $xml = type\base\xml_gen::update_user_password($this);
+        $xml = xml_gen::update_user_password($this);
 
         $response = $webex->get_response($xml);
 
@@ -217,7 +220,7 @@ class user {
      * @return string|bool    The url, false on failure.
      */
     public function get_login_url($backurl = false, $forwardurl = false) {
-        $xml = \mod_webexactivity\type\base\xml_gen::get_user_login_url($this->webexid);
+        $xml = xml_gen::get_user_login_url($this->webexid);
 
         $webex = new \mod_webexactivity\webex();
 
@@ -269,7 +272,7 @@ class user {
         if (!isset($this->password)) {
             return false;
         }
-        $xml = type\base\xml_gen::check_user_auth($this);
+        $xml = xml_gen::check_user_auth($this);
 
         $webex = new \mod_webexactivity\webex();
 
@@ -347,10 +350,10 @@ class user {
 
         if (isset($this->webexuserid)) {
             // The user has already been saved to WebEx, update.
-            $xml = type\base\xml_gen::update_user($this);
+            $xml = xml_gen::update_user($this);
             try {
                 $response = $webex->get_response($xml);
-            } catch (\mod_webexactivity\exception\webex_xml_exception $e) {
+            } catch (exception\webex_xml_exception $e) {
                 $response = false;
             }
 
@@ -361,12 +364,12 @@ class user {
             }
         } else {
             // Creating a new user.
-            $xml = type\base\xml_gen::create_user($this);
+            $xml = xml_gen::create_user($this);
             try {
                 $response = $webex->get_response($xml);
-            } catch (\mod_webexactivity\exception\webex_xml_exception $e) {
+            } catch (exception\webex_xml_exception $e) {
                 $response = false;
-            } catch (\mod_webexactivity\exception\webex_user_collision $e) {
+            } catch (exception\webex_user_collision $e) {
                 // Expection for username or email already exists.
                 if ($this->update_from_webex()) {
                     return true;
@@ -468,7 +471,7 @@ class user {
     public static function search_webex_for_webexid($webexid) {
         $webex = new webex();
 
-        $xml = type\base\xml_gen::get_user_info($webexid);
+        $xml = xml_gen::get_user_info($webexid);
         $response = $webex->get_response($xml);
 
         if (!$response) {
@@ -507,7 +510,7 @@ class user {
     public static function search_webex_for_email($email) {
         $webex = new webex();
 
-        $xml = type\base\xml_gen::get_user_for_email($email);
+        $xml = xml_gen::get_user_for_email($email);
         $response = $webex->get_response($xml);
 
         if (!$response) {

@@ -23,25 +23,25 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\exception;
+namespace mod_webexactivity\local\exception;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Exception for a curl setup failure.
+ * Exception for WebEx bad password error.
  *
  * @package    mod_webexactvity
  * @author     Eric Merrill <merrill@oakland.edu>
  * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class curl_setup_exception extends webexactivity_exception {
+class bad_password extends webexactivity_exception {
     /**
      * Constructor
      *
      * @param string $debuginfo Additional info about the error.
      */
     public function __construct($debuginfo=null) {
-        parent::__construct('curlsetupexception', '', null, $debuginfo);
+        parent::__construct('badpasswordexception', '', null, $debuginfo);
     }
 }
