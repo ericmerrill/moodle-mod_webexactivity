@@ -127,21 +127,25 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
 
         $xml .= '<accessControl><listToPublic>false</listToPublic></accessControl>';
 
+        $xml .= '<schedule>';
         // Only include the time if it isn't in the past.
         if (isset($data->starttime) && ($data->starttime >= (time() + 10))) {
             $startstr = self::time_to_date_string($data->starttime);
 
-            $xml .= '<schedule>';
+            
             $xml .= '<startDate>'.$startstr.'</startDate>';
             $xml .= '<openTime>20</openTime>';
-            if (isset($data->duration)) {
-                $xml .= '<duration>'.$data->duration.'</duration>';
-            }
-            if (isset($data->hostwebexid)) {
-                $xml .= '<hostWebExID>'.self::format_text($data->hostwebexid).'</hostWebExID>';
-            }
-            $xml .= '</schedule>';
         }
+
+        if (isset($data->duration)) {
+            $xml .= '<duration>'.$data->duration.'</duration>';
+        }
+        if (isset($data->hostwebexid)) {
+            $xml .= '<hostWebExID>'.self::format_text($data->hostwebexid).'</hostWebExID>';
+        }
+            
+        }
+        $xml .= '</schedule>';
 
         if (isset($data->name)) {
             $xml .= '<metaData>';

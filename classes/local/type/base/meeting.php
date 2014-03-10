@@ -179,6 +179,8 @@ class meeting {
             case 'starttime':
             case 'name':
             case 'intro':
+            case 'creatorwebexid':
+            case 'hostwebexid':
                 if (!isset($this->$name) || ($this->$name !== $val)) {
                     $this->webexchange = true;
                 }
@@ -254,7 +256,7 @@ class meeting {
             $response = $this->webex->get_response($xml, $creator);
         } catch (exception\host_scheduling $e) {
             // If the user doesn't have the scheduing permission set, then update it.
-            $update = $creator->set_scheduling_permission();
+            $update = $hostuser->set_scheduling_permission();
 
             if ($update) {
                 // Try again.
@@ -467,6 +469,17 @@ class meeting {
         return true;
     }
 
+    /**
+     * Change the webex host to a different user.
+     *
+     * @param user    $webexuser The user object to add.
+     * @return bool   True on success, false on failure/error.
+     */
+    public function change_webexuser_host($webexuser) {
+        $this->hostwebexid = $webexuser->webexid;
+
+        return $this->save();
+    }
 
     // ---------------------------------------------------
     // Recording Functions.
@@ -528,6 +541,51 @@ class meeting {
         if ($returnurl) {
             $url .= '&BU='.urlencode($returnurl);
         }
+
+        return $url;
+    }
+
+    /**
+     * Get an authenticated host url for a meeting.
+     *
+     * @param string     $authfailed Failure url.
+     * @param string     $hostsuccess Post host url.
+     * @return string    The host url.
+     */
+    public function get_authed_host_url($authfail = false, $hostsuccess = false) {
+        $gen = static::GENERATOR;
+
+        $xml = $gen::get_host_url($this);
+        $creator = $this->get_creator_webex_user();
+
+        if (!$response = $this->webex->get_response($xml, $creator)) {
+            throw new \coding_exception('error');
+        }
+
+        if (!isset($response['meet:hostMeetingURL']['0']['#'])) {
+            throw new \coding_exception('error');
+        }
+
+        $url = $response['meet:hostMeetingURL']['0']['#'];
+
+        $parts = explode('&', $url);
+
+        if ($hostsuccess) {
+            foreach ($parts as $key => $part) {
+                $subs = explode('=', $part);
+                if (strcasecmp('MU', $subs[0]) === 0) {
+                    $mu = urldecode($subs[1]);
+                    $mu .= '&BU='.urlencode($hostsuccess);
+                    $parts[$key] = 'MU='.urlencode($mu);
+                }
+            }
+        }
+
+        if ($authfail) {
+            $parts[] = 'BU='.urlencode($authfail);
+        }
+
+        $url = implode('&', $parts);
 
         return $url;
     }
@@ -595,6 +653,19 @@ class meeting {
         }
 
         return $webexuser;
+    }
+
+    /**
+     * Check if this meeting was created by an admin.
+     *
+     * @return bool  True if admin created this, false if otherwise.
+     */
+    public function is_admin_created() {
+        if (strcasecmp(get_config('webexactivity', 'apiusername'), $this->creatorwebexid) === 0) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

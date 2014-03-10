@@ -463,10 +463,9 @@ class user {
     /**
      * Load user info from WebEx.
      *
-     * @param bool     $force If true, ignore username prefix restriction.
      * @return bool    True if auth succeeded, false if failed.
      */
-    public function update_from_webex($force = true) {
+    public function update_from_webex() {
         $info = false;
 
         if (isset($this->email)) {
@@ -491,11 +490,7 @@ class user {
         $prefix = get_config('webexactivity', 'prefix');
         if (strpos($info->webexid, $prefix) !== 0) {
             // Not the same username prefix.
-            if (!$force) {
-                return false;
-            } else {
-                $this->manual = 1;
-            }
+            $this->manual = 1;
         }
 
         $this->webexid = $info->webexid;

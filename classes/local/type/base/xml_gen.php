@@ -231,6 +231,20 @@ class xml_gen {
         return $xml;
     }
 
+    /**
+     * Provide the xml to retrieve the hosting url for a meeting.
+     *
+     * @param meeting   $meeting The meeting to get the host URL for.
+     * @return string   The XML.
+     */
+    public static function get_host_url($meeting) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.GethosturlMeeting">'.
+               '<sessionKey>'.$meeting->meetingkey.'</sessionKey>'.
+               '</bodyContent></body>';
+
+        return $xml;
+    }
+
     // ---------------------------------------------------
     // Meeting Functions.
     // ---------------------------------------------------

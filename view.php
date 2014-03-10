@@ -183,14 +183,25 @@ switch ($action) {
             }
             throw $e;
         }
-        $webexmeeting->add_webexuser_host($webexuser);
-        $hosturl = $webexmeeting->get_host_url($returnurl);
-
-        $params = array('id' => $id, 'action' => 'hostmeetingerror');
-        $failurl = new moodle_url($returnurl, $params);
-        $authurl = $webexuser->get_login_url($failurl->out(false), $hosturl);
-
+        if ($webexmeeting->is_admin_created()) {
+            // New style.
+            $webexmeeting->change_webexuser_host($webexuser);
+    
+            $params = array('id' => $id, 'action' => 'hostmeetingerror');
+            $failurl = new moodle_url($returnurl, $params);
+    
+            $authurl = $webexmeeting->get_authed_host_url($failurl->out(false), $returnurl);
+        } else {
+            // Old style (pre 0.2.0).
+            $webexmeeting->add_webexuser_host($webexuser);
+            $hosturl = $webexmeeting->get_host_url($returnurl);
+    
+            $params = array('id' => $id, 'action' => 'hostmeetingerror');
+            $failurl = new moodle_url($returnurl, $params);
+            $authurl = $webexuser->get_login_url($failurl->out(false), $hosturl);
+        }
         redirect($authurl);
+
         break;
 
     case 'joinmeeting':
