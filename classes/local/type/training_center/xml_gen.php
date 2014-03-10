@@ -136,7 +136,6 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
         if (isset($data->starttime) && ($data->starttime >= (time() + 10))) {
             $startstr = self::time_to_date_string($data->starttime);
 
-            
             $xml .= '<startDate>'.$startstr.'</startDate>';
             $xml .= '<openTime>20</openTime>';
         }
@@ -145,8 +144,7 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
         }
         if (isset($data->hostwebexid)) {
             $xml .= '<hostWebExID>'.self::format_text($data->hostwebexid).'</hostWebExID>';
-        }            
-        
+        }
         $xml .= '</schedule>';
 
         if (isset($data->name)) {
