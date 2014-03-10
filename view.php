@@ -198,7 +198,11 @@ switch ($action) {
 
             $params = array('id' => $id, 'action' => 'hostmeetingerror');
             $failurl = new moodle_url($returnurl, $params);
-            $authurl = $webexuser->get_login_url($failurl->out(false), $hosturl);
+            try {
+                $authurl = $webexuser->get_login_url($failurl->out(false), $hosturl);
+            } catch (\mod_webexactivity\local\exception\bad_password $e) {
+                \mod_webexactivity\webex::password_redirect($returnurl);
+            }
         }
         redirect($authurl);
 
