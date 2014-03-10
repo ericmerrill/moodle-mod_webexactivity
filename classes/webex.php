@@ -110,6 +110,17 @@ class webex {
     // ---------------------------------------------------
     // User Functions.
     // ---------------------------------------------------
+    /**
+     * Delete unused passwords, since beginning in 0.2.0 we don't need them anymore.
+     */
+    public static function delete_passwords() {
+        global $DB;
+
+        // Clear passwords that we no longer need.
+        $sub = 'SELECT COUNT(1) FROM {webexactivity} WHERE creatorwebexid = u.webexid';
+        $sql = 'UPDATE {webexactivity_user} AS u SET password = null WHERE ('.$sub.') = 0';
+        $DB->execute($sql);
+    }
 
     // ---------------------------------------------------
     // Support Functions.
@@ -384,6 +395,10 @@ class webex {
     public function get_response($basexml, $webexuser = false) {
         global $USER;
 
+        if (!$webexuser) {
+            $webexuser = user::load_admin_user();
+        }
+
         $xml = type\base\xml_gen::auth_wrap($basexml, $webexuser);
 
         list($status, $response, $errors) = $this->fetch_response($xml);
@@ -392,7 +407,7 @@ class webex {
             return $response;
         } else {
             // Bad user password, reset it and try again.
-            if ($webexuser && (isset($errors['exception'])) && ($errors['exception'] === '030002')) {
+            if ((!$webexuser->isadmin) && (isset($errors['exception'])) && ($errors['exception'] === '030002')) {
                 if ($webexuser->update_password(self::generate_password())) {
                     $xml = type\base\xml_gen::auth_wrap($basexml, $webexuser);
                     list($status, $response, $errors) = $this->fetch_response($xml);
@@ -404,6 +419,7 @@ class webex {
                 throw new exception\bad_password();
             }
 
+            // Handling of special cases.
             if ((isset($errors['exception'])) && ($errors['exception'] === '000015')) {
                 // No records found (000015), which is not really a failure, return empty array.
                 return array();
@@ -419,6 +435,17 @@ class webex {
                 throw new exception\webex_user_collision();
             }
 
+            if ((isset($errors['exception'])) && (($errors['exception'] === '060021'))) {
+                // The passed user cannot schedule meetings for the WebEx Host ID passed.
+                throw new exception\host_scheduling();
+            }
+
+            if ((isset($errors['exception'])) && (($errors['exception'] === '060019'))) {
+                // The WebEx Host ID doesn't exist.
+                throw new exception\unknown_hostwebexid();
+            }
+
+            // Generic exception for other cases.
             throw new exception\webex_xml_exception($errors['exception'], $errors['message'], $xml);
         }
     }

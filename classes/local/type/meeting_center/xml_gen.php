@@ -137,6 +137,9 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
             if (isset($data->duration)) {
                 $xml .= '<duration>'.$data->duration.'</duration>';
             }
+            if (isset($data->hostwebexid)) {
+                $xml .= '<hostWebExID>'.self::format_text($data->hostwebexid).'</hostWebExID>';
+            }
             $xml .= '</schedule>';
         }
 

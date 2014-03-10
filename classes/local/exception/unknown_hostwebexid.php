@@ -23,11 +23,25 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_webexactivity\local\exception;
+
 defined('MOODLE_INTERNAL') || die();
 
-$module->version   = 2014031000;
-$module->requires  = 2013101800; // See http://docs.moodle.org/dev/Moodle_Versions.
-$module->cron      = 1;
-$module->component = 'mod_webexactivity';
-$module->maturity  = MATURITY_BETA;
-$module->release   = '0.1.4 Beta';
+/**
+ * Exception for WebEx bad password error.
+ *
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class unknown_hostwebexid extends webexactivity_exception {
+    /**
+     * Constructor
+     *
+     * @param string $debuginfo Additional info about the error.
+     */
+    public function __construct($debuginfo=null) {
+        parent::__construct('unknownhostwebexidexception', '', null, $debuginfo);
+    }
+}

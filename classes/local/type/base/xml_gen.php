@@ -144,8 +144,13 @@ class xml_gen {
                '<email>'.$data->email.'</email>'.
                '<password>'.self::format_text($data->password).'</password>'.
                '<privilege><host>true</host></privilege>'.
-               '<active>ACTIVATED</active>'.
-               '</bodyContent></body>';
+               '<active>ACTIVATED</active>';
+
+        if (isset($data->schedulingpermission)) {
+            $xml .= '<schedulingPermission>'.self::format_text($data->schedulingpermission).'</schedulingPermission>';
+        }
+
+        $xml .= '</bodyContent></body>';
 
         return $xml;
     }
@@ -183,8 +188,13 @@ class xml_gen {
         $xml .= '<firstName>'.self::format_text($webexuser->firstname, 64).'</firstName>'.
                 '<lastName>'.self::format_text($webexuser->lastname, 64).'</lastName>'.
                 '<email>'.$webexuser->email.'</email>'.
-                '<active>ACTIVATED</active>'.
-                '</bodyContent></body>';
+                '<active>ACTIVATED</active>';
+
+        if (isset($webexuser->schedulingpermission)) {
+            $xml .= '<schedulingPermission>'.self::format_text($webexuser->schedulingpermission).'</schedulingPermission>';
+        }
+
+        $xml .= '</bodyContent></body>';
 
         return $xml;
     }

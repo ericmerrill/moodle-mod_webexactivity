@@ -76,5 +76,13 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014030602, 'webexactivity');
     }
 
+    if ($oldversion < 2014031000) {
+
+        \mod_webexactivity\webex::delete_passwords();
+
+        // WebEx Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014031000, 'webexactivity');
+    }
+
     return true;
 }

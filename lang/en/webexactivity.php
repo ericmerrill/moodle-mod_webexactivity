@@ -72,6 +72,7 @@ $string['externallinktext'] = '<p>This link is for participants who do not have 
 $string['getexternallink'] = '<a href="{$a->url}">Get external participant link</a>';
 $string['host'] = 'Host';
 $string['hostmeetinglink'] = '<a href="{$a->url}">Host Meeting</a>';
+$string['hostschedulingexception'] = 'User cannot scheduling a meeting for this host.';
 $string['invalidtype'] = 'Invalid type';
 $string['joinmeetinglink'] = '<a href="{$a->url}">Join Meeting</a>';
 $string['longavailability'] = 'Extended Availability';
@@ -115,6 +116,7 @@ $string['typemeetingcenter_desc'] = '';
 $string['typetrainingcenter'] = 'Training Center';
 $string['typetrainingcenter_desc'] = '';
 $string['undeletelink'] = '<a href="{$a->url}">Undelete</a>';
+$string['unknownhostwebexidexception'] = 'WebEx Host ID doesn\'t exist';
 $string['url'] = 'Site Name';
 $string['url_help'] = 'The url part before .webex.com. If your site url was "https://example.webex.com", you would enter "example" above.';
 $string['usereditauto'] = 'You WebEx user is managed internally, and cannot be edited.';
