@@ -119,6 +119,8 @@ class user {
                 // Some error creating the user.
                 return false;
             }
+            // We needed to send a password for creation, but we don't really want it.
+            $webexuser->password = null;
             $webexuser->save_to_db();
         }
 
@@ -464,7 +466,7 @@ class user {
      * @param bool     $force If true, ignore username prefix restriction.
      * @return bool    True if auth succeeded, false if failed.
      */
-    public function update_from_webex($force = false) {
+    public function update_from_webex($force = true) {
         $info = false;
 
         if (isset($this->email)) {
@@ -612,7 +614,11 @@ class user {
     public function __set($name, $val) {
         switch ($name) {
             case 'password':
-                $this->user->password = self::encrypt_password($val);
+                if ($val) {
+                    $this->user->password = self::encrypt_password($val);
+                } else {
+                    $this->user->password = null;
+                }
                 break;
             case 'schedulingpermission':
                 $this->_schedulingpermission = $val;
