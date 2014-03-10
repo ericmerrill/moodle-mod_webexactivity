@@ -51,6 +51,7 @@ class meeting {
             'intro' => null,
             'introformat' => 0,
             'creatorwebexid' => null,
+            'hostwebexid' => null,
             'type' => null,
             'meetingkey' => null,
             'guestkey' => null,

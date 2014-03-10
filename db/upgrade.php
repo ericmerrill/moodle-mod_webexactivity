@@ -58,5 +58,23 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014030300, 'webexactivity');
     }
 
+    if ($oldversion < 2014030602) {
+
+        // Define field hostwebexid to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('hostwebexid', XMLDB_TYPE_CHAR, '100', null, null, null, null, 'creatorwebexid');
+
+        // Conditionally launch add field hostwebexid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $sql = 'UPDATE {webexactivity} SET hostwebexid = creatorwebexid WHERE hostwebexid IS NULL';
+        $DB->execute($sql);
+
+        // WebEx Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014030602, 'webexactivity');
+    }
+
     return true;
 }
