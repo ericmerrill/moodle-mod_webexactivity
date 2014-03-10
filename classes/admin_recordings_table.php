@@ -100,7 +100,7 @@ class admin_recordings_table extends \table_sql implements \renderable {
         if ($this->is_downloading()) {
             return $recording->fileurl;
         } else {
-            return '<a href="'.$recording->fileurl.'">Download</a>';
+            return '<a href="'.$recording->fileurl.'">'.get_string('download').'</a>';
         }
     }
 
@@ -114,7 +114,7 @@ class admin_recordings_table extends \table_sql implements \renderable {
         if ($this->is_downloading()) {
             return $recording->streamurl;
         } else {
-            return '<a href="'.$recording->streamurl.'">Stream</a>';
+            return '<a href="'.$recording->streamurl.'">'.get_string('stream', 'webexactivity').'</a>';
         }
     }
 
@@ -174,7 +174,7 @@ class admin_recordings_table extends \table_sql implements \renderable {
                 if ($this->is_downloading()) {
                     return $returnurl->out(false);
                 } else {
-                    return '<a href="'.$returnurl->out(false).'">Activity</a>';
+                    return '<a href="'.$returnurl->out(false).'">'.get_string('activity').'</a>';
                 }
             } else {
                 return '-';

@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
     'mod/webexactivity:view' => array(
+        'riskbitmask'  => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -47,7 +48,8 @@ $capabilities = array(
     ),
 
     'mod/webexactivity:hostmeeting' => array(
-        'captype' => 'read',
+        'riskbitmask'  => RISK_DATALOSS | RISK_PERSONAL,
+        'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
             'editingteacher' => CAP_ALLOW,
@@ -59,6 +61,15 @@ $capabilities = array(
     'mod/webexactivity:allavailabletypes' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+        ),
+        'clonepermissionsfrom' => 'moodle/site:config'
+    ),
+
+    'mod/webexactivity:reports' => array(
+        'riskbitmask'  => RISK_DATALOSS | RISK_PERSONAL,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => array(
         ),
         'clonepermissionsfrom' => 'moodle/site:config'
