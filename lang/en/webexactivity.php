@@ -119,7 +119,7 @@ $string['undeletelink'] = '<a href="{$a->url}">Undelete</a>';
 $string['unknownhostwebexidexception'] = 'WebEx Host ID doesn\'t exist';
 $string['url'] = 'Site Name';
 $string['url_help'] = 'The url part before .webex.com. If your site url was "https://example.webex.com", you would enter "example" above.';
-$string['usereditauto'] = 'You WebEx user is managed internally, and cannot be edited.';
+$string['usereditauto'] = 'Your WebEx user is managed internally, and cannot be edited.';
 $string['usereditbad'] = 'You should not have arrived at this page.';
 $string['usereditunabletoload'] = 'Unable to load your user from WebEx.';
 $string['userexistsexplanation'] = 'Your email address ({$a->email}) is already in user by the WebEx User <b>{$a->username}</b>. Please enter your WebEx password below.';
