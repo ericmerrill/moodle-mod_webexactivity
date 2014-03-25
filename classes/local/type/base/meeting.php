@@ -772,10 +772,6 @@ class meeting {
             return false;
         }
 
-        if (strcasecmp($this->creatorwebexid, get_config('webexactivity', 'apiusername')) !== 0) {
-            \mod_webexactivity\webex::delete_passwords();
-        }
-
         return true;
     }
 
