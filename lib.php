@@ -52,7 +52,7 @@ function webexactivity_supports($feature) {
         case FEATURE_BACKUP_MOODLE2:
             return false;
         case FEATURE_SHOW_DESCRIPTION:
-            return false;
+            return true;
 
         default:
             return null;
