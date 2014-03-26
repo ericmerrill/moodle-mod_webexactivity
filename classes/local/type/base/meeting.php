@@ -60,7 +60,6 @@ class meeting {
             'starttime' => null,
             'endtime' => null,
             'duration' => null,
-            'hosts' => null, // Unused?
             'allchat' => 1, // Used for MC.
             'studentdownload' => 1,
             'laststatuscheck' => 0,
