@@ -73,6 +73,7 @@ $string['getexternallink'] = '<a href="{$a->url}">Get external participant link<
 $string['host'] = 'Host';
 $string['hostmeetinglink'] = '<a href="{$a->url}">Host Meeting</a>';
 $string['hostschedulingexception'] = 'User cannot scheduling a meeting for this host.';
+$string['inprogress'] = 'In progress';
 $string['invalidtype'] = 'Invalid type';
 $string['joinmeetinglink'] = '<a href="{$a->url}">Join Meeting</a>';
 $string['longavailability'] = 'Extended Availability';
@@ -104,7 +105,8 @@ $string['recordingtrashtime_help'] = 'Number of hours a recording will be held b
 $string['settings'] = 'WebEx Meeting settings';
 $string['siteid'] = 'Site ID';
 $string['siteid_help'] = 'This is provided by you Cisco account representative.';
-$string['starttime'] = 'Meeting start time';
+$string['startssoon'] = 'Starts soon';
+$string['starttime'] = 'Start time';
 $string['stream'] = 'Stream';
 $string['studentdownload'] = 'Allow students to download recordings';
 $string['studentdownload_help'] = 'Allow students access to the download link for recordings.';

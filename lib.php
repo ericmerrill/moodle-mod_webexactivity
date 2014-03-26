@@ -142,6 +142,68 @@ function webexactivity_update_instance($data, $mform) {
 }
 
 /**
+ * Print an overview of all WebEx Meetings for the courses.
+ *
+ * @param mixed   $courses The list of courses to print the overview for
+ * @param array   $htmlarray The array of html to return
+ */
+function webexactivity_print_overview($courses, &$htmlarray) {
+    global $USER, $CFG, $DB;
+
+    if (empty($courses) || !is_array($courses) || count($courses) == 0) {
+        return;
+    }
+
+    if (!$meetings = get_all_instances_in_courses('webexactivity', $courses)) {
+        return;
+    }
+
+    $displaymeetings = array();
+
+    foreach ($meetings as $rec) {
+        $meeting = \mod_webexactivity\meeting::load($rec);
+        if ($meeting->is_available()) {
+            $displaymeetings[] = $meeting;
+        }
+    }
+
+    if (count($displaymeetings) == 0) {
+        return;
+    }
+
+    $strmodname = get_string('modulename', 'webexactivity');
+    $strinprogress = get_string('inprogress', 'webexactivity');
+    $strstartsoon = get_string('startssoon', 'webexactivity');
+    $strstarttime = get_string('starttime', 'webexactivity');
+    $strstatus = get_string('status');
+
+    foreach ($displaymeetings as $meeting) {
+        $href = $CFG->wwwroot . '/mod/webexactivity/view.php?id=' . $meeting->coursemodule;
+        $str = '<div class="webexactivity overview"><div class="name">';
+        $str .= $strmodname.': <a title="'.$strmodname.'" href="'.$href.'">';
+        $str .= format_string($meeting->name).'</a></div>';
+
+        $status = $meeting->get_time_status();
+        if (!isset($meeting->endtime)) {
+            $str .= '<div class="start">'.$strstarttime.': '.userdate($meeting->starttime).'</div>';
+        }
+        if ($status == \mod_webexactivity\webex::WEBEXACTIVITY_TIME_IN_PROGRESS) {
+            $str .= '<div class="status">'.$strstatus.': '.$strinprogress.'</div>';
+        } else if ($status == \mod_webexactivity\webex::WEBEXACTIVITY_TIME_AVAILABLE) {
+            $str .= '<div class="status">'.$strstatus.': '.$strstartsoon.'</div>';
+        }
+        $str .= '</div>';
+
+        if (isset($htmlarray[$meeting->course]['webexactivity'])) {
+            $htmlarray[$meeting->course]['webexactivity'] .= $str;
+        } else {
+            $htmlarray[$meeting->course]['webexactivity'] = $str;
+        }
+    }
+
+}
+
+/**
  * Delete a WebEx instance.
  *
  * @param int   $id     Record id to delete.

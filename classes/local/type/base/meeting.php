@@ -190,7 +190,6 @@ class meeting {
         $this->meetingrecord->$name = $val;
         if (!array_key_exists($name, $this->keys)) {
             debugging('Unknown meeting value set "'.$name.'"', DEBUG_DEVELOPER);
-            return;
         }
         return;
     }
@@ -201,9 +200,8 @@ class meeting {
      * @param string    $name The name of the value to be retrieved.
      */
     public function __get($name) {
-        if (!array_key_exists($name, $this->keys)) {
-            debugging('Unknown meeting value requested "'.$name.'"', DEBUG_DEVELOPER);
-            return false;
+        if (!isset($this->meetingrecord->$name)) {
+            return null;
         }
 
         return $this->meetingrecord->$name;
@@ -703,12 +701,6 @@ class meeting {
         $this->meetingrecord = $meeting;
 
         $meetingarray = (array) $meeting;
-
-        foreach ($meetingarray as $key => $val) {
-            if (!array_key_exists($key, $this->keys)) {
-                debugging('Unknown meeting variable '.$key, DEBUG_DEVELOPER);
-            }
-        }
     }
 
     /**
