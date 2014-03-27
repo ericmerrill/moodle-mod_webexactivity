@@ -82,7 +82,7 @@ class user_admin extends user {
      * @return string|bool    The url, false on failure.
      */
     public function get_login_url($backurl = false, $forwardurl = false) {
-        debugging('You get the login for the admin user.');
+        debugging('You cannot get the login for the admin user.');
         return false;
     }
 

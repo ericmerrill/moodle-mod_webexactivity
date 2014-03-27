@@ -42,6 +42,11 @@ class webex {
     /**
      * Type that represents a Meeting Center meeting.
      */
+    const WEBEXACTIVITY_TYPE_BASE = 0;
+
+    /**
+     * Type that represents a Meeting Center meeting.
+     */
     const WEBEXACTIVITY_TYPE_MEETING = 1;
 
     /**
@@ -103,6 +108,11 @@ class webex {
      * The flag for Available to all setting for meeting types.
      */
     const WEBEXACTIVITY_TYPE_ALL = 'all';
+
+    /**
+     * The flag for passwords are required meeting types.
+     */
+    const WEBEXACTIVITY_TYPE_PASSWORD_REQUIRED = 'pwreq';
 
     /** @var mixed Storage for the latest errors from a connection. */
     private $latesterrors = null;

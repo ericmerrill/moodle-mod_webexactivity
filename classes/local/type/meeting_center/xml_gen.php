@@ -125,7 +125,14 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
             $xml .= '<meetingkey>'.$data->meetingkey.'</meetingkey>';
         }
 
-        $xml .= '<accessControl><listToPublic>false</listToPublic></accessControl>';
+        $xml .= '<accessControl><listToPublic>FALSE</listToPublic>';
+
+        if (isset($data->password)) {
+            $xml .= '<meetingPassword>'.self::format_text($data->password, 16).'</meetingPassword>';
+            $xml .= '<enforcePassword>FALSE</enforcePassword>';
+        }
+
+        $xml .= '</accessControl>';
 
         $xml .= '<schedule>';
         // Only include the time if it isn't in the past.

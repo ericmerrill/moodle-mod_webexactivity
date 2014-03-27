@@ -130,5 +130,19 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014032602, 'webexactivity');
     }
 
+    if ($oldversion < 2014042701) {
+        // Define field password to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('password', XMLDB_TYPE_CHAR, '16', null, null, null, null, 'hostkey');
+
+        // Conditionally launch add field password.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // WebEx Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014042701, 'webexactivity');
+    }
+
     return true;
 }

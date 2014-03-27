@@ -178,7 +178,7 @@ class meeting {
      * Returns the name of a meeting type.
      *
      * @param int           $type A meeting type constant.
-     * @return lang_string  True if it is valid, false if not.
+     * @return lang_string  String object of meeting name.
      * @throws coding_exception on type error.
      */
     public static function get_meeting_type_name($type) {
@@ -189,6 +189,33 @@ class meeting {
             case webex::WEBEXACTIVITY_TYPE_TRAINING:
                 return get_string('typetrainingcenter', 'mod_webexactivity', null, true);
                 break;
+            default:
+                throw new \coding_exception('Unknown meeting type passed to get_meeting_name.');
+                break;
+        }
+    }
+
+    /**
+     * Returns if the meeting requires a password or not.
+     *
+     * @param int      $type A meeting type constant.
+     * @return bool    True if password is required, false if not.
+     * @throws coding_exception on type error.
+     */
+    public static function get_meeting_type_password_required($type) {
+        switch ($type) {
+            case webex::WEBEXACTIVITY_TYPE_MEETING:
+                $setting = get_config('webexactivity', 'typemeetingcenter');
+                if (stripos($setting, webex::WEBEXACTIVITY_TYPE_PASSWORD_REQUIRED) !== false) {
+                    return true;
+                }
+                return false;
+            case webex::WEBEXACTIVITY_TYPE_TRAINING:
+                $setting = get_config('webexactivity', 'typetrainingcenter');
+                if (stripos($setting, webex::WEBEXACTIVITY_TYPE_PASSWORD_REQUIRED) !== false) {
+                    return true;
+                }
+                return false;
             default:
                 throw new \coding_exception('Unknown meeting type passed to get_meeting_name.');
                 break;

@@ -85,6 +85,14 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
         $mform->setDefault('duration', 20);
         $mform->addHelpButton('durationgroup', 'duration', 'webexactivity');
 
+        $mform->addElement('passwordunmask', 'password', get_string('meetingpassword', 'webexactivity'));
+        $mform->setType('password', PARAM_TEXT);
+        $mform->addRule('password', null, 'maxlength', 16, 'client');
+        $req = get_config('webexactivity', 'requiremeetingpassword');
+        if ($req) {
+            $mform->addRule('password', null, 'required', null, 'client');
+        }
+
         $mform->addElement('header', 'additionalsettings', get_string('additionalsettings', 'webexactivity'));
 
         $mform->addElement('checkbox', 'studentdownload', get_string('studentdownload', 'webexactivity'));

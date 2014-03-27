@@ -81,6 +81,13 @@ function webexactivity_add_instance($data, $mform) {
     $meeting->introformat = $data->introformat;
     $meeting->name = $data->name;
     $meeting->course = $data->course;
+
+    if (isset($data->password) && !empty($data->password)) {
+        $meeting->password = $data->password;
+    } else {
+        $meeting->password = null;
+    }
+
     $meeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_NEVER_STARTED;
     if (isset($data->studentdownload) && $data->studentdownload) {
         $meeting->studentdownload = 1;
@@ -120,6 +127,12 @@ function webexactivity_update_instance($data, $mform) {
     $meeting->introformat = $data->introformat;
     $meeting->name = $data->name;
     $meeting->course = $data->course;
+
+    if (isset($data->password) && !empty($data->password)) {
+        $meeting->password = $data->password;
+    } else {
+        $meeting->password = null;
+    }
 
     if (isset($data->studentdownload) && $data->studentdownload) {
         $meeting->studentdownload = 1;

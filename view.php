@@ -79,7 +79,7 @@ if ($webexres['ST'] === 'FAIL') {
                 $error = get_string('error_'.$webexres['AT'].'_'.$webexres['RS'], 'webexactivity');
                 break;
             default:
-                debugging('An unknown webex occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
+                debugging('An unknown WebEx error occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
                 $error = get_string('error_unknown', 'webexactivity');
                 break;
 
@@ -90,7 +90,7 @@ if ($webexres['ST'] === 'FAIL') {
                 $error = get_string('error_'.$webexres['AT'].'_'.$webexres['RS'], 'webexactivity');
                 break;
             default:
-                debugging('An unknown webex occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
+                debugging('An unknown WebEx error occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
                 $error = get_string('error_unknown', 'webexactivity');
                 break;
         }
@@ -114,7 +114,7 @@ if ($webexres['ST'] === 'FAIL') {
             case 'InvalidTicket':
                 $error = get_string('error_'.$webexres['AT'].'_'.$webexres['RS'], 'webexactivity');
             default:
-                debugging('An unknown webex occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
+                debugging('An unknown WebEx error occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
                 $error = get_string('error_unknown', 'webexactivity');
                 break;
         }
@@ -190,7 +190,7 @@ switch ($action) {
             $params = array('id' => $id, 'action' => 'hostmeetingerror');
             $failurl = new moodle_url($returnurl, $params);
 
-            $authurl = $webexmeeting->get_authed_host_url($failurl->out(false), $returnurl);
+            $authurl = $webexmeeting->get_authed_host_url($failurl->out(false), $returnurl->out(false));
         } else {
             // Old style (pre 0.2.0).
             $webexmeeting->add_webexuser_host($webexuser);
@@ -204,6 +204,7 @@ switch ($action) {
                 \mod_webexactivity\webex::password_redirect($returnurl);
             }
         }
+
         redirect($authurl);
 
         break;
@@ -542,7 +543,11 @@ if (!$view) {
     // Show the external participant link.
 
     echo get_string('externallinktext', 'webexactivity');
-    echo $webexmeeting->get_external_join_url();
+    echo '<div>'.$webexmeeting->get_external_join_url().'</div>';
+
+    if (isset($webexmeeting->password)) {
+        echo get_string('externalpassword', 'webexactivity', $webexmeeting->password);
+    }
 } else if ($view === 'editrecording') {
     // Show the editing recording link.
     $recordingid = required_param('recordingid', PARAM_INT);

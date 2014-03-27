@@ -57,6 +57,7 @@ class meeting {
             'guestkey' => null,
             'eventid' => null,
             'hostkey' => null, // Unused?
+            'password' => null,
             'starttime' => null,
             'endtime' => null,
             'duration' => null,
@@ -74,13 +75,18 @@ class meeting {
 
     /** 
      * The XML generator class name to use. Can be redefined by child classes.
-     **/
+     */
     const GENERATOR = '\mod_webexactivity\local\type\base\xml_gen';
 
     /** 
      * Prefix for retrieved XML fields.
-     **/
+     */
     const XML_PREFIX = '';
+
+    /**
+     * The meetings type.
+     */
+    const TYPE = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_BASE;
 
     /**
      * Builds the meeting object.
@@ -178,6 +184,7 @@ class meeting {
             case 'starttime':
             case 'name':
             case 'intro':
+            case 'password':
             case 'creatorwebexid':
             case 'hostwebexid':
                 if (!isset($this->$name) || ($this->$name !== $val)) {
@@ -234,6 +241,10 @@ class meeting {
      */
     public function save_to_webex() {
         $gen = static::GENERATOR;
+
+        if (!isset($this->password) && static::is_password_required()) {
+            $this->password = self::generate_password();
+        }
 
         $hostuser = $this->get_host_webex_user();
         $creator = $this->get_creator_webex_user();
@@ -535,6 +546,7 @@ class meeting {
     public function get_host_url($returnurl = false) {
         $baseurl = \mod_webexactivity\webex::get_base_url();
         $url = $baseurl.'/m.php?AT=HM&MK='.$this->meetingkey;
+
         if ($returnurl) {
             $url .= '&BU='.urlencode($returnurl);
         }
@@ -601,6 +613,10 @@ class meeting {
 
         $url = $baseurl.'/m.php?AT=JM&MK='.$this->meetingkey;
         $url .= '&AE='.$email.'&AN='.$user->firstname.'%20'.$user->lastname;
+        if (isset($this->password)) {
+            $url .= '&PW='.$this->password;
+        }
+
         if ($returnurl) {
             $url .= '&BU='.urlencode($returnurl);
         }
@@ -650,6 +666,32 @@ class meeting {
         }
 
         return $webexuser;
+    }
+
+    /**
+     * Check if this meeting type requires a password.
+     *
+     * @return bool  True if a meeting password is required, false if not.
+     */
+    public static function is_password_required() {
+        return \mod_webexactivity\meeting::get_meeting_type_password_required(static::TYPE);
+    }
+
+    /**
+     * Generate password.
+     *
+     * @return string  A meeting password.
+     */
+    public static function generate_password() {
+        $alphabet = "abcdefghijklmnopqrstuwxyzABCDEFGHIJKLMNOPQRSTUWXYZ0123456789";
+        $pass = array();
+        $length = strlen($alphabet) - 1;
+        for ($i = 0; $i < 8; $i++) {
+            $n = rand(0, $length);
+            $pass[] = $alphabet[$n];
+        }
+
+        return implode($pass);
     }
 
     /**

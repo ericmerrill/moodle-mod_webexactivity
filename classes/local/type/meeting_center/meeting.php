@@ -39,13 +39,18 @@ class meeting extends \mod_webexactivity\local\type\base\meeting {
 
     /** 
      * The XML generator class name to use.
-     **/
+     */
     const GENERATOR = '\mod_webexactivity\local\type\meeting_center\xml_gen';
 
     /** 
      * Prefix for retrieved XML fields.
-     **/
+     */
     const XML_PREFIX = 'meet';
+
+    /**
+     * The meetings type.
+     */
+    const TYPE = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_MEETING;
 
     /**
      * Builds the meeting object.
@@ -56,7 +61,7 @@ class meeting extends \mod_webexactivity\local\type\base\meeting {
         parent::__construct($meeting);
 
         if (!isset($this->type)) {
-            $this->type = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_MEETING;
+            $this->type = static::TYPE;
         }
     }
 
@@ -82,6 +87,26 @@ class meeting extends \mod_webexactivity\local\type\base\meeting {
         }
 
         return true;
+    }
+
+    // ---------------------------------------------------
+    // URL Functions.
+    // ---------------------------------------------------
+    /**
+     * Get the link for external users to join the meeting.
+     *
+     * @return string    The external join url.
+     */
+    public function get_external_join_url() {
+        $baseurl = \mod_webexactivity\webex::get_base_url();
+
+        if (!isset($this->eventid)) {
+            $this->get_info(true);
+        }
+
+        $url = $baseurl.'/j.php?ED='.$this->eventid.'&UID=1';
+
+        return $url;
     }
 
 }

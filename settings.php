@@ -61,19 +61,21 @@ if ($ADMIN->fulltree) {
             get_string('meetingtypes_desc', 'mod_webexactivity')));
 
     $typeopts = array(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_INSTALLED => get_string('typeinstalled', 'mod_webexactivity'),
-                    \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_ALL => get_string('typeforall', 'mod_webexactivity'));
+                    \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_ALL => get_string('typeforall', 'mod_webexactivity'),
+                    \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_PASSWORD_REQUIRED => get_string('typepwreq', 'mod_webexactivity')
+                    );
 
     $setting = new admin_setting_configmulticheckbox('webexactivity/typemeetingcenter',
             get_string('typemeetingcenter', 'mod_webexactivity'),
             get_string('typemeetingcenter_desc', 'mod_webexactivity'),
-            array(),
+            array(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_PASSWORD_REQUIRED => 1),
             $typeopts);
     $settings->add($setting);
 
     $setting = new admin_setting_configmulticheckbox('webexactivity/typetrainingcenter',
             get_string('typetrainingcenter', 'mod_webexactivity'),
             get_string('typetrainingcenter_desc', 'mod_webexactivity'),
-            array(),
+            array(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_PASSWORD_REQUIRED => 1),
             $typeopts);
     $settings->add($setting);
 
@@ -85,6 +87,10 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('webexactivity/meetingclosegrace',
             get_string('meetingclosegrace', 'mod_webexactivity'),
             get_string('meetingclosegrace_help', 'mod_webexactivity'), '120'));
+
+    $settings->add(new admin_setting_configcheckbox('webexactivity/requiremeetingpassword',
+            get_string('requiremeetingpassword', 'mod_webexactivity'),
+            get_string('requiremeetingpassword_help', 'mod_webexactivity'), 0));
 
     // ---------------------------------------------------
     // Recording Settings.

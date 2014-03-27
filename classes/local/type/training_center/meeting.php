@@ -39,13 +39,18 @@ class meeting extends \mod_webexactivity\local\type\base\meeting {
 
     /** 
      * The XML generator class name to use.
-     **/
+     */
     const GENERATOR = '\mod_webexactivity\local\type\training_center\xml_gen';
 
     /** 
      * Prefix for retrieved XML fields.
-     **/
+     */
     const XML_PREFIX = 'train';
+
+    /**
+     * The meetings type.
+     */
+    const TYPE = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING;
 
     /**
      * Builds the meeting object.
@@ -56,7 +61,7 @@ class meeting extends \mod_webexactivity\local\type\base\meeting {
         parent::__construct($meeting);
 
         if (!isset($this->type)) {
-            $this->type = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING;
+            $this->type = static::TYPE;
         }
     }
 

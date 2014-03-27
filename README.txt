@@ -20,6 +20,9 @@ As this software is in beta, you should see the Limitations and Bugs list at:
 https://github.com/merrill-oakland/moodle-mod_webexactivity/wiki/Limitations-and-Bugs
 
 Highlights for this release:
+- If you host one meeting type (like Meeting Center), and then go to try and host a meeting of a different type (Training Center)
+  you may get an error. Workaround: Go to the WebEx site and click "Log out". Then try again.
+- When hosting a Meeting Center meeting, you are not redirected back into Moodle (may be WebEx bug).
 - Backup and restore does not work.
 - When a Moodle user is used to create or host a meeting, a new WebEx user is created for them, with the prefix setting prepended to
   the username. If the email address is already taken, the user will be redirected to a field to enter their WebEx password. A
