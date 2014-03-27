@@ -298,13 +298,17 @@ class xml_gen {
     }
 
     /**
-     * Provide the xml to delete a meeting. Must be overridden.
+     * Provide the xml to delete a meeting.
      *
      * @param string    $meetingkey Meeting key to delete.
      * @return string   The XML.
      */
     public static function delete_meeting($meetingkey) {
-        debugging('Function delete_meeting must be implemented by child class.', DEBUG_DEVELOPER);
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.DelSession">'.
+               '<sessionKey>'.$meetingkey.'</sessionKey>'.
+               '</bodyContent></body>';
+
+        return $xml;
     }
 
     /**

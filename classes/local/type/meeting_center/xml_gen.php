@@ -199,18 +199,4 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
         return $xml;
     }
 
-    /**
-     * Provide the xml to delete a meeting. Must be overridden.
-     *
-     * @param string    $meetingkey Meeting key to delete.
-     * @return string   The XML.
-     */
-    public static function delete_meeting($meetingkey) {
-        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.DelMeeting">'.
-               '<meetingKey>'.$meetingkey.'</meetingKey>'.
-               '</bodyContent></body>';
-
-        return $xml;
-    }
-
 }
