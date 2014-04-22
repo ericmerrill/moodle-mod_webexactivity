@@ -270,7 +270,7 @@ class webex {
      */
     public function update_recordings() {
         $params = new \stdClass();
-        $params->startdate = time() - (365 * 24 * 3600);
+        $params->startdate = time() - (30 * 24 * 3600);
         $params->enddate = time() + (12 * 3600);
 
         $xml = type\base\xml_gen::list_recordings($params);
