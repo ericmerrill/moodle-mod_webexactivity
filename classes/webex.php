@@ -152,6 +152,39 @@ class webex {
     }
 
     /**
+     * Returns count info about List type responses.
+     *
+     * @return array  The total, startFrom, and count.
+     */
+    public static function get_list_info($response) {
+        if (!isset($response['ep:matchingRecords'][0]['#'])) {
+            return array(0, 0, 0);
+        }
+        $records = $response['ep:matchingRecords'][0]['#'];
+        $out = array();
+
+        if (isset($records['serv:total'][0]['#'])) {
+            $out[] = $records['serv:total'][0]['#'];
+        } else {
+            $out[] = 0;
+        }
+
+        if (isset($records['serv:startFrom'][0]['#'])) {
+            $out[] = $records['serv:startFrom'][0]['#'];
+        } else {
+            $out[] = 0;
+        }
+
+        if (isset($records['serv:returned'][0]['#'])) {
+            $out[] = $records['serv:returned'][0]['#'];
+        } else {
+            $out[] = 0;
+        }
+
+        return $out;
+    }
+
+    /**
      * Generate a password that will pass the WebEx requirements.
      *
      * @return string  The generated password.
@@ -266,20 +299,36 @@ class webex {
     /**
      * Check and update recordings from WebEx.
      *
+     * @param int    Number of days to look back. 0 for forever.
      * @return bool  True on success, false on failure.
      */
-    public function update_recordings() {
+    public function update_recordings($daysback = 10) {
         $params = new \stdClass();
-        $params->startdate = time() - (30 * 24 * 3600);
-        $params->enddate = time() + (12 * 3600);
-
-        $xml = type\base\xml_gen::list_recordings($params);
-
-        if (!($response = $this->get_response($xml))) {
-            return false;
+        if ($daysback) {
+            $params->startdate = time() - ($daysback * 24 * 3600);
+            $params->enddate = time() + (12 * 3600);
         }
 
-        return $this->proccess_recording_response($response);
+        $found = 0;
+        $start = 0;
+        $status = true;
+
+        do {
+            $params->start = $start;
+            $xml = type\base\xml_gen::list_recordings($params);
+
+            if (!($response = $this->get_response($xml))) {
+                return false;
+            }
+
+            list($found, $start, $count) = self::get_list_info($response);
+            $start += $count;
+
+            $status = $this->proccess_recording_response($response) && $status;
+
+        } while ($found > $start);
+
+        return $status;
     }
 
     /**
@@ -288,7 +337,7 @@ class webex {
      * @param array  The response array from WebEx.
      * @return bool  True on success, false on failure.
      */
-    public function proccess_recording_response($response) {
+    private function proccess_recording_response($response) {
         global $DB;
 
         if (!is_array($response)) {

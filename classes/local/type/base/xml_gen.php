@@ -333,13 +333,25 @@ class xml_gen {
      * 1/ meetingkey - Meeting key to retrieve recordings for.
      * 2/ startdate - Start time range.
      * 3/ enddate - End time range.
+     * 4/ start - Record number to start at.
+     * 5/ count - Count of records to get, 500 max.
      *
      * @param stdClass  $data Data object to use.
      * @return string   The XML.
      */
     public static function list_recordings($data) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.LstRecording">';
-        $xml .= '<listControl><startFrom>0</startFrom><maximumNum>1000</maximumNum></listControl>';
+
+        if (!isset($data->start)) {
+            $data->start = 0;
+        }
+        if (!isset($data->count)) {
+            $data->count = 500;
+        }
+
+        $xml .= '<listControl><startFrom>'.$data->start.'</startFrom>';
+        $xml .= '<maximumNum>'.$data->count.'</maximumNum></listControl>';
+
         if (isset($data->meetingkey)) {
             $xml .= '<sessionKey>'.$data->meetingkey.'</sessionKey>';
         }
