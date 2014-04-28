@@ -63,6 +63,7 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
                 $mform->addElement('hidden', 'type', $type);
             } else {
                 $mform->addElement('select', 'type', get_string('meetingtype', 'webexactivity'), $meetingtypes);
+                $mform->setDefault('type', get_config('webexactivity', 'defaultmeetingtype'));
             }
             $mform->setType('type', PARAM_INT);
         }
