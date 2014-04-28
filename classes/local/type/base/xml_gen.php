@@ -432,11 +432,18 @@ class xml_gen {
      * @return string  The formatted text.
      */
     public static function format_text($text, $limit = 0) {
+        // No current support for HTML tags. Researching.
         $text = strip_tags($text);
 
-        $text = htmlentities($text);
+        // Some characters are already encoded in the DB.
+        $text = html_entity_decode($text);
 
-        $text = str_replace("\n", "<br />\n\r", $text);
+        // Convert with XML compatability.
+        $text = htmlentities($text, ENT_COMPAT | ENT_XML1);
+
+        // Need special line endings.
+        $text = str_replace("\n", "&#10;\n", $text);
+        $text = str_replace("\r", "&#13;\r", $text);
 
         if ($limit) {
             $text = substr($text, 0, $limit);
