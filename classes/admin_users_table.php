@@ -46,7 +46,8 @@ class admin_users_table extends \table_sql implements \renderable {
      */
     public function col_login($user) {
         if (isset($user->password)) {
-            $pageurl = new \moodle_url('/mod/webexactivity/admin_users.php', array('action' => 'login', 'webexid' => $user->webexid));
+            $pageurl = new \moodle_url('/mod/webexactivity/admin_users.php',
+                    array('action' => 'login', 'webexid' => $user->webexid));
             return '<a href="'.$pageurl->out(false).'" target=_blank>Login</a>';
         }
 
