@@ -140,7 +140,7 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
             $startstr = self::time_to_date_string($data->starttime);
 
             $xml .= '<startDate>'.$startstr.'</startDate>';
-            $xml .= '<openTime>20</openTime>';
+            $xml .= '<openTime>900</openTime>';
         }
 
         if (isset($data->duration)) {

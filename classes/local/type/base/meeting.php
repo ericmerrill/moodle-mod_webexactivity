@@ -84,6 +84,11 @@ class meeting {
     const XML_PREFIX = '';
 
     /**
+     * The default open time for this meeting type.
+     */
+    const OPEN_TIME = 20;
+
+    /**
      * The meetings type.
      */
     const TYPE = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_BASE;
@@ -359,7 +364,7 @@ class meeting {
             $endtime = $this->starttime + ($this->duration * 60) + ($grace * 60);
         }
 
-        $starttime = $this->starttime - (20 * 60);
+        $starttime = $this->starttime - (static::OPEN_TIME * 60);
 
         if ($this->status == \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
             return \mod_webexactivity\webex::WEBEXACTIVITY_TIME_IN_PROGRESS;
