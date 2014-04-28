@@ -79,7 +79,7 @@ if ($webexres['ST'] === 'FAIL') {
                 $error = get_string('error_'.$webexres['AT'].'_'.$webexres['RS'], 'webexactivity');
                 break;
             default:
-                debugging('An unknown webex occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
+                debugging('An unknown WebEx error occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
                 $error = get_string('error_unknown', 'webexactivity');
                 break;
 
@@ -90,7 +90,7 @@ if ($webexres['ST'] === 'FAIL') {
                 $error = get_string('error_'.$webexres['AT'].'_'.$webexres['RS'], 'webexactivity');
                 break;
             default:
-                debugging('An unknown webex occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
+                debugging('An unknown WebEx error occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
                 $error = get_string('error_unknown', 'webexactivity');
                 break;
         }
@@ -114,7 +114,7 @@ if ($webexres['ST'] === 'FAIL') {
             case 'InvalidTicket':
                 $error = get_string('error_'.$webexres['AT'].'_'.$webexres['RS'], 'webexactivity');
             default:
-                debugging('An unknown webex occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
+                debugging('An unknown WebEx error occurred: '.$webexres['RS'], DEBUG_DEVELOPER);
                 $error = get_string('error_unknown', 'webexactivity');
                 break;
         }
@@ -174,8 +174,8 @@ switch ($action) {
         try {
             $webexuser = \mod_webexactivity\user::load_for_user($USER);
         } catch (Exception $e) {
-            $collision = ($e instanceof \mod_webexactivity\exception\webex_user_collision);
-            $password = ($e instanceof \mod_webexactivity\exception\bad_password);
+            $collision = ($e instanceof \mod_webexactivity\local\exception\webex_user_collision);
+            $password = ($e instanceof \mod_webexactivity\local\exception\bad_password);
             if ($collision || $password) {
                 \mod_webexactivity\webex::password_redirect($returnurl);
             } else {
@@ -183,14 +183,30 @@ switch ($action) {
             }
             throw $e;
         }
-        $webexmeeting->add_webexuser_host($webexuser);
-        $hosturl = $webexmeeting->get_host_url($returnurl);
+        if ($webexmeeting->is_admin_created()) {
+            // New style.
+            $webexmeeting->change_webexuser_host($webexuser);
 
-        $params = array('id' => $id, 'action' => 'hostmeetingerror');
-        $failurl = new moodle_url($returnurl, $params);
-        $authurl = $webexuser->get_login_url($failurl->out(false), $hosturl);
+            $params = array('id' => $id, 'action' => 'hostmeetingerror');
+            $failurl = new moodle_url($returnurl, $params);
+
+            $authurl = $webexmeeting->get_authed_host_url($failurl->out(false), $returnurl->out(false));
+        } else {
+            // Old style (pre 0.2.0).
+            $webexmeeting->add_webexuser_host($webexuser);
+            $hosturl = $webexmeeting->get_host_url($returnurl);
+
+            $params = array('id' => $id, 'action' => 'hostmeetingerror');
+            $failurl = new moodle_url($returnurl, $params);
+            try {
+                $authurl = $webexuser->get_login_url($failurl->out(false), $hosturl);
+            } catch (\mod_webexactivity\local\exception\bad_password $e) {
+                \mod_webexactivity\webex::password_redirect($returnurl);
+            }
+        }
 
         redirect($authurl);
+
         break;
 
     case 'joinmeeting':
@@ -527,7 +543,11 @@ if (!$view) {
     // Show the external participant link.
 
     echo get_string('externallinktext', 'webexactivity');
-    echo $webexmeeting->get_external_join_url();
+    echo '<div>'.$webexmeeting->get_external_join_url().'</div>';
+
+    if (isset($webexmeeting->password)) {
+        echo get_string('externalpassword', 'webexactivity', $webexmeeting->password);
+    }
 } else if ($view === 'editrecording') {
     // Show the editing recording link.
     $recordingid = required_param('recordingid', PARAM_INT);

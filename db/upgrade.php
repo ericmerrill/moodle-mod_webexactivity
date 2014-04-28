@@ -58,5 +58,91 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014030300, 'webexactivity');
     }
 
+    if ($oldversion < 2014030602) {
+
+        // Define field hostwebexid to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('hostwebexid', XMLDB_TYPE_CHAR, '100', null, null, null, null, 'creatorwebexid');
+
+        // Conditionally launch add field hostwebexid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $sql = 'UPDATE {webexactivity} SET hostwebexid = creatorwebexid WHERE hostwebexid IS NULL';
+        $DB->execute($sql);
+
+        // WebEx Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014030602, 'webexactivity');
+    }
+
+    if ($oldversion < 2014031000) {
+        // WebEx Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014031000, 'webexactivity');
+    }
+
+    if ($oldversion < 2014032602) {
+        // Reducing the length of a number of char fields.
+        // Webexactivity table.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('creatorwebexid', XMLDB_TYPE_CHAR, '64', null, null, null, null, 'introformat');
+        // Launch change of precision for field creatorwebexid.
+        $dbman->change_field_precision($table, $field);
+
+        $field = new xmldb_field('hostwebexid', XMLDB_TYPE_CHAR, '64', null, null, null, null, 'creatorwebexid');
+        // Launch change of precision for field hostwebexid.
+        $dbman->change_field_precision($table, $field);
+
+        // Webexactivity_user table.
+        $table = new xmldb_table('webexactivity_user');
+        $field = new xmldb_field('webexid', XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL, null, null, 'manual');
+        // Launch change of precision for field webexid.
+        $dbman->change_field_precision($table, $field);
+
+        $field = new xmldb_field('firstname', XMLDB_TYPE_CHAR, '64', null, null, null, null, 'password');
+        // Launch change of precision for field firstname.
+        $dbman->change_field_precision($table, $field);
+
+        $field = new xmldb_field('lastname', XMLDB_TYPE_CHAR, '64', null, null, null, null, 'firstname');
+        // Launch change of precision for field lastname.
+        $dbman->change_field_precision($table, $field);
+
+        $field = new xmldb_field('email', XMLDB_TYPE_CHAR, '64', null, null, null, null, 'lastname');
+        // Launch change of precision for field email.
+        $dbman->change_field_precision($table, $field);
+
+        // Webexactivity_recording table.
+        $table = new xmldb_table('webexactivity_recording');
+        $field = new xmldb_field('hostid', XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL, null, null, 'recordingid');
+        // Launch change of precision for field hostid.
+        $dbman->change_field_precision($table, $field);
+
+        // Dropping unneeded fields.
+        // Define field hosts to be dropped from webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('hosts');
+        // Conditionally launch drop field hosts.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // WebEx Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014032602, 'webexactivity');
+    }
+
+    if ($oldversion < 2014042701) {
+        // Define field password to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('password', XMLDB_TYPE_CHAR, '16', null, null, null, null, 'hostkey');
+
+        // Conditionally launch add field password.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // WebEx Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014042701, 'webexactivity');
+    }
+
     return true;
 }

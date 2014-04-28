@@ -74,7 +74,6 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
         $this->add_intro_editor(false);
 
         $mform->addElement('date_time_selector', 'starttime', get_string('starttime', 'webexactivity'));
-        $mform->setDefault('starttime', (time() + (3600 * 1)));
         $mform->addRule('starttime', null, 'required', null, 'client');
 
         $duration = array();
@@ -85,6 +84,14 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
         $mform->addRule('durationgroup', null, 'required', null, 'client');
         $mform->setDefault('duration', 20);
         $mform->addHelpButton('durationgroup', 'duration', 'webexactivity');
+
+        $mform->addElement('passwordunmask', 'password', get_string('meetingpassword', 'webexactivity'));
+        $mform->setType('password', PARAM_TEXT);
+        $mform->addRule('password', null, 'maxlength', 16, 'client');
+        $req = get_config('webexactivity', 'requiremeetingpassword');
+        if ($req) {
+            $mform->addRule('password', null, 'required', null, 'client');
+        }
 
         $mform->addElement('header', 'additionalsettings', get_string('additionalsettings', 'webexactivity'));
 

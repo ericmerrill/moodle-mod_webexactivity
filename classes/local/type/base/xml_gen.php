@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\type\base;
+namespace mod_webexactivity\local\type\base;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -144,8 +144,13 @@ class xml_gen {
                '<email>'.$data->email.'</email>'.
                '<password>'.self::format_text($data->password).'</password>'.
                '<privilege><host>true</host></privilege>'.
-               '<active>ACTIVATED</active>'.
-               '</bodyContent></body>';
+               '<active>ACTIVATED</active>';
+
+        if (isset($data->schedulingpermission)) {
+            $xml .= '<schedulingPermission>'.self::format_text($data->schedulingpermission).'</schedulingPermission>';
+        }
+
+        $xml .= '</bodyContent></body>';
 
         return $xml;
     }
@@ -183,8 +188,13 @@ class xml_gen {
         $xml .= '<firstName>'.self::format_text($webexuser->firstname, 64).'</firstName>'.
                 '<lastName>'.self::format_text($webexuser->lastname, 64).'</lastName>'.
                 '<email>'.$webexuser->email.'</email>'.
-                '<active>ACTIVATED</active>'.
-                '</bodyContent></body>';
+                '<active>ACTIVATED</active>';
+
+        if (isset($webexuser->schedulingpermission)) {
+            $xml .= '<schedulingPermission>'.self::format_text($webexuser->schedulingpermission).'</schedulingPermission>';
+        }
+
+        $xml .= '</bodyContent></body>';
 
         return $xml;
     }
@@ -216,6 +226,20 @@ class xml_gen {
                '<serv:maximumNum>1</serv:maximumNum>'.
                '</listControl>'.
                '<email>'.self::format_text($email).'</email>'.
+               '</bodyContent></body>';
+
+        return $xml;
+    }
+
+    /**
+     * Provide the xml to retrieve the hosting url for a meeting.
+     *
+     * @param meeting   $meeting The meeting to get the host URL for.
+     * @return string   The XML.
+     */
+    public static function get_host_url($meeting) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.GethosturlMeeting">'.
+               '<sessionKey>'.$meeting->meetingkey.'</sessionKey>'.
                '</bodyContent></body>';
 
         return $xml;
@@ -274,13 +298,17 @@ class xml_gen {
     }
 
     /**
-     * Provide the xml to delete a meeting. Must be overridden.
+     * Provide the xml to delete a meeting.
      *
      * @param string    $meetingkey Meeting key to delete.
      * @return string   The XML.
      */
     public static function delete_meeting($meetingkey) {
-        debugging('Function delete_meeting must be implemented by child class.', DEBUG_DEVELOPER);
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.DelSession">'.
+               '<sessionKey>'.$meetingkey.'</sessionKey>'.
+               '</bodyContent></body>';
+
+        return $xml;
     }
 
     /**

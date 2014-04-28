@@ -23,25 +23,25 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\exception;
+namespace mod_webexactivity\local\exception;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Exception for WebEx username or email collision.
+ * Exception for a curl setup failure.
  *
  * @package    mod_webexactvity
  * @author     Eric Merrill <merrill@oakland.edu>
  * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class webex_user_collision extends webexactivity_exception {
+class curl_setup_exception extends webexactivity_exception {
     /**
      * Constructor
      *
      * @param string $debuginfo Additional info about the error.
      */
     public function __construct($debuginfo=null) {
-        parent::__construct('webexusercollision', '', null, $debuginfo);
+        parent::__construct('curlsetupexception', '', null, $debuginfo);
     }
 }

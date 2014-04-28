@@ -25,6 +25,9 @@
 
 namespace mod_webexactivity;
 
+use \mod_webexactivity\local\exception;
+use \mod_webexactivity\local\type\base\xml_gen;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -38,7 +41,13 @@ defined('MOODLE_INTERNAL') || die();
 class user {
     // TODO Cleaner handling of user changes to webex. Support for userid changes.
     /** @var stdClass The DB record that represents this user. */
-    private $user = null;
+    protected $user = null;
+
+    /** @var string A string to hold scheduling permission temporarily. */
+    protected $_schedulingpermission = null;
+
+    /** @var bool Is this an admin user. */
+    private $_isadmin = false;
 
     /**
      * Builds the user object.
@@ -110,6 +119,8 @@ class user {
                 // Some error creating the user.
                 return false;
             }
+            // We needed to send a password for creation, but we don't really want it.
+            $webexuser->password = null;
             $webexuser->save_to_db();
         }
 
@@ -125,6 +136,10 @@ class user {
      */
     public static function load_webex_id($webexid) {
         global $DB;
+
+        if (strcasecmp(get_config('webexactivity', 'apiusername'), $webexid) === 0) {
+            return self::load_admin_user();
+        }
 
         if (is_numeric($webexid)) {
             $params = array('webexuserid' => $webexid);
@@ -170,6 +185,20 @@ class user {
     }
 
     /**
+     * Load the webex user for a given moodle user.
+     *
+     * @return user|bool     The user object, false on failure.
+     */
+    public static function load_admin_user() {
+        $record = new \stdClass();
+        $record->webexid = get_config('webexactivity', 'apiusername');
+        $record->password = self::encrypt_password(get_config('webexactivity', 'apipassword'));
+        $record->manual = 1;
+
+        return new user_admin($record);
+    }
+
+    /**
      * Create a new WebEx user.
      *
      * @return user  The user object, false on failure.
@@ -196,7 +225,7 @@ class user {
 
         $webex = new webex();
 
-        $xml = type\base\xml_gen::update_user_password($this);
+        $xml = xml_gen::update_user_password($this);
 
         $response = $webex->get_response($xml);
 
@@ -206,7 +235,6 @@ class user {
         } else {
             return false;
         }
-
     }
 
     /**
@@ -217,7 +245,7 @@ class user {
      * @return string|bool    The url, false on failure.
      */
     public function get_login_url($backurl = false, $forwardurl = false) {
-        $xml = \mod_webexactivity\type\base\xml_gen::get_user_login_url($this->webexid);
+        $xml = xml_gen::get_user_login_url($this->webexid);
 
         $webex = new \mod_webexactivity\webex();
 
@@ -269,7 +297,7 @@ class user {
         if (!isset($this->password)) {
             return false;
         }
-        $xml = type\base\xml_gen::check_user_auth($this);
+        $xml = xml_gen::check_user_auth($this);
 
         $webex = new \mod_webexactivity\webex();
 
@@ -284,6 +312,39 @@ class user {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Update the schedulingPermission to let the admin user schedule meetings for the user.
+     *
+     * @return bool    True if auth succeeded, false if failed.
+     */
+    public function set_scheduling_permission() {
+        $info = self::get_webex_info($this->webexid);
+
+        $adminusername = get_config('webexactivity', 'apiusername');
+
+        if (isset($info['use:schedulingPermission']['0']['#'])) {
+            $perm = $info['use:schedulingPermission']['0']['#'];
+
+            $ids = explode(';', $perm);
+
+            foreach ($ids as $id) {
+                if (strcasecmp($adminusername, $id) === 0) {
+                    // The user already has the permission set, don't set again.
+                    return true;
+                }
+            }
+
+            $ids[] = $adminusername;
+            $perm = implode(';', $ids);
+        } else {
+            $perm = $adminusername;
+        }
+
+        $this->schedulingpermission = $perm;
+
+        return $this->save_to_webex();
     }
 
     /**
@@ -347,26 +408,25 @@ class user {
 
         if (isset($this->webexuserid)) {
             // The user has already been saved to WebEx, update.
-            $xml = type\base\xml_gen::update_user($this);
-            try {
-                $response = $webex->get_response($xml);
-            } catch (\mod_webexactivity\exception\webex_xml_exception $e) {
-                $response = false;
-            }
+            $xml = xml_gen::update_user($this);
 
-            if ($response) {
+            $response = $webex->get_response($xml);
+
+            if ($response !== false) {
                 return true;
             } else {
                 return false;
             }
         } else {
             // Creating a new user.
-            $xml = type\base\xml_gen::create_user($this);
+            $this->schedulingpermission = get_config('webexactivity', 'apiusername');
+
+            $xml = xml_gen::create_user($this);
             try {
                 $response = $webex->get_response($xml);
-            } catch (\mod_webexactivity\exception\webex_xml_exception $e) {
+            } catch (exception\webex_xml_exception $e) {
                 $response = false;
-            } catch (\mod_webexactivity\exception\webex_user_collision $e) {
+            } catch (exception\webex_user_collision $e) {
                 // Expection for username or email already exists.
                 if ($this->update_from_webex()) {
                     return true;
@@ -403,10 +463,9 @@ class user {
     /**
      * Load user info from WebEx.
      *
-     * @param bool     $force If true, ignore username prefix restriction.
      * @return bool    True if auth succeeded, false if failed.
      */
-    public function update_from_webex($force = false) {
+    public function update_from_webex() {
         $info = false;
 
         if (isset($this->email)) {
@@ -431,11 +490,7 @@ class user {
         $prefix = get_config('webexactivity', 'prefix');
         if (strpos($info->webexid, $prefix) !== 0) {
             // Not the same username prefix.
-            if (!$force) {
-                return false;
-            } else {
-                $this->manual = 1;
-            }
+            $this->manual = 1;
         }
 
         $this->webexid = $info->webexid;
@@ -462,14 +517,11 @@ class user {
     /**
      * Load user info from WebEx. Guaranteed to return webexid and userid if exists.
      *
-     * @param string       $webexid WebEx ID (username) to search for.
-     * @return stdClass|bool  array of user info, false if failed.
+     * @param string          $webexid WebEx ID (username) to search for.
+     * @return stdClass|bool  object of user info, false if failed.
      */
     public static function search_webex_for_webexid($webexid) {
-        $webex = new webex();
-
-        $xml = type\base\xml_gen::get_user_info($webexid);
-        $response = $webex->get_response($xml);
+        $response = self::get_webex_info($webexid);
 
         if (!$response) {
             // Not found (or maybe another error).
@@ -499,15 +551,15 @@ class user {
     }
 
     /**
-     * Load user info from WebEx.
+     * Load user info from WebEx based on email address.
      *
-     * @param string       $webexid Email address to search for.
-     * @return stdClass|bool  array of user info, false if failed.
+     * @param string          $email Email address to search for.
+     * @return stdClass|bool  object of user info, false if failed.
      */
     public static function search_webex_for_email($email) {
         $webex = new webex();
 
-        $xml = type\base\xml_gen::get_user_for_email($email);
+        $xml = xml_gen::get_user_for_email($email);
         $response = $webex->get_response($xml);
 
         if (!$response) {
@@ -525,6 +577,26 @@ class user {
         return self::search_webex_for_webexid($webexid);
     }
 
+    /**
+     * Load user info from WebEx.
+     *
+     * @param string       $webexid WebEx ID of the user to get info for.
+     * @return array|bool  array of user info, false if failed.
+     */
+    public static function get_webex_info($webexid) {
+        $webex = new webex();
+
+        $xml = xml_gen::get_user_info($webexid);
+        $response = $webex->get_response($xml);
+
+        if (!$response) {
+            // Not found (or maybe another error).
+            return false;
+        }
+
+        return $response;
+    }
+
     // ---------------------------------------------------
     // Magic Methods.
     // ---------------------------------------------------
@@ -537,7 +609,17 @@ class user {
     public function __set($name, $val) {
         switch ($name) {
             case 'password':
-                $this->user->password = self::encrypt_password($val);
+                if ($val) {
+                    $this->user->password = self::encrypt_password($val);
+                } else {
+                    $this->user->password = null;
+                }
+                break;
+            case 'schedulingpermission':
+                $this->_schedulingpermission = $val;
+                break;
+            case 'isadmin':
+                throw new \coding_exception('Can\'t change isadmin variable.');
                 break;
             default:
                 $this->user->$name = $val;
@@ -562,6 +644,12 @@ class user {
             case 'record':
                 return $this->user;
                 break;
+            case 'schedulingpermission':
+                return $this->_schedulingpermission;
+                break;
+            case 'isadmin':
+                return $this->_isadmin;
+                break;
         }
 
         return $this->user->$name;
@@ -573,6 +661,15 @@ class user {
      * @param string    $name The name of the value to be checked.
      */
     public function __isset($name) {
+        switch ($name) {
+            case 'schedulingpermission':
+                return isset($this->_schedulingpermission);
+                break;
+            case 'isadmin':
+                return true;
+                break;
+        }
+
         return isset($this->user->$name);
     }
 
@@ -582,6 +679,16 @@ class user {
      * @param string    $name The name of the value to be unset.
      */
     public function __unset($name) {
+        switch ($name) {
+            case 'schedulingpermission':
+                unset($this->_schedulingpermission);
+                return;
+                break;
+            case 'isadmin':
+                throw new \coding_exception('Can\'t change isadmin variable.');
+                break;
+        }
+
         unset($this->user->$name);
     }
 }

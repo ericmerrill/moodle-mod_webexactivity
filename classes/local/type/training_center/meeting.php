@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\type\training_center;
+namespace mod_webexactivity\local\type\training_center;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -35,17 +35,22 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class meeting extends \mod_webexactivity\type\base\meeting {
+class meeting extends \mod_webexactivity\local\type\base\meeting {
 
     /** 
      * The XML generator class name to use.
-     **/
-    const GENERATOR = '\mod_webexactivity\type\training_center\xml_gen';
+     */
+    const GENERATOR = '\mod_webexactivity\local\type\training_center\xml_gen';
 
     /** 
      * Prefix for retrieved XML fields.
-     **/
+     */
     const XML_PREFIX = 'train';
+
+    /**
+     * The meetings type.
+     */
+    const TYPE = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING;
 
     /**
      * Builds the meeting object.
@@ -56,7 +61,7 @@ class meeting extends \mod_webexactivity\type\base\meeting {
         parent::__construct($meeting);
 
         if (!isset($this->type)) {
-            $this->type = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING;
+            $this->type = static::TYPE;
         }
     }
 

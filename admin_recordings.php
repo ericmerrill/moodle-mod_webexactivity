@@ -69,9 +69,11 @@ $table->define_baseurl($pageurl);
 
 // Content.
 $table->set_sql('*', '{webexactivity_recording}', '1=1', array());
-$table->define_columns(array('name', 'hostid', 'timecreated',
-        'duration', 'filesize', 'fileurl', 'streamurl', 'deleted', 'webexid'));
-$table->define_headers(array('Name', 'Host', 'Date', 'Length', 'Size', 'Download', 'Stream', 'Delete', 'Activity'));
+$table->define_columns(array('name', 'hostid', 'timecreated', 'duration', 'filesize', 'fileurl',
+                             'streamurl', 'deleted', 'webexid'));
+$table->define_headers(array(get_string('name'), get_string('host', 'webexactivity'), get_string('date'),
+                             get_string('duration', 'search'), get_string('size'), get_string('download'),
+                             get_string('stream', 'webexactivity'), get_string('delete'), get_string('activity')));
 
 // Options.
 $table->sortable(true, 'timecreated', SORT_DESC);
@@ -84,9 +86,11 @@ $table->is_downloadable(true);
 // Setup for downloading.
 if ($download) {
     // Redefine headers for download.
-    $table->define_headers(array('Name', 'Host', 'Date', 'Length (sec)', 'Size (B)',
-            'Download', 'Stream', 'Deletion Time', 'Activity'));
-    $table->is_downloading($download, 'WebEx Recordings');
+    $table->define_headers(array(get_string('name'), get_string('host', 'webexactivity'), get_string('date'),
+                                 get_string('duration', 'search'), get_string('size'), get_string('download'),
+                                 get_string('stream', 'webexactivity'), get_string('deletetime', 'webexactivity'),
+                                 get_string('activity')));
+    $table->is_downloading($download, get_string('webexrecordings', 'webexactivity'));
     $table->out(50, false);
     die();
 }

@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\exception;
+namespace mod_webexactivity\local\exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -35,13 +35,13 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class bad_password extends webexactivity_exception {
+class host_scheduling extends webexactivity_exception {
     /**
      * Constructor
      *
      * @param string $debuginfo Additional info about the error.
      */
     public function __construct($debuginfo=null) {
-        parent::__construct('badpasswordexception', '', null, $debuginfo);
+        parent::__construct('hostschedulingexception', '', null, $debuginfo);
     }
 }

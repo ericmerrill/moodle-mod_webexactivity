@@ -25,10 +25,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-// Create and add a folder/category.
-$ADMIN->add('modsettings', new admin_category('modwebexactivityfolder', new lang_string('pluginname', 'mod_webexactivity'),
-        $module->is_enabled() === false));
-
 // Create a settings page object to add to.
 $settings = new admin_settingpage($section, get_string('settings', 'mod_webexactivity'), 'moodle/site:config',
         $module->is_enabled() === false);
@@ -65,19 +61,21 @@ if ($ADMIN->fulltree) {
             get_string('meetingtypes_desc', 'mod_webexactivity')));
 
     $typeopts = array(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_INSTALLED => get_string('typeinstalled', 'mod_webexactivity'),
-                    \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_ALL => get_string('typeforall', 'mod_webexactivity'));
+                    \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_ALL => get_string('typeforall', 'mod_webexactivity'),
+                    \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_PASSWORD_REQUIRED => get_string('typepwreq', 'mod_webexactivity')
+                    );
 
     $setting = new admin_setting_configmulticheckbox('webexactivity/typemeetingcenter',
             get_string('typemeetingcenter', 'mod_webexactivity'),
             get_string('typemeetingcenter_desc', 'mod_webexactivity'),
-            array(),
+            array(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_PASSWORD_REQUIRED => 1),
             $typeopts);
     $settings->add($setting);
 
     $setting = new admin_setting_configmulticheckbox('webexactivity/typetrainingcenter',
             get_string('typetrainingcenter', 'mod_webexactivity'),
             get_string('typetrainingcenter_desc', 'mod_webexactivity'),
-            array(),
+            array(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_PASSWORD_REQUIRED => 1),
             $typeopts);
     $settings->add($setting);
 
@@ -89,6 +87,10 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('webexactivity/meetingclosegrace',
             get_string('meetingclosegrace', 'mod_webexactivity'),
             get_string('meetingclosegrace_help', 'mod_webexactivity'), '120'));
+
+    $settings->add(new admin_setting_configcheckbox('webexactivity/requiremeetingpassword',
+            get_string('requiremeetingpassword', 'mod_webexactivity'),
+            get_string('requiremeetingpassword_help', 'mod_webexactivity'), 0));
 
     // ---------------------------------------------------
     // Recording Settings.
@@ -104,17 +106,21 @@ if ($ADMIN->fulltree) {
             get_string('manageallrecordings_help', 'mod_webexactivity'), 0));
 }
 
+// Add reports.
+// Create and add a folder/category.
+$ADMIN->add('modsettings', new admin_category('modwebexactivityfolder', new lang_string('pluginname', 'mod_webexactivity'),
+        $module->is_enabled() === false));
+
 // Add the settings to a the folder.
 $ADMIN->add('modwebexactivityfolder', $settings);
 
-// Add reports.
 $ADMIN->add("modwebexactivityfolder", new admin_externalpage('modwebexactivityrecordings',
         get_string('page_managerecordings', 'mod_webexactivity'),
-        "$CFG->wwwroot/mod/webexactivity/admin_recordings.php", "moodle/role:manage"));
+        "$CFG->wwwroot/mod/webexactivity/admin_recordings.php", "mod/webexactivity:reports"));
 
 $ADMIN->add("modwebexactivityfolder", new admin_externalpage('modwebexactivityusers',
         get_string('page_manageusers', 'mod_webexactivity'),
-        "$CFG->wwwroot/mod/webexactivity/admin_users.php", "moodle/role:manage"));
+        "$CFG->wwwroot/mod/webexactivity/admin_users.php", "mod/webexactivity:reports"));
 
 // Tell core we already added the settings structure.
 $settings = null;

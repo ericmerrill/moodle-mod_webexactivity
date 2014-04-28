@@ -52,7 +52,7 @@ function webexactivity_supports($feature) {
         case FEATURE_BACKUP_MOODLE2:
             return false;
         case FEATURE_SHOW_DESCRIPTION:
-            return false;
+            return true;
 
         default:
             return null;
@@ -81,6 +81,13 @@ function webexactivity_add_instance($data, $mform) {
     $meeting->introformat = $data->introformat;
     $meeting->name = $data->name;
     $meeting->course = $data->course;
+
+    if (isset($data->password) && !empty($data->password)) {
+        $meeting->password = $data->password;
+    } else {
+        $meeting->password = null;
+    }
+
     $meeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_NEVER_STARTED;
     if (isset($data->studentdownload) && $data->studentdownload) {
         $meeting->studentdownload = 1;
@@ -88,19 +95,8 @@ function webexactivity_add_instance($data, $mform) {
         $meeting->studentdownload = 0;
     }
 
-    try {
-        if ($meeting->save()) {
-            return $meeting->id;
-        }
-    } catch (Exception $e) {
-        $collision = ($e instanceof \mod_webexactivity\exception\webex_user_collision);
-        $password = ($e instanceof \mod_webexactivity\exception\bad_password);
-        if ($collision || $password) {
-            \mod_webexactivity\webex::password_redirect($PAGE->url);
-        } else {
-            throw $e;
-        }
-        throw $e;
+    if ($meeting->save()) {
+        return $meeting->id;
     }
 
     return false;
@@ -132,6 +128,12 @@ function webexactivity_update_instance($data, $mform) {
     $meeting->name = $data->name;
     $meeting->course = $data->course;
 
+    if (isset($data->password) && !empty($data->password)) {
+        $meeting->password = $data->password;
+    } else {
+        $meeting->password = null;
+    }
+
     if (isset($data->studentdownload) && $data->studentdownload) {
         $meeting->studentdownload = 1;
     } else {
@@ -150,6 +152,68 @@ function webexactivity_update_instance($data, $mform) {
         }
         throw $e;
     }
+}
+
+/**
+ * Print an overview of all WebEx Meetings for the courses.
+ *
+ * @param mixed   $courses The list of courses to print the overview for
+ * @param array   $htmlarray The array of html to return
+ */
+function webexactivity_print_overview($courses, &$htmlarray) {
+    global $USER, $CFG, $DB;
+
+    if (empty($courses) || !is_array($courses) || count($courses) == 0) {
+        return;
+    }
+
+    if (!$meetings = get_all_instances_in_courses('webexactivity', $courses)) {
+        return;
+    }
+
+    $displaymeetings = array();
+
+    foreach ($meetings as $rec) {
+        $meeting = \mod_webexactivity\meeting::load($rec);
+        if ($meeting->is_available()) {
+            $displaymeetings[] = $meeting;
+        }
+    }
+
+    if (count($displaymeetings) == 0) {
+        return;
+    }
+
+    $strmodname = get_string('modulename', 'webexactivity');
+    $strinprogress = get_string('inprogress', 'webexactivity');
+    $strstartsoon = get_string('startssoon', 'webexactivity');
+    $strstarttime = get_string('starttime', 'webexactivity');
+    $strstatus = get_string('status');
+
+    foreach ($displaymeetings as $meeting) {
+        $href = $CFG->wwwroot . '/mod/webexactivity/view.php?id=' . $meeting->coursemodule;
+        $str = '<div class="webexactivity overview"><div class="name">';
+        $str .= $strmodname.': <a title="'.$strmodname.'" href="'.$href.'">';
+        $str .= format_string($meeting->name).'</a></div>';
+
+        $status = $meeting->get_time_status();
+        if (!isset($meeting->endtime)) {
+            $str .= '<div class="start">'.$strstarttime.': '.userdate($meeting->starttime).'</div>';
+        }
+        if ($status == \mod_webexactivity\webex::WEBEXACTIVITY_TIME_IN_PROGRESS) {
+            $str .= '<div class="status">'.$strstatus.': '.$strinprogress.'</div>';
+        } else if ($status == \mod_webexactivity\webex::WEBEXACTIVITY_TIME_AVAILABLE) {
+            $str .= '<div class="status">'.$strstatus.': '.$strstartsoon.'</div>';
+        }
+        $str .= '</div>';
+
+        if (isset($htmlarray[$meeting->course]['webexactivity'])) {
+            $htmlarray[$meeting->course]['webexactivity'] .= $str;
+        } else {
+            $htmlarray[$meeting->course]['webexactivity'] = $str;
+        }
+    }
+
 }
 
 /**

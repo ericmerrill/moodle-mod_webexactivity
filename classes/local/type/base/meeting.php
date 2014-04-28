@@ -23,7 +23,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\type\base;
+namespace mod_webexactivity\local\type\base;
+
+use \mod_webexactivity\local\exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -49,15 +51,16 @@ class meeting {
             'intro' => null,
             'introformat' => 0,
             'creatorwebexid' => null,
+            'hostwebexid' => null,
             'type' => null,
             'meetingkey' => null,
             'guestkey' => null,
             'eventid' => null,
             'hostkey' => null, // Unused?
+            'password' => null,
             'starttime' => null,
             'endtime' => null,
             'duration' => null,
-            'hosts' => null, // Unused?
             'allchat' => 1, // Used for MC.
             'studentdownload' => 1,
             'laststatuscheck' => 0,
@@ -72,13 +75,18 @@ class meeting {
 
     /** 
      * The XML generator class name to use. Can be redefined by child classes.
-     **/
-    const GENERATOR = '\mod_webexactivity\type\base\xml_gen';
+     */
+    const GENERATOR = '\mod_webexactivity\local\type\base\xml_gen';
 
     /** 
      * Prefix for retrieved XML fields.
-     **/
+     */
     const XML_PREFIX = '';
+
+    /**
+     * The meetings type.
+     */
+    const TYPE = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_BASE;
 
     /**
      * Builds the meeting object.
@@ -176,6 +184,9 @@ class meeting {
             case 'starttime':
             case 'name':
             case 'intro':
+            case 'password':
+            case 'creatorwebexid':
+            case 'hostwebexid':
                 if (!isset($this->$name) || ($this->$name !== $val)) {
                     $this->webexchange = true;
                 }
@@ -185,7 +196,6 @@ class meeting {
         $this->meetingrecord->$name = $val;
         if (!array_key_exists($name, $this->keys)) {
             debugging('Unknown meeting value set "'.$name.'"', DEBUG_DEVELOPER);
-            return;
         }
         return;
     }
@@ -196,9 +206,8 @@ class meeting {
      * @param string    $name The name of the value to be retrieved.
      */
     public function __get($name) {
-        if (!array_key_exists($name, $this->keys)) {
-            debugging('Unknown meeting value requested "'.$name.'"', DEBUG_DEVELOPER);
-            return false;
+        if (!isset($this->meetingrecord->$name)) {
+            return null;
         }
 
         return $this->meetingrecord->$name;
@@ -231,21 +240,39 @@ class meeting {
      * @return bool    True on success, false on failure.
      */
     public function save_to_webex() {
-        $data = $this->meetingrecord;
         $gen = static::GENERATOR;
 
-        $webexuser = $this->get_meeting_webex_user();
+        if (!isset($this->password) && static::is_password_required()) {
+            $this->password = self::generate_password();
+        }
+
+        $hostuser = $this->get_host_webex_user();
+        $creator = $this->get_creator_webex_user();
 
         if (isset($this->meetingkey)) {
             // Updating meeting.
-            $xml = $gen::update_meeting($data);
+            $xml = $gen::update_meeting($this);
         } else {
             // Creating meeting.
-            $xml = $gen::create_meeting($data);
-            $this->meetingrecord->creatorwebexid = $webexuser->webexid;
+            $this->hostwebexid = $hostuser->webexid;
+            $this->creatorwebexid = $creator->webexid;
+
+            $xml = $gen::create_meeting($this);
         }
 
-        $response = $this->webex->get_response($xml, $webexuser);
+        try {
+            $response = $this->webex->get_response($xml, $creator);
+        } catch (exception\host_scheduling $e) {
+            // If the user doesn't have the scheduing permission set, then update it.
+            $update = $hostuser->set_scheduling_permission();
+
+            if ($update) {
+                // Try again.
+                $response = $this->webex->get_response($xml, $creator);
+            } else {
+                return false;
+            }
+        }
 
         $status = $this->process_response($response);
 
@@ -271,11 +298,11 @@ class meeting {
         $gen = static::GENERATOR;
 
         $xml = $gen::delete_meeting($this->meetingkey);
-        $webexuser = $this->get_meeting_webex_user();
+        $creator = $this->get_creator_webex_user();
 
         try {
-            $response = $this->webex->get_response($xml, $webexuser);
-        } catch (\mod_webexactivity\exception\webex_xml_exception $e) {
+            $response = $this->webex->get_response($xml, $creator);
+        } catch (exception\webex_xml_exception $e) {
             if (strpos($e->getMessage(), '060001') !== false) {
                 // If the code is 060001, meeting was not found in WebEx.
                 return true;
@@ -300,9 +327,9 @@ class meeting {
         $gen = static::GENERATOR;
 
         $xml = $gen::get_meeting_info($this->meetingkey);
-        $webexuser = $this->get_meeting_webex_user();
+        $creator = $this->get_creator_webex_user();
 
-        if (!$response = $this->webex->get_response($xml, $webexuser)) {
+        if (!$response = $this->webex->get_response($xml, $creator)) {
             return false;
         }
 
@@ -424,8 +451,7 @@ class meeting {
     public function add_webexuser_host($webexuser) {
         global $DB;
 
-        $creator = $this->get_meeting_webex_user();
-        if ($webexuser->webexid === $creator->webexid) {
+        if ($webexuser->webexid === $this->hostwebexid) {
             return true;
         }
 
@@ -443,6 +469,7 @@ class meeting {
         $gen = static::GENERATOR;
         $xml = $gen::update_meeting($data);
 
+        $creator = $this->get_creator_webex_user();
         if (!($response = $this->webex->get_response($xml, $creator))) {
             return false;
         }
@@ -450,6 +477,17 @@ class meeting {
         return true;
     }
 
+    /**
+     * Change the webex host to a different user.
+     *
+     * @param user    $webexuser The user object to add.
+     * @return bool   True on success, false on failure/error.
+     */
+    public function change_webexuser_host($webexuser) {
+        $this->hostwebexid = $webexuser->webexid;
+
+        return $this->save();
+    }
 
     // ---------------------------------------------------
     // Recording Functions.
@@ -508,9 +546,55 @@ class meeting {
     public function get_host_url($returnurl = false) {
         $baseurl = \mod_webexactivity\webex::get_base_url();
         $url = $baseurl.'/m.php?AT=HM&MK='.$this->meetingkey;
+
         if ($returnurl) {
             $url .= '&BU='.urlencode($returnurl);
         }
+
+        return $url;
+    }
+
+    /**
+     * Get an authenticated host url for a meeting.
+     *
+     * @param string     $authfailed Failure url.
+     * @param string     $hostsuccess Post host url.
+     * @return string    The host url.
+     */
+    public function get_authed_host_url($authfail = false, $hostsuccess = false) {
+        $gen = static::GENERATOR;
+
+        $xml = $gen::get_host_url($this);
+        $creator = $this->get_creator_webex_user();
+
+        if (!$response = $this->webex->get_response($xml, $creator)) {
+            throw new \coding_exception('error');
+        }
+
+        if (!isset($response['meet:hostMeetingURL']['0']['#'])) {
+            throw new \coding_exception('error');
+        }
+
+        $url = $response['meet:hostMeetingURL']['0']['#'];
+
+        $parts = explode('&', $url);
+
+        if ($hostsuccess) {
+            foreach ($parts as $key => $part) {
+                $subs = explode('=', $part);
+                if (strcasecmp('MU', $subs[0]) === 0) {
+                    $mu = urldecode($subs[1]);
+                    $mu .= '&BU='.urlencode($hostsuccess);
+                    $parts[$key] = 'MU='.urlencode($mu);
+                }
+            }
+        }
+
+        if ($authfail) {
+            $parts[] = 'BU='.urlencode($authfail);
+        }
+
+        $url = implode('&', $parts);
 
         return $url;
     }
@@ -529,6 +613,10 @@ class meeting {
 
         $url = $baseurl.'/m.php?AT=JM&MK='.$this->meetingkey;
         $url .= '&AE='.$email.'&AN='.$user->firstname.'%20'.$user->lastname;
+        if (isset($this->password)) {
+            $url .= '&PW='.$this->password;
+        }
+
         if ($returnurl) {
             $url .= '&BU='.urlencode($returnurl);
         }
@@ -561,18 +649,79 @@ class meeting {
      *
      * @return bool|user    The WebEx user. False on failure.
      */
-    public function get_meeting_webex_user() {
-        global $USER;
-
+    public function get_creator_webex_user() {
         $webexuser = false;
         if (isset($this->creatorwebexid)) {
             try {
                 // Try and load the user for this meetings user.
                 $webexuser = \mod_webexactivity\user::load_webex_id($this->creatorwebexid);
             } catch (\coding_exception $e) {
-                // Try and just load this users record.
-                $webexuser = \mod_webexactivity\user::load_for_user($USER);
-                return $webexuser;
+                $webexuser = false;
+            }
+        }
+
+        // If we haven't set it, try and set it to the admin user.
+        if (!$webexuser) {
+            $webexuser = \mod_webexactivity\user::load_admin_user();
+        }
+
+        return $webexuser;
+    }
+
+    /**
+     * Check if this meeting type requires a password.
+     *
+     * @return bool  True if a meeting password is required, false if not.
+     */
+    public static function is_password_required() {
+        return \mod_webexactivity\meeting::get_meeting_type_password_required(static::TYPE);
+    }
+
+    /**
+     * Generate password.
+     *
+     * @return string  A meeting password.
+     */
+    public static function generate_password() {
+        $alphabet = "abcdefghijklmnopqrstuwxyzABCDEFGHIJKLMNOPQRSTUWXYZ0123456789";
+        $pass = array();
+        $length = strlen($alphabet) - 1;
+        for ($i = 0; $i < 8; $i++) {
+            $n = rand(0, $length);
+            $pass[] = $alphabet[$n];
+        }
+
+        return implode($pass);
+    }
+
+    /**
+     * Check if this meeting was created by an admin.
+     *
+     * @return bool  True if admin created this, false if otherwise.
+     */
+    public function is_admin_created() {
+        if (strcasecmp(get_config('webexactivity', 'apiusername'), $this->creatorwebexid) === 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the webex user that hosts this meeting.
+     *
+     * @return bool|user    The WebEx user. False on failure.
+     */
+    public function get_host_webex_user() {
+        global $USER;
+
+        $webexuser = false;
+        if (isset($this->hostwebexid)) {
+            try {
+                // Try and load the user for this meetings user.
+                $webexuser = \mod_webexactivity\user::load_webex_id($this->hostwebexid);
+            } catch (\coding_exception $e) {
+                $webexuser = false;
             }
         }
 
@@ -593,12 +742,6 @@ class meeting {
         $this->meetingrecord = $meeting;
 
         $meetingarray = (array) $meeting;
-
-        foreach ($meetingarray as $key => $val) {
-            if (!array_key_exists($key, $this->keys)) {
-                debugging('Unknown meeting variable '.$key, DEBUG_DEVELOPER);
-            }
-        }
     }
 
     /**

@@ -25,6 +25,9 @@
 
 namespace mod_webexactivity;
 
+use \mod_webexactivity\local\type;
+use \mod_webexactivity\local\exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -105,10 +108,8 @@ class recording {
 
         $xml = type\base\xml_gen::delete_recording($this->__get('recordingid'));
 
-        $webexuser = $this->get_recording_webex_user();
-
         $webex = new webex();
-        $response = $webex->get_response($xml, $webexuser);
+        $response = $webex->get_response($xml);
 
         if ($response === false) {
             throw new exception\webexactivity_exception('errordeletingrecording');
@@ -117,27 +118,6 @@ class recording {
         $DB->delete_records('webexactivity_recording', array('id' => $this->__get('id')));
 
         return true;
-    }
-
-    /**
-     * Returns the WebEx user that created this recording.
-     *
-     * @return bool|user    The WebEx user. False on failure.
-     */
-    public function get_recording_webex_user() {
-        global $USER;
-
-        $webexuser = false;
-        if (isset($this->hostid)) {
-            $webexuser = user::load_webex_id($this->hostid);
-        }
-
-        // If we haven't set it, try and set it to the current user.
-        if (!$webexuser) {
-            $webexuser = user::load_for_user($USER);
-        }
-
-        return $webexuser;
     }
 
     /**

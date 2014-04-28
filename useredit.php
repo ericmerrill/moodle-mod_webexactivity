@@ -65,11 +65,12 @@ switch($action) {
             $webexuser = false;
             try {
                 $webexuser = \mod_webexactivity\user::load_for_user($user);
-            } catch (\mod_webexactivity\exception\webexactivity_exception $e) {
+            } catch (\mod_webexactivity\local\exception\webexactivity_exception $e) {
+                // TODO: Should not be needed after 0.2.0.
                 $webexuser = \mod_webexactivity\user::create();
                 $webexuser->moodleuserid = $id;
                 $webexuser->email = $user->email;
-                if ($webexuser->update_from_webex(true)) {
+                if ($webexuser->update_from_webex()) {
                     $webexuser->save_to_db();
                 } else {
                     $webexuser = false;

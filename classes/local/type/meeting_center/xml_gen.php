@@ -23,39 +23,35 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_webexactivity\type\training_center;
+namespace mod_webexactivity\local\type\meeting_center;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * A class that (statically) provides training center xml.
+ * A class that (statically) provides meeting center xml.
  *
  * @package    mod_webexactvity
  * @author     Eric Merrill <merrill@oakland.edu>
  * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class xml_gen extends \mod_webexactivity\type\base\xml_gen {
-
-    // ---------------------------------------------------
-    // Meeting Functions.
-    // ---------------------------------------------------
+class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
     /**
-     * Provide the xml to get information about a meeting.
+     * Provide the xml to get information about a meeting. Must be overridden.
      *
      * @param string    $meetingkey Meeting key to lookup.
      * @return string   The XML.
      */
     public static function get_meeting_info($meetingkey) {
-        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.GetTrainingSession">'.
-               '<sessionKey>'.$meetingkey.'</sessionKey>'.
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.GetMeeting">'.
+               '<meetingKey>'.$meetingkey.'</meetingKey>'.
                '</bodyContent></body>';
 
         return $xml;
     }
 
     /**
-     * Provide the xml to create a meeting.
+     * Provide the xml to create a meeting. Must be overridden.
      *
      * Required keys in $data are:
      * 1/ startdate - Start time range.
@@ -70,19 +66,19 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
      * @return string   The XML.
      */
     public static function create_meeting($data) {
-        if (!$sessionxml = self::training_session_xml($data)) {
+        if (!$meetingxml = self::meeting_xml($data)) {
             return false;
         }
 
-        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.CreateTrainingSession">';
-        $xml .= $sessionxml;
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.CreateMeeting">';
+        $xml .= $meetingxml;
         $xml .= '</bodyContent></body>';
 
         return $xml;
     }
 
     /**
-     * Provide the xml to update a meeting.
+     * Provide the xml to update a meeting. Must be overridden.
      *
      * Required keys in $data are:
      * 1/ meetingkey - Meeting key to update.
@@ -98,12 +94,12 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
      * @return string   The XML.
      */
     public static function update_meeting($data) {
-        if (!$sessionxml = self::training_session_xml($data)) {
+        if (!$meetingxml = self::meeting_xml($data)) {
             return false;
         }
 
-        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.SetTrainingSession">';
-        $xml .= $sessionxml;
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.SetMeeting">';
+        $xml .= $meetingxml;
         $xml .= '</bodyContent></body>';
 
         return $xml;
@@ -123,32 +119,43 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
      * @param stdClass  $data Meeting data to make.
      * @return string   The XML.
      */
-    private static function training_session_xml($data) {
+    private static function meeting_xml($data) {
         $xml = '';
         if (isset($data->meetingkey)) {
-            $xml .= '<sessionKey>'.$data->meetingkey.'</sessionKey>';
+            $xml .= '<meetingkey>'.$data->meetingkey.'</meetingkey>';
         }
 
-        $xml .= '<accessControl><listing>UNLISTED</listing></accessControl>';
+        $xml .= '<accessControl><listToPublic>FALSE</listToPublic>';
 
+        if (isset($data->password)) {
+            $xml .= '<meetingPassword>'.self::format_text($data->password, 16).'</meetingPassword>';
+            $xml .= '<enforcePassword>FALSE</enforcePassword>';
+        }
+
+        $xml .= '</accessControl>';
+
+        $xml .= '<schedule>';
         // Only include the time if it isn't in the past.
         if (isset($data->starttime) && ($data->starttime >= (time() + 10))) {
             $startstr = self::time_to_date_string($data->starttime);
 
-            $xml .= '<schedule>';
             $xml .= '<startDate>'.$startstr.'</startDate>';
             $xml .= '<openTime>20</openTime>';
-            if (isset($data->duration)) {
-                $xml .= '<duration>'.$data->duration.'</duration>';
-            }
-            $xml .= '</schedule>';
         }
+
+        if (isset($data->duration)) {
+            $xml .= '<duration>'.$data->duration.'</duration>';
+        }
+        if (isset($data->hostwebexid)) {
+            $xml .= '<hostWebExID>'.self::format_text($data->hostwebexid).'</hostWebExID>';
+        }
+        $xml .= '</schedule>';
 
         if (isset($data->name)) {
             $xml .= '<metaData>';
             $xml .= '<confName>'.self::format_text($data->name, 400).'</confName>';
             if (isset($data->intro)) {
-                $xml .= '<description>'.self::format_text($data->intro, 2250).'</description>';
+                $xml .= '<agenda>'.self::format_text($data->intro, 2250).'</agenda>';
             }
             $xml .= '</metaData>';
         }
@@ -166,9 +173,9 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
         $xml .= '</enableOptions>';
 
         if (isset($data->hostusers)) {
-            $xml .= '<presenters><participants>';
+            $xml .= '<participants><attendees>';
             foreach ($data->hostusers as $huser) {
-                $xml .= '<participant><person>';
+                $xml .= '<attendee><person>';
 
                 if (isset($huser->firstname) && isset($huser->lastname)) {
                     $xml .= '<name>'.self::format_text($huser->firstname.' '.$huser->lastname).'</name>';
@@ -180,28 +187,14 @@ class xml_gen extends \mod_webexactivity\type\base\xml_gen {
                     $xml .= '<webExId>'.$huser->webexid.'</webExId>';
                 }
                 $xml .= '<type>MEMBER</type></person>'.
-                        '<role>HOST</role></participant>';
+                        '<role>HOST</role></attendee>';
             }
-            $xml .= '</participants></presenters>';
+            $xml .= '</attendees></participants>';
         }
 
         // TODO Expand.
 
-        $xml .= '<repeat><repeatType>SINGLE</repeatType></repeat>';
-
-        return $xml;
-    }
-
-    /**
-     * Provide the xml to delete a meeting.
-     *
-     * @param string    $meetingkey Meeting key to delete.
-     * @return string   The XML.
-     */
-    public static function delete_meeting($meetingkey) {
-        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.training.DelTrainingSession">'.
-               '<sessionKey>'.$meetingkey.'</sessionKey>'.
-               '</bodyContent></body>';
+        $xml .= '<repeat><repeatType>NO_REPEAT</repeatType></repeat>';
 
         return $xml;
     }
