@@ -328,6 +328,10 @@ class webex {
 
         } while ($found > $start);
 
+        if ($status && !$daysback) {
+            $this->remove_missing_recordings();
+        }
+
         return $status;
     }
 
@@ -437,6 +441,18 @@ class webex {
         }
 
         $rs->close();
+    }
+
+    /**
+     * Removes records for recordings that we haven't seen in a long time.
+     */
+    public function remove_missing_recordings() {
+        global $DB;
+
+        $select = 'timemodified < ?';
+        $params = array(time() - (7 * 24 * 3600));
+
+        $DB->delete_records_select('webexactivity_recording', $select, $params);
     }
 
 
