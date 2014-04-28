@@ -78,10 +78,10 @@ class xml_gen {
 
         if ($user == false) {
             $outxml .= '<webExID>'.$config->apiusername.'</webExID>';
-            $outxml .= '<password>'.self::format_text($config->apipassword).'</password>';
+            $outxml .= '<password>'.self::format_password($config->apipassword).'</password>';
         } else {
             $outxml .= '<webExID>'.$user->webexid.'</webExID>';
-            $outxml .= '<password>'.self::format_text($user->password).'</password>';
+            $outxml .= '<password>'.self::format_password($user->password).'</password>';
         }
 
         $outxml .= '<siteID>'.$config->siteid.'</siteID>';
@@ -142,7 +142,7 @@ class xml_gen {
                '<lastName>'.self::format_text($data->lastname, 64).'</lastName>'.
                '<webExId>'.$data->webexid.'</webExId>'.
                '<email>'.$data->email.'</email>'.
-               '<password>'.self::format_text($data->password).'</password>'.
+               '<password>'.self::format_password($data->password).'</password>'.
                '<privilege><host>true</host></privilege>'.
                '<active>ACTIVATED</active>';
 
@@ -164,7 +164,7 @@ class xml_gen {
     public static function update_user_password($webexuser) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.user.SetUser">'.
                '<webExId>'.$webexuser->webexid.'</webExId>'.
-               '<password>'.self::format_text($webexuser->password, 64).'</password>'.
+               '<password>'.self::format_password($webexuser->password, 64).'</password>'.
                '<active>ACTIVATED</active>'.
                '</bodyContent></body>';
 
@@ -444,6 +444,24 @@ class xml_gen {
         // Need special line endings.
         $text = str_replace("\n", "&#10;\n", $text);
         $text = str_replace("\r", "&#13;\r", $text);
+
+        if ($limit) {
+            $text = substr($text, 0, $limit);
+        }
+
+        return $text;
+    }
+
+    /**
+     * Format a password for sending to WebEx.
+     *
+     * @param string   $text The password to format.
+     * @param int      $limit Limit the output to this many chars. 0 for unlimited.
+     * @return string  The formatted password.
+     */
+    public static function format_password($text, $limit = 0) {
+        // Convert with XML compatability.
+        $text = htmlentities($text, ENT_COMPAT | ENT_XML1);
 
         if ($limit) {
             $text = substr($text, 0, $limit);
