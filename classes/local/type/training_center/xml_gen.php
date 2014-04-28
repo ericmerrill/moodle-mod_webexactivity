@@ -132,7 +132,7 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
         $xml .= '<accessControl><listing>UNLISTED</listing>';
 
         if (isset($data->password)) {
-            $xml .= '<sessionPassword>'.self::format_text($data->password, 16).'</sessionPassword>';
+            $xml .= '<sessionPassword>'.self::format_password($data->password, 16).'</sessionPassword>';
             $xml .= '<enforcePassword>FALSE</enforcePassword>';
         }
 

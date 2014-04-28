@@ -234,7 +234,22 @@ function webexactivity_delete_instance($id) {
  */
 function webexactivity_cron() {
     $webex = new \mod_webexactivity\webex();
-    $webex->update_recordings();
+
+    $lastlonglook = get_config('webexactivity', 'loadedallrecordingstime');
+    if ((time() - $lastlonglook) > (3 * 25 * 3600)) {
+        $webex->update_recordings(0);
+        set_config('loadedallrecordingstime', time(), 'webexactivity');
+        set_config('loadedpastrecordingstime', time(), 'webexactivity');
+    } else {
+        $lastmedlook = get_config('webexactivity', 'loadedpastrecordingstime');
+        if ((time() - $lastmedlook) > (9 * 3600)) {
+            $webex->update_recordings(120);
+            set_config('loadedpastrecordingstime', time(), 'webexactivity');
+        } else {
+            $webex->update_recordings();
+        }
+    }
+
     $webex->update_open_sessions();
     $webex->remove_deleted_recordings();
 

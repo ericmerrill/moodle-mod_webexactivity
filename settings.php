@@ -92,6 +92,13 @@ if ($ADMIN->fulltree) {
             get_string('requiremeetingpassword', 'mod_webexactivity'),
             get_string('requiremeetingpassword_help', 'mod_webexactivity'), 0));
 
+    $options = array(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_MEETING => get_string('typemeetingcenter', 'mod_webexactivity'),
+            \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_TRAINING => get_string('typetrainingcenter', 'mod_webexactivity'));
+
+    $settings->add(new admin_setting_configselect('webexactivity/defaultmeetingtype',
+            get_string('defaultmeetingtype', 'webexactivity'),
+            get_string('defaultmeetingtype_help', 'webexactivity'), 0, $options));
+
     // ---------------------------------------------------
     // Recording Settings.
     // ---------------------------------------------------

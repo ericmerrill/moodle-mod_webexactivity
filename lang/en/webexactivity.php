@@ -48,6 +48,8 @@ $string['badpassword'] = 'Your WebEx username and password do not match.';
 $string['confirmrecordingdelete'] = 'Are you sure you want to delete the recording <b>{$a->name}</b>, with a length of {$a->time}? This cannot be undone.';
 $string['connectionexception'] = 'An error occurred while trying to connect: {$a->error}';
 $string['curlsetupexception'] = 'An error occurred while setting up curl.';
+$string['defaultmeetingtype'] = 'Default meeting type';
+$string['defaultmeetingtype_help'] = 'The meeting type that will be preselected when creating a new meeting.';
 $string['deletelink'] = '<a href="{$a->url}">Delete</a>';
 $string['deletionin'] = '<div>{$a->time} until deletion.</div>';
 $string['deletionsoon'] = '<div>Will be deleted soon.</div>';

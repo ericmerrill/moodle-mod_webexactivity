@@ -48,6 +48,11 @@ class meeting extends \mod_webexactivity\local\type\base\meeting {
     const XML_PREFIX = 'meet';
 
     /**
+     * The default open time for this meeting type.
+     */
+    const OPEN_TIME = 15;
+
+    /**
      * The meetings type.
      */
     const TYPE = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_MEETING;

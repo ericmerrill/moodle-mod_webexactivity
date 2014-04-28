@@ -128,7 +128,7 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
         $xml .= '<accessControl><listToPublic>FALSE</listToPublic>';
 
         if (isset($data->password)) {
-            $xml .= '<meetingPassword>'.self::format_text($data->password, 16).'</meetingPassword>';
+            $xml .= '<meetingPassword>'.self::format_password($data->password, 16).'</meetingPassword>';
             $xml .= '<enforcePassword>FALSE</enforcePassword>';
         }
 
@@ -140,7 +140,7 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
             $startstr = self::time_to_date_string($data->starttime);
 
             $xml .= '<startDate>'.$startstr.'</startDate>';
-            $xml .= '<openTime>20</openTime>';
+            $xml .= '<openTime>900</openTime>';
         }
 
         if (isset($data->duration)) {
