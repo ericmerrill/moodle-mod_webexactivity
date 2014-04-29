@@ -70,6 +70,14 @@ $string['error_LI_InvalidSessionTicket'] = 'The session ticket is invalid. Pleas
 $string['error_LI_InvalidTicket'] = 'The login ticket is invalid. Please try again.';
 $string['error_unknown'] = 'An unknown error occurred.';
 $string['error_'] = '';
+$string['event_meeting_ended'] = 'Meeting ended';
+$string['event_meeting_hosted'] = 'Meeting hosted';
+$string['event_meeting_joined'] = 'meeting joined ';
+$string['event_meeting_started'] = 'Meeting started';
+$string['event_recording_created'] = 'Recording created';
+$string['event_recording_deleted'] = 'Recording deleted';
+$string['event_recording_downloaded'] = 'Recording downloaded';
+$string['event_recording_viewed'] = 'Recording viewed';
 $string['externallinktext'] = '<p>This link is for participants who do not have a Oakland University NetID account, or who are not participants in this course. Students in the course will not need to be emailed this link, as they can just click on the Join meeting link on the previous page. This link should be distributed carefully - anybody with this link will be able to access this meeting.  To invite others to the meeting, copy the URL below and send it to them.  If this is a public meeting, this link can also be placed on a web site.</p>';
 $string['externalpassword'] = 'Participants will also need to know the meeting password: <b>{$a}</b>';
 $string['getexternallink'] = '<a href="{$a->url}">Get external participant link</a>';
