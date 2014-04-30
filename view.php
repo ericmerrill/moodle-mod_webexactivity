@@ -371,7 +371,14 @@ switch ($action) {
 }
 
 // Record that the page was viewed.
-add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webexmeeting->id, $cm->id);
+$params = array(
+    'objectid' => $webexmeeting->id,
+    'context' => $context
+);
+$event = \mod_webexactivity\event\course_module_viewed::create($params);
+$event->add_record_snapshot('webexactivity', $webexrecord);
+$event->trigger();
+
 
 // Basic page setup.
 $PAGE->set_title($course->shortname.': '.$webexmeeting->name);
