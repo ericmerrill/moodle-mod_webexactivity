@@ -450,8 +450,13 @@ class xml_gen {
         // Some characters are already encoded in the DB.
         $text = html_entity_decode($text);
 
-        // Convert with XML compatability.
-        $text = htmlentities($text, ENT_COMPAT | ENT_XML1);
+        // Hack for pre-PHP 5.4.0 support. Remove when dropping Moodle 2.6 support.
+        if (PHP_VERSION_ID < 50400) {
+            $text = htmlspecialchars($text);
+        } else {
+            // Convert with XML compatability.
+            $text = htmlentities($text, ENT_COMPAT | ENT_XML1);
+        }
 
         // Need special line endings.
         $text = str_replace("\n", "&#10;\n", $text);
