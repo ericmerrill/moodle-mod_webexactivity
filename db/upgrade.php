@@ -152,5 +152,16 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014042801, 'webexactivity');
     }
 
+    if ($oldversion < 2014043002) {
+        $sitename = get_config('webexactivity', 'url');
+        if ($sitename) {
+            set_config('sitename', $sitename, 'webexactivity');
+            unset_config('url', 'webexactivity');
+        }
+
+        // WebEx Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2014043002, 'webexactivity');
+    }
+
     return true;
 }

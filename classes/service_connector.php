@@ -90,7 +90,7 @@ class service_connector {
      * @return object    The configured curl handle.
      */
     private function create_curl_handle() {
-        $url = get_config('webexactivity', 'url');
+        $url = get_config('webexactivity', 'sitename');
         if ($url === false) {
             return false;
         }

@@ -84,8 +84,7 @@ class xml_gen {
             $outxml .= '<password>'.self::format_password($user->password).'</password>';
         }
 
-        $outxml .= '<siteID>'.$config->siteid.'</siteID>';
-        $outxml .= '<partnerID>'.$config->partnerid.'</partnerID>';
+        $outxml .= '<siteName>'.$config->sitename.'</siteName>';
 
         $outxml .= '</securityContext></header>';
 
