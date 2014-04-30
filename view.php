@@ -371,14 +371,18 @@ switch ($action) {
 }
 
 // Record that the page was viewed.
-$params = array(
-    'objectid' => $webexmeeting->id,
-    'context' => $context
-);
-$event = \mod_webexactivity\event\course_module_viewed::create($params);
-$event->add_record_snapshot('webexactivity', $webexrecord);
-$event->trigger();
-
+// Stupid hack for 2.6
+if ($CFG->version < 2013111899) {
+    add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webexmeeting->id, $cm->id);
+} else {
+    $params = array(
+        'objectid' => $webexmeeting->id,
+        'context' => $context
+    );
+    $event = \mod_webexactivity\event\course_module_viewed::create($params);
+    $event->add_record_snapshot('webexactivity', $webexrecord);
+    $event->trigger();
+}
 
 // Basic page setup.
 $PAGE->set_title($course->shortname.': '.$webexmeeting->name);
