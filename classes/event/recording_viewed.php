@@ -36,7 +36,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2014 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class recording_viewed extends \core\event\content_viewed {
+class recording_viewed extends \core\event\base {
 
     /**
      * Returns description of what happened.
@@ -53,8 +53,8 @@ class recording_viewed extends \core\event\content_viewed {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'webexactivity', 'recording viewed', 'view.php?id=' . $this->context->instanceid,
-                'Recording ID '.$this->objectid, $this->context->instanceid);
+        return array($this->courseid, 'webexactivity', 'recording viewed', 'view.php?id=' . $this->contextinstanceid,
+                'Recording ID '.$this->objectid, $this->contextinstanceid);
     }
 
     /**
@@ -72,7 +72,7 @@ class recording_viewed extends \core\event\content_viewed {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/webexactivity/view.php', array('id' => $this->context->instanceid));
+        return new \moodle_url('/mod/webexactivity/view.php', array('id' => $this->contextinstanceid));
     }
 
     /**

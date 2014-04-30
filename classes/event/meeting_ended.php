@@ -53,8 +53,8 @@ class meeting_ended extends \core\event\base {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'webexactivity', 'meeting ended', 'view.php?id=' . $this->context->instanceid,
-                '', $this->context->instanceid);
+        return array($this->courseid, 'webexactivity', 'meeting ended', 'view.php?id=' . $this->contextinstanceid,
+                '', $this->contextinstanceid);
     }
 
     /**
@@ -72,7 +72,7 @@ class meeting_ended extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/webexactivity/view.php', array('id' => $this->context->instanceid));
+        return new \moodle_url('/mod/webexactivity/view.php', array('id' => $this->contextinstanceid));
     }
 
     /**

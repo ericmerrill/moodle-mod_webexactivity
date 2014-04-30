@@ -141,7 +141,7 @@ class webex {
      * @return string  The base URL.
      */
     public static function get_base_url() {
-        $host = get_config('webexactivity', 'url');
+        $host = get_config('webexactivity', 'sitename');
 
         if ($host === false) {
             return false;

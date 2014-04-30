@@ -233,25 +233,38 @@ function webexactivity_delete_instance($id) {
  * @return bool   true if successful.
  */
 function webexactivity_cron() {
-    $webex = new \mod_webexactivity\webex();
+    try {
+        $webex = new \mod_webexactivity\webex();
 
-    $lastlonglook = get_config('webexactivity', 'loadedallrecordingstime');
-    if ((time() - $lastlonglook) > (3 * 25 * 3600)) {
-        $webex->update_recordings(0);
-        set_config('loadedallrecordingstime', time(), 'webexactivity');
-        set_config('loadedpastrecordingstime', time(), 'webexactivity');
-    } else {
-        $lastmedlook = get_config('webexactivity', 'loadedpastrecordingstime');
-        if ((time() - $lastmedlook) > (9 * 3600)) {
-            $webex->update_recordings(120);
+        $lastlonglook = get_config('webexactivity', 'loadedallrecordingstime');
+        if ((time() - $lastlonglook) > (3 * 25 * 3600)) {
+            $webex->update_recordings(0);
+            set_config('loadedallrecordingstime', time(), 'webexactivity');
             set_config('loadedpastrecordingstime', time(), 'webexactivity');
         } else {
-            $webex->update_recordings();
+            $lastmedlook = get_config('webexactivity', 'loadedpastrecordingstime');
+            if ((time() - $lastmedlook) > (9 * 3600)) {
+                $webex->update_recordings(120);
+                set_config('loadedpastrecordingstime', time(), 'webexactivity');
+            } else {
+                $webex->update_recordings();
+            }
         }
+    } catch (Exception $e) {
+        echo 'Exception thrown (and caught): '.$e->getMessage();
     }
 
-    $webex->update_open_sessions();
-    $webex->remove_deleted_recordings();
+    try {
+        $webex->update_open_sessions();
+    } catch (Exception $e) {
+        echo 'Exception thrown (and caught): '.$e->getMessage();
+    }
+
+    try {
+        $webex->remove_deleted_recordings();
+    } catch (Exception $e) {
+        echo 'Exception thrown (and caught): '.$e->getMessage();
+    }
 
     return true;
 }

@@ -23,11 +23,28 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_webexactivity\event;
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014043003;
-$plugin->requires  = 2013101800; // See http://docs.moodle.org/dev/Moodle_Versions.
-$plugin->cron      = 1;
-$plugin->component = 'mod_webexactivity';
-$plugin->maturity  = MATURITY_BETA;
-$plugin->release   = '0.2.2 Beta';
+/**
+ * mod_webexactiviy was viewed.
+ *
+ * @package    mod_webexactvity
+ * @category   events
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2014 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class course_module_viewed extends \core\event\course_module_viewed {
+    /**
+     * Init method.
+     *
+     * @return void
+     */
+    protected function init() {
+        $this->data['crud'] = 'r';
+        $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
+        $this->data['objecttable'] = 'webexactivity';
+    }
+}

@@ -36,14 +36,8 @@ if ($ADMIN->fulltree) {
     // ---------------------------------------------------
     $settings->add(new admin_setting_heading('apisettings', get_string('apisettings', 'mod_webexactivity'), ''));
 
-    $settings->add(new admin_setting_configtext('webexactivity/url', get_string('url', 'mod_webexactivity'),
-            get_string('url_help', 'mod_webexactivity'), ''));
-
-    $settings->add(new admin_setting_configtext('webexactivity/siteid', get_string('siteid', 'mod_webexactivity'),
-            get_string('siteid_help', 'mod_webexactivity'), ''));
-
-    $settings->add(new admin_setting_configtext('webexactivity/partnerid', get_string('partnerid', 'mod_webexactivity'),
-            get_string('partnerid_help', 'mod_webexactivity'), ''));
+    $settings->add(new admin_setting_configtext('webexactivity/sitename', get_string('sitename', 'mod_webexactivity'),
+            get_string('sitename_help', 'mod_webexactivity'), ''));
 
     $settings->add(new admin_setting_configtext('webexactivity/apiusername', get_string('apiusername', 'mod_webexactivity'),
             get_string('apiusername_help', 'mod_webexactivity'), ''));
