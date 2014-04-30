@@ -44,7 +44,7 @@ class recording_created extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return 'WebEx recording with id ' . $this->objectid . ' created in meeting with id ' . $this->context->instanceid;
+        return 'WebEx recording with id ' . $this->objectid . ' created in meeting with id ' . $this->contextinstanceid;
     }
 
     /**
@@ -53,8 +53,8 @@ class recording_created extends \core\event\base {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'webexactivity', 'recording created', 'view.php?id=' . $this->context->instanceid,
-                'Recording ID '.$this->objectid, $this->context->instanceid);
+        return array($this->courseid, 'webexactivity', 'recording created', 'view.php?id=' . $this->contextinstanceid,
+                'Recording ID '.$this->objectid, $this->contextinstanceid);
     }
 
     /**
@@ -72,7 +72,7 @@ class recording_created extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/webexactivity/view.php', array('id' => $this->context->instanceid));
+        return new \moodle_url('/mod/webexactivity/view.php', array('id' => $this->contextinstanceid));
     }
 
     /**
