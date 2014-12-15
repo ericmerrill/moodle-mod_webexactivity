@@ -522,7 +522,7 @@ if (!$view) {
 
             if ($canhost) {
                 // Editing buttons.
-                echo '<div class="recordingblock buttons">';
+                echo '<div class="recordingblock actions">';
 
                 $actions = array();
 
@@ -532,36 +532,46 @@ if (!$view) {
                 $actions['edit'] = new action_menu_link_secondary(
                     $urlobj,
                     new \pix_icon('t/editstring', 'Edit'),
-                    "EdiT";
+                    get_string('edit')
                 );
 
                 if ($recording->visible) {
                     $params['action'] = 'hiderecording';
                     $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
 
-                    $actions['edit'] = new action_menu_link_secondary(
+                    $actions['showhide'] = new action_menu_link_secondary(
                         $urlobj,
                         new \pix_icon('t/hide', 'Hide'),
-                        "HidE";
+                        get_string('hide')
                     );
                 } else {
                     $params['action'] = 'showrecording';
                     $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
 
-                    $actions['edit'] = new action_menu_link_secondary(
+                    $actions['showhide'] = new action_menu_link_secondary(
                         $urlobj,
                         new \pix_icon('t/show', 'Show'),
-                        "ShoW";
+                        get_string('show')
                     );
                 }
+
+                unset($params['action']);
+                $params['view'] = 'directlinks';
+                $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
+
+                $actions['direct'] = new action_menu_link_secondary(
+                    $urlobj,
+                    new \pix_icon('t/restore', 'Direct Links'),
+                    'Direct links'
+                );
 
                 $params['action'] = 'deleterecording';
                 $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
 
-                $actions['edit'] = new action_menu_link_secondary(
+                $actions['delete'] = new action_menu_link_secondary(
                     $urlobj,
                     new \pix_icon('t/delete', 'Delete'),
-                    "DeletE";
+                    get_string('delete')
                 );
 
                 $menu = new action_menu();
@@ -593,6 +603,12 @@ if (!$view) {
     if (isset($webexmeeting->password)) {
         echo get_string('externalpassword', 'webexactivity', $webexmeeting->password);
     }
+} else if ($view === 'directlinks') {
+    // Show the recording text.
+    $recordingid = required_param('recordingid', PARAM_INT);
+    $recording = new \mod_webexactivity\recording($recordingid);
+    $params = array('streamurl' => $recording->streamurl, 'fileurl' => $recording->fileurl);
+    echo get_string('directlinkstext', 'webexactivity', $params);
 } else if ($view === 'editrecording') {
     // Show the editing recording link.
     $recordingid = required_param('recordingid', PARAM_INT);
