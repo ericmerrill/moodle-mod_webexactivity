@@ -371,7 +371,7 @@ switch ($action) {
 }
 
 // Record that the page was viewed.
-// Stupid hack for 2.6
+// Stupid hack for 2.6.
 if ($CFG->version < 2013111899) {
     add_to_log($course->id, 'webexactivity', 'view', 'view.php?id='.$cm->id, $webexmeeting->id, $cm->id);
 } else {
@@ -575,9 +575,6 @@ if (!$view) {
                 );
 
                 $menu = new action_menu();
-                //$menu->set_owner_selector('.gradingtable-actionmenu');
-                $menu->set_alignment(action_menu::TL, action_menu::BL);
-                //$menu->set_constraint('.gradingtable > .no-overflow');
                 $menu->set_menu_trigger(get_string('edit'));
                 foreach ($actions as $action) {
                     $menu->add($action);
