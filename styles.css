@@ -38,6 +38,11 @@
     margin-left: 10px;
 }
 
+#recordings .recording .actions .moodle-actionmenu {
+    white-space: nowrap;
+}
+
+
 #recordings .recording .buttons .play {
     display: inline-block;
 }

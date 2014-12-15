@@ -91,7 +91,8 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configselect('webexactivity/defaultmeetingtype',
             get_string('defaultmeetingtype', 'webexactivity'),
-            get_string('defaultmeetingtype_help', 'webexactivity'), 0, $options));
+            get_string('defaultmeetingtype_help', 'webexactivity'),
+            \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_MEETING, $options));
 
     // ---------------------------------------------------
     // Recording Settings.
