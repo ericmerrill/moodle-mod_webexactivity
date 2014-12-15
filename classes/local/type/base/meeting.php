@@ -524,7 +524,8 @@ class meeting {
     public function get_recordings() {
         global $DB;
 
-        $recordingrecords = $DB->get_records('webexactivity_recording', array('webexid' => $this->id, 'deleted' => 0));
+        $params = array('webexid' => $this->id, 'deleted' => 0);
+        $recordingrecords = $DB->get_records('webexactivity_recording', $params, 'timecreated ASC');
 
         if (!$recordingrecords) {
             return array();
