@@ -261,7 +261,7 @@ switch ($action) {
         $event->add_record_snapshot('webexactivity_recording', $recording->record);
         $event->trigger();
 
-        redirect($recording->streamurl);
+        redirect($recording->fileurl);
         break;
 
     case 'hiderecording':
@@ -497,7 +497,9 @@ if (!$view) {
             // Download Button.
             if ($candownload) {
                 echo '<div class="download">';
-                echo $OUTPUT->action_icon($recording->fileurl, new \pix_icon('download', 'Download', 'mod_webexactivity'),
+                $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'downloadrecording');
+                $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
+                echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('download', 'Download', 'mod_webexactivity'),
                         null, array('target' => '_blank'));
                 echo '</div>';
             }
