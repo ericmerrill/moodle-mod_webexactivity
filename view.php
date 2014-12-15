@@ -524,24 +524,56 @@ if (!$view) {
                 // Editing buttons.
                 echo '<div class="recordingblock buttons">';
 
-                // Delete, rename, hide.
+                $actions = array();
+
                 $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'editrecording');
                 $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-                echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('t/editstring', 'Edit recording'));
+
+                $actions['edit'] = new action_menu_link_secondary(
+                    $urlobj,
+                    new \pix_icon('t/editstring', 'Edit'),
+                    "EdiT";
+                );
 
                 if ($recording->visible) {
                     $params['action'] = 'hiderecording';
                     $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-                    echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('t/hide', 'Hide recording'));
+
+                    $actions['edit'] = new action_menu_link_secondary(
+                        $urlobj,
+                        new \pix_icon('t/hide', 'Hide'),
+                        "HidE";
+                    );
                 } else {
                     $params['action'] = 'showrecording';
                     $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-                    echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('t/show', 'Show recording'));
+
+                    $actions['edit'] = new action_menu_link_secondary(
+                        $urlobj,
+                        new \pix_icon('t/show', 'Show'),
+                        "ShoW";
+                    );
                 }
 
                 $params['action'] = 'deleterecording';
                 $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-                echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('t/delete', 'Delete recording'));
+
+                $actions['edit'] = new action_menu_link_secondary(
+                    $urlobj,
+                    new \pix_icon('t/delete', 'Delete'),
+                    "DeletE";
+                );
+
+                $menu = new action_menu();
+                //$menu->set_owner_selector('.gradingtable-actionmenu');
+                $menu->set_alignment(action_menu::TL, action_menu::BL);
+                //$menu->set_constraint('.gradingtable > .no-overflow');
+                $menu->set_menu_trigger(get_string('edit'));
+                foreach ($actions as $action) {
+                    $menu->add($action);
+                }
+                $menu->prioritise = true;
+                echo $OUTPUT->render($menu);
 
                 echo '</div>';
             }
