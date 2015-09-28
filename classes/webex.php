@@ -312,6 +312,40 @@ class webex {
         $found = 0;
         $start = 0;
         $status = true;
+        $urls = array();
+
+        $params->servicetype = array();
+
+        $setting = get_config('webexactivity', 'typemeetingcenter');
+        if (stripos($setting, webex::WEBEXACTIVITY_TYPE_INSTALLED) !== false) {
+            $params->servicetype[] = "MeetingCenter";
+        }
+
+        $setting = get_config('webexactivity', 'typetrainingcenter');
+        if (stripos($setting, webex::WEBEXACTIVITY_TYPE_INSTALLED) !== false) {
+            $params->servicetype[] = "TrainingCenter";
+        }
+
+        do {
+            // Workaround for stupid WebEx bug.
+            $params->start = $start;
+
+            $xml = type\base\xml_gen::list_recordings($params);
+
+            if (!($response = $this->get_response($xml))) {
+                return false;
+            }
+            list($found, $start, $count) = self::get_list_info($response);
+            $start += $count;
+
+            $this->process_conf_urls($response, $urls);
+        } while ($found > $start);
+
+        unset($params->servicetype);
+
+        $found = 0;
+        $start = 0;
+        $status = true;
 
         do {
             $params->start = $start;
@@ -324,7 +358,7 @@ class webex {
             list($found, $start, $count) = self::get_list_info($response);
             $start += $count;
 
-            $status = $this->proccess_recording_response($response) && $status;
+            $status = $this->proccess_recording_response($response, $urls) && $status;
 
         } while ($found > $start);
 
@@ -335,13 +369,57 @@ class webex {
         return $status;
     }
 
+    // Temporary function to work around WebEx bug.
+    private function process_conf_urls($response, &$output) {
+        global $DB;
+
+        if (!is_array($response)) {
+            return false;
+        }
+
+        $recordings = $response['ep:recording'];
+
+        foreach ($recordings as $recording) {
+            $recording = $recording['#'];
+
+            if (!isset($recording['ep:confID'][0]['#'])) {
+                continue;
+            }
+            $confid = $recording['ep:confID'][0]['#'];
+            if (!isset($output[$confid])) {
+                $output[$confid] = array();
+            }
+
+            $size = $recording['ep:size'][0]['#'];
+            $dur = $recording['ep:duration'][0]['#'];
+            $name = $recording['ep:name'][0]['#'];
+            $key = $size.':'.$dur;
+            $hash = md5($key);
+            $key2 = $size.':'.$name;
+            $hash2 = md5($key2);
+
+            if (!isset($output[$confid][$hash])) {
+                $output[$confid][$hash] = array();
+            }
+
+            if (!isset($output[$confid][$hash2])) {
+                $output[$confid][$hash2] = &$output[$confid][$hash];
+            }
+
+            $output[$confid][$hash]['streamurl'] = $recording['ep:streamURL'][0]['#'];
+            $output[$confid][$hash]['fileurl'] = $recording['ep:fileURL'][0]['#'];
+        }
+
+        return $output;
+    }
+
     /**
      * Process the response of recordings from WebEx.
      *
      * @param array  The response array from WebEx.
      * @return bool  True on success, false on failure.
      */
-    private function proccess_recording_response($response) {
+    private function proccess_recording_response($response, $overrideurls = false) {
         global $DB;
 
         if (!is_array($response)) {
@@ -378,8 +456,37 @@ class webex {
             $rec->hostid = $recording['ep:hostWebExID'][0]['#'];
             $rec->name = $recording['ep:name'][0]['#'];
             $rec->timecreated = strtotime($recording['ep:createTime'][0]['#']);
-            $rec->streamurl = $recording['ep:streamURL'][0]['#'];
-            $rec->fileurl = $recording['ep:fileURL'][0]['#'];
+            if ($overrideurls) {
+                $confid = $recording['ep:confID'][0]['#'];
+                $size = $recording['ep:size'][0]['#'];
+                $dur = $recording['ep:duration'][0]['#'];
+                $name = $recording['ep:name'][0]['#'];
+                $key = $size.':'.$dur;
+                $hash = md5($key);
+                $key2 = $size.':'.$name;
+                $hash2 = md5($key2);
+                if (isset($overrideurls[$confid][$hash]['streamurl'])) {
+                    $rec->streamurl = $overrideurls[$confid][$hash]['streamurl'];
+                } else {
+                    if (isset($overrideurls[$confid][$hash2]['streamurl'])) {
+                        $rec->streamurl = $overrideurls[$confid][$hash2]['streamurl'];
+                    } else {
+                        $rec->streamurl = $recording['ep:streamURL'][0]['#'];
+                    }
+                }
+                if (isset($overrideurls[$confid][$hash]['fileurl'])) {
+                    $rec->fileurl = $overrideurls[$confid][$hash]['fileurl'];
+                } else {
+                    if (isset($overrideurls[$confid][$hash2]['fileurl'])) {
+                        $rec->fileurl = $overrideurls[$confid][$hash2]['fileurl'];
+                    } else {
+                        $rec->fileurl = $recording['ep:fileURL'][0]['#'];
+                    }
+                }
+            } else {
+                $rec->streamurl = $recording['ep:streamURL'][0]['#'];
+                $rec->fileurl = $recording['ep:fileURL'][0]['#'];
+            }
             $size = $recording['ep:size'][0]['#'];
             $size = floatval($size);
             $size = $size * 1024 * 1024;
