@@ -432,7 +432,8 @@ class xml_gen {
      * @return string   The XML.
      */
     public static function time_to_date_string($time) {
-        return date('m/d/Y H:i:s', $time);
+    	$gmttime = $time - date('Z', $time) ; //convert timestamp in server timezone to GMT
+        return date('m/d/Y H:i:s', $gmttime);
     }
 
     /**
