@@ -54,6 +54,7 @@ class meeting {
             'hostwebexid' => null,
             'type' => null,
             'meetingkey' => null,
+            'typecode' => null,
             'guestkey' => null,
             'eventid' => null,
             'hostkey' => null, // Unused?
@@ -650,6 +651,22 @@ class meeting {
         $url = $baseurl.'/k2/j.php?ED='.$this->eventid.'&UID=1';
 
         return $url;
+    }
+    
+    /**
+     * Get the link to switch meeting type for further URL API requests
+     *
+     * @param string     $mtype Meeting type to switch to
+     * @param string     $returnurl The url to return the use to.
+     * @return string    The url for switching meeting type
+     */
+    public function get_switch_mt_ulr($mtype = "MC", $returnurl = false){
+    	$baseurl = \mod_webexactivity\webex::get_base_url();
+    	$url = $baseurl."/o.php?AT=ST&SP=".$mtype;
+    	if ($returnurl) {
+            $url .= '&BU='.urlencode($returnurl);
+        }
+    	return $url;
     }
 
     // ---------------------------------------------------
