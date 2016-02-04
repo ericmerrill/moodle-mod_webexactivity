@@ -29,4 +29,4 @@ $plugin->version   = 2014121502;
 $plugin->requires  = 2013101800; // See http://docs.moodle.org/dev/Moodle_Versions.
 $plugin->component = 'mod_webexactivity';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '2.7.0';
+$plugin->release   = '2.8.0';
