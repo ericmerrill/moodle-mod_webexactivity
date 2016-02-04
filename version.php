@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014121500;
+$plugin->version   = 2014121501;
 $plugin->requires  = 2015051100; // 2.9.0
 $plugin->cron      = 1;
 $plugin->component = 'mod_webexactivity';
