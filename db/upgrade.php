@@ -163,14 +163,5 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014043002, 'webexactivity');
     }
 
-    if ($oldversion < 2014121501) {
-        set_config('loadedallrecordingstime', 0, 'webexactivity');
-        set_config('loadedpastrecordingstime', 0, 'webexactivity');
-
-        // WebEx Activity savepoint reached.
-        upgrade_mod_savepoint(true, 2014121501, 'webexactivity');
-    }
-
-
     return true;
 }

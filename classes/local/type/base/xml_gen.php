@@ -281,7 +281,7 @@ class xml_gen {
      *
      * Required keys in $data are:
      * 1/ meetingkey - Meeting key to update.
-     *
+     * 
      * Optional keys in $data are:
      * 1/ startdate - Start time range.
      * 2/ duration - Duration in minutes.
@@ -360,16 +360,6 @@ class xml_gen {
             $xml .= '<createTimeEnd>'.self::time_to_date_string($data->enddate).'</createTimeEnd>';
             $xml .= '</createTimeScope>';
         }
-        if (isset($data->servicetype)) {
-            $xml .= '<serviceTypes>';
-            if (!is_array($data->servicetype)) {
-                $data->servicetype = array($data->servicetype);
-            }
-            foreach ($data->servicetype as $type) {
-                $xml .= "<serviceType>".$type."</serviceType>";
-            }
-            $xml .= '</serviceTypes>';
-        }
         $xml .= '<returnSessionDetails>true</returnSessionDetails>';
         $xml .= '</bodyContent></body>';
 
@@ -409,7 +399,7 @@ class xml_gen {
      *
      * Required keys in $data are:
      * 1/ recordingid - Meeting key to retrieve recordings for.
-     *
+     * 
      * Optional keys in $data are:
      * 1/ name - The name to set.
      *
