@@ -244,6 +244,28 @@ class xml_gen {
         return $xml;
     }
 
+    /**
+     * Provide the xml to retrieve the participant join url for a meeting.
+     *
+     * @param meeting   $meeting The meeting to get the host URL for.
+     * @param object    $user The user object
+     * @return string   The XML.
+     */
+    public static function get_join_url($meeting, $user) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.GetjoinurlMeeting">'.
+               '<sessionKey>'.$meeting->meetingkey.'</sessionKey>'.
+               '<attendeeEmail>'.$user->email.'</attendeeEmail>'.
+               '<attendeeName>'.fullname($user).'</attendeeName>';
+
+        if (!empty($meeting->password)) {
+            $xml .= '<meetingPW>'.$meeting->password.'</meetingPW>';
+        }
+
+        $xml .= '</bodyContent></body>';
+
+        return $xml;
+    }
+
     // ---------------------------------------------------
     // Meeting Functions.
     // ---------------------------------------------------
@@ -281,7 +303,7 @@ class xml_gen {
      *
      * Required keys in $data are:
      * 1/ meetingkey - Meeting key to update.
-     * 
+     *
      * Optional keys in $data are:
      * 1/ startdate - Start time range.
      * 2/ duration - Duration in minutes.
@@ -399,7 +421,7 @@ class xml_gen {
      *
      * Required keys in $data are:
      * 1/ recordingid - Meeting key to retrieve recordings for.
-     * 
+     *
      * Optional keys in $data are:
      * 1/ name - The name to set.
      *
