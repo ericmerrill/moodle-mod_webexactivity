@@ -19,14 +19,37 @@
  *
  * @package    mod_webexactvity
  * @author     Eric Merrill <merrill@oakland.edu>
- * @copyright  2014 Oakland University
+ * @copyright  2016 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_webexactivity\task;
 
-$plugin->version   = 2016020402;
-$plugin->requires  = 2015051100; // Moodle 2.9.0.
-$plugin->component = 'mod_webexactivity';
-$plugin->maturity  = MATURITY_BETA;
-$plugin->release   = '3.0.0';
+
+/**
+ * Deletes recordings.
+ *
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2016 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class update_open_sessions extends \core\task\scheduled_task {
+    /**
+     * Return the task name.
+     *
+     * @return string    Name of task
+     */
+    public function get_name() {
+        return get_string('task_updateopensessions', 'mod_webexactivity');
+    }
+
+    /**
+     * Do the task.
+     */
+    public function execute() {
+        $webex = new \mod_webexactivity\webex();
+
+        $webex->update_open_sessions();
+    }
+}

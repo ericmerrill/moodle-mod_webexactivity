@@ -144,14 +144,6 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014042701, 'webexactivity');
     }
 
-    if ($oldversion < 2014042801) {
-        set_config('loadedallrecordingstime', 0, 'webexactivity');
-        set_config('loadedpastrecordingstime', 0, 'webexactivity');
-
-        // WebEx Activity savepoint reached.
-        upgrade_mod_savepoint(true, 2014042801, 'webexactivity');
-    }
-
     if ($oldversion < 2014043002) {
         $sitename = get_config('webexactivity', 'url');
         if ($sitename) {
@@ -161,6 +153,14 @@ function xmldb_webexactivity_upgrade($oldversion) {
 
         // WebEx Activity savepoint reached.
         upgrade_mod_savepoint(true, 2014043002, 'webexactivity');
+    }
+
+    if ($oldversion < 2016020402) {
+        unset_config('loadedallrecordingstime', 'webexactivity');
+        unset_config('loadedpastrecordingstime', 'webexactivity');
+
+        // WebEx Activity savepoint reached.
+        upgrade_mod_savepoint(true, 2016020402, 'webexactivity');
     }
 
     return true;
