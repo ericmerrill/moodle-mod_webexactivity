@@ -73,12 +73,12 @@ class meeting {
     /** @var bool Track if there is a change that needs to go to WebEx. */
     protected $webexchange;
 
-    /** 
+    /**
      * The XML generator class name to use. Can be redefined by child classes.
      */
     const GENERATOR = '\mod_webexactivity\local\type\base\xml_gen';
 
-    /** 
+    /**
      * Prefix for retrieved XML fields.
      */
     const XML_PREFIX = '';
@@ -613,15 +613,20 @@ class meeting {
      * @return string    The moodle join url.
      */
     public function get_moodle_join_url($user, $returnurl = false) {
-        $baseurl = \mod_webexactivity\webex::get_base_url();
+        $gen = static::GENERATOR;
 
-        $email = str_replace('+', '%2B', $user->email);
+        $xml = $gen::get_join_url($this, $user);
+        $creator = $this->get_creator_webex_user();
 
-        $url = $baseurl.'/m.php?AT=JM&MK='.$this->meetingkey;
-        $url .= '&AE='.$email.'&AN='.$user->firstname.'%20'.$user->lastname;
-        if (isset($this->password)) {
-            $url .= '&PW='.$this->password;
+        if (!$response = $this->webex->get_response($xml, $creator)) {
+            throw new \coding_exception('error');
         }
+
+        if (!isset($response['meet:joinMeetingURL']['0']['#'])) {
+            throw new \coding_exception('error');
+        }
+
+        $url = $response['meet:joinMeetingURL']['0']['#'];
 
         if ($returnurl) {
             $url .= '&BU='.urlencode($returnurl);
