@@ -19,14 +19,37 @@
  *
  * @package    mod_webexactvity
  * @author     Eric Merrill <merrill@oakland.edu>
- * @copyright  2014 Oakland University
+ * @copyright  2016 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_webexactivity\task;
 
-$plugin->version   = 2014121502;
-$plugin->requires  = 2013101800; // See http://docs.moodle.org/dev/Moodle_Versions.
-$plugin->component = 'mod_webexactivity';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '2.7.0';
+
+/**
+ * Deletes recordings.
+ *
+ * @package    mod_webexactvity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2016 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class remove_deleted_recordings extends \core\task\scheduled_task {
+    /**
+     * Return the task name.
+     *
+     * @return string    Name of task
+     */
+    public function get_name() {
+        return get_string('task_deleterecordings', 'mod_webexactivity');
+    }
+
+    /**
+     * Do the task.
+     */
+    public function execute() {
+        $webex = new \mod_webexactivity\webex();
+
+        $webex->remove_deleted_recordings();
+    }
+}
