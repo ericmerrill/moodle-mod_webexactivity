@@ -86,7 +86,7 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
      *
      * Required keys in $data are:
      * 1/ meetingkey - Meeting key to update.
-     * 
+     *
      * Optional keys in $data are:
      * 1/ startdate - Start time range.
      * 2/ duration - Duration in minutes.
@@ -124,6 +124,8 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
      * @return string   The XML.
      */
     private static function training_session_xml($data) {
+        $config = get_config('webexactivity');
+
         $xml = '';
         if (isset($data->meetingkey)) {
             $xml .= '<sessionKey>'.$data->meetingkey.'</sessionKey>';
@@ -174,6 +176,10 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
         }*/
 
         $xml .= '</enableOptions>';
+
+        if (!empty($config->enablecallin)) {
+            $xml .= "<telephony><telephonySupport>CALLIN</telephonySupport></telephony>";
+        }
 
         if (isset($data->hostusers)) {
             $xml .= '<presenters><participants>';

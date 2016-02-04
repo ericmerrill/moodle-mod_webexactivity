@@ -94,6 +94,10 @@ if ($ADMIN->fulltree) {
             get_string('defaultmeetingtype_help', 'webexactivity'),
             \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_MEETING, $options));
 
+    $settings->add(new admin_setting_configcheckbox('webexactivity/enablecallin',
+            get_string('enablecallin', 'mod_webexactivity'),
+            get_string('enablecallin_help', 'mod_webexactivity'), 0));
+
     // ---------------------------------------------------
     // Recording Settings.
     // ---------------------------------------------------
