@@ -54,7 +54,6 @@ class meeting {
             'hostwebexid' => null,
             'type' => null,
             'meetingkey' => null,
-            'typecode' => null,
             'guestkey' => null,
             'eventid' => null,
             'hostkey' => null, // Unused?
@@ -88,6 +87,11 @@ class meeting {
      * The default open time for this meeting type.
      */
     const OPEN_TIME = 20;
+
+    /**
+     * The meetings type code.
+     */
+    const TYPE_CODE = '';
 
     /**
      * The meetings type.
@@ -652,7 +656,7 @@ class meeting {
 
         return $url;
     }
-    
+
     /**
      * Get the link to switch meeting type for further URL API requests
      *
@@ -660,13 +664,13 @@ class meeting {
      * @param string     $returnurl The url to return the use to.
      * @return string    The url for switching meeting type
      */
-    public function get_switch_mt_ulr($mtype = "MC", $returnurl = false){
-    	$baseurl = \mod_webexactivity\webex::get_base_url();
-    	$url = $baseurl."/o.php?AT=ST&SP=".$mtype;
-    	if ($returnurl) {
+    public function get_switch_meeting_type_ulr($mtype = 'MC', $returnurl = false) {
+        $baseurl = \mod_webexactivity\webex::get_base_url();
+        $url = $baseurl."/o.php?AT=ST&SP=".$mtype;
+        if ($returnurl) {
             $url .= '&BU='.urlencode($returnurl);
         }
-    	return $url;
+        return $url;
     }
 
     // ---------------------------------------------------
