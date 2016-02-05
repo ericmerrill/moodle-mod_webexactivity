@@ -380,6 +380,7 @@ class xml_gen {
             $xml .= '<createTimeScope>';
             $xml .= '<createTimeStart>'.self::time_to_date_string($data->startdate).'</createTimeStart>';
             $xml .= '<createTimeEnd>'.self::time_to_date_string($data->enddate).'</createTimeEnd>';
+            $xml .= '<timeZoneID>20</timeZoneID>'; // GMT timezone.
             $xml .= '</createTimeScope>';
         }
         $xml .= '<returnSessionDetails>true</returnSessionDetails>';
@@ -448,13 +449,16 @@ class xml_gen {
     // Support Functions.
     // ---------------------------------------------------
     /**
-     * Format a timestamp to send to WebEx.
+     * Format a timestamp to send to WebEx. Converts to GMT time.
      *
      * @param int       $time Timestamp to format.
      * @return string   The XML.
      */
     public static function time_to_date_string($time) {
-    	$gmttime = $time - date('Z', $time) ; //convert timestamp in server timezone to GMT
+        // Convert the time to GMT.
+        $dt = new \DateTime(date("o:m:d H:i:s", $time), \core_date::get_server_timezone_object());
+        $gmttime = $time - $dt->getOffset();
+
         return date('m/d/Y H:i:s', $gmttime);
     }
 
