@@ -222,7 +222,6 @@ switch ($action) {
         if (!$webexmeeting->is_available()) {
             break;
         }
-        $joinurl = $webexmeeting->get_moodle_join_url($USER, $returnurl);
 		
 		global $SESSION;
         
@@ -232,7 +231,8 @@ switch ($action) {
 			$switchmturl = $webexmeeting->get_switch_mt_ulr($webexmeeting->typecode, $joinreturnurl);
 			redirect($switchmturl);
         } else {
-        	redirect($joinurl);
+        	$joinurl = $webexmeeting->get_moodle_join_url($USER, $returnurl);
+        	echo $joinurl;
         }
 		
         break;

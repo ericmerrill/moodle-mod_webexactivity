@@ -616,19 +616,23 @@ class meeting {
     public function get_moodle_join_url($user, $returnurl = false) {
         $baseurl = \mod_webexactivity\webex::get_base_url();
 
-        $email = str_replace('+', '%2B', $user->email);
-
-        $url = $baseurl.'/m.php?AT=JM&MK='.$this->meetingkey;
-        $url .= '&AE='.$email.'&AN='.$user->firstname.'%20'.$user->lastname;
-        if (isset($this->password)) {
-            $url .= '&PW='.$this->password;
-        }
-
-        if ($returnurl) {
-            $url .= '&BU='.urlencode($returnurl);
-        }
-
-        return $url;
+        $url = $baseurl.'/m.php';
+		$form = '<form name="webexform" action="'.$url.'" method="post">';
+		$form .= '<input type="hidden" name="AT" value="JM">';
+		$form .= '<input type="hidden" name="MK" value="'.$this->meetingkey.'">';
+		$form .= '<input type="hidden" name="AE" value="'.$user->email.'">';
+		$form .= '<input type="hidden" name="AN" value="'.$user->firstname.' '.$user->lastname.'">';
+		if (isset($this->password)) {
+			$form .= '<input type="hidden" name="PW" value="'.$this->password.'">';
+		}
+		if ($returnurl) {
+		    $form .= '<input type="hidden" name="BU" value="'.$returnurl.'">';
+		}
+		$form .= '</form>';
+		$form .= '<script>';
+		$form .= 'window.onload = function(){document.forms["webexform"].submit();}';
+		$form .= '</script>';
+		return $form;
     }
 
     /**
