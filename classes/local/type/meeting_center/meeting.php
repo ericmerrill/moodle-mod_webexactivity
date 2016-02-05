@@ -56,6 +56,11 @@ class meeting extends \mod_webexactivity\local\type\base\meeting {
      * The meetings type.
      */
     const TYPE = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_MEETING;
+    
+    /**
+     * The meetings type code.
+     */
+    const TYPE_CODE = 'MC';
 
     /**
      * Builds the meeting object.
@@ -67,6 +72,9 @@ class meeting extends \mod_webexactivity\local\type\base\meeting {
 
         if (!isset($this->type)) {
             $this->type = static::TYPE;
+        }
+        if (!isset($this->typecode)) {
+            $this->typecode = static::TYPE_CODE;
         }
     }
 

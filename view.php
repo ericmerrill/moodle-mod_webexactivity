@@ -204,8 +204,17 @@ switch ($action) {
                 \mod_webexactivity\webex::password_redirect($returnurl);
             }
         }
-
-        redirect($authurl);
+		
+		global $SESSION;
+        
+        if($SESSION->mod_webexactivity_sestype != $webexmeeting->typecode){
+        	$SESSION->mod_webexactivity_sestype = $webexmeeting->typecode;
+        	$hostreturnurl = $returnurl."&action=hostmeeting";
+			$switchmturl = $webexmeeting->get_switch_mt_ulr($webexmeeting->typecode, $hostreturnurl);
+			redirect($switchmturl);
+        } else {
+        	redirect($authurl);
+        }
 
         break;
 
@@ -213,9 +222,19 @@ switch ($action) {
         if (!$webexmeeting->is_available()) {
             break;
         }
-        $joinurl = $webexmeeting->get_moodle_join_url($USER, $returnurl);
-
-        redirect($joinurl);
+		
+		global $SESSION;
+        
+        if($SESSION->mod_webexactivity_sestype != $webexmeeting->typecode){
+        	$SESSION->mod_webexactivity_sestype = $webexmeeting->typecode;
+        	$joinreturnurl = $returnurl."&action=joinmeeting";
+			$switchmturl = $webexmeeting->get_switch_mt_ulr($webexmeeting->typecode, $joinreturnurl);
+			redirect($switchmturl);
+        } else {
+        	$joinurl = $webexmeeting->get_moodle_join_url($USER, $returnurl);
+        	echo $joinurl;
+        }
+		
         break;
 
     case 'viewrecording':

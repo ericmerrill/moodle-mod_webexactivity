@@ -54,6 +54,7 @@ class meeting {
             'hostwebexid' => null,
             'type' => null,
             'meetingkey' => null,
+            'typecode' => null,
             'guestkey' => null,
             'eventid' => null,
             'hostkey' => null, // Unused?
@@ -615,19 +616,23 @@ class meeting {
     public function get_moodle_join_url($user, $returnurl = false) {
         $baseurl = \mod_webexactivity\webex::get_base_url();
 
-        $email = str_replace('+', '%2B', $user->email);
-
-        $url = $baseurl.'/m.php?AT=JM&MK='.$this->meetingkey;
-        $url .= '&AE='.$email.'&AN='.$user->firstname.'%20'.$user->lastname;
-        if (isset($this->password)) {
-            $url .= '&PW='.$this->password;
-        }
-
-        if ($returnurl) {
-            $url .= '&BU='.urlencode($returnurl);
-        }
-
-        return $url;
+        $url = $baseurl.'/m.php';
+		$form = '<form name="webexform" action="'.$url.'" method="post">';
+		$form .= '<input type="hidden" name="AT" value="JM">';
+		$form .= '<input type="hidden" name="MK" value="'.$this->meetingkey.'">';
+		$form .= '<input type="hidden" name="AE" value="'.$user->email.'">';
+		$form .= '<input type="hidden" name="AN" value="'.$user->firstname.' '.$user->lastname.'">';
+		if (isset($this->password)) {
+			$form .= '<input type="hidden" name="PW" value="'.$this->password.'">';
+		}
+		if ($returnurl) {
+		    $form .= '<input type="hidden" name="BU" value="'.$returnurl.'">';
+		}
+		$form .= '</form>';
+		$form .= '<script>';
+		$form .= 'window.onload = function(){document.forms["webexform"].submit();}';
+		$form .= '</script>';
+		return $form;
     }
 
     /**
@@ -645,6 +650,22 @@ class meeting {
         $url = $baseurl.'/k2/j.php?ED='.$this->eventid.'&UID=1';
 
         return $url;
+    }
+    
+    /**
+     * Get the link to switch meeting type for further URL API requests
+     *
+     * @param string     $mtype Meeting type to switch to
+     * @param string     $returnurl The url to return the use to.
+     * @return string    The url for switching meeting type
+     */
+    public function get_switch_mt_ulr($mtype = "MC", $returnurl = false){
+    	$baseurl = \mod_webexactivity\webex::get_base_url();
+    	$url = $baseurl."/o.php?AT=ST&SP=".$mtype;
+    	if ($returnurl) {
+            $url .= '&BU='.urlencode($returnurl);
+        }
+    	return $url;
     }
 
     // ---------------------------------------------------
