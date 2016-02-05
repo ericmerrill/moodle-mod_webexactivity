@@ -37,12 +37,12 @@ defined('MOODLE_INTERNAL') || die();
  */
 class meeting extends \mod_webexactivity\local\type\base\meeting {
 
-    /** 
+    /**
      * The XML generator class name to use.
      */
     const GENERATOR = '\mod_webexactivity\local\type\meeting_center\xml_gen';
 
-    /** 
+    /**
      * Prefix for retrieved XML fields.
      */
     const XML_PREFIX = 'meet';
@@ -56,7 +56,7 @@ class meeting extends \mod_webexactivity\local\type\base\meeting {
      * The meetings type.
      */
     const TYPE = \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_MEETING;
-    
+
     /**
      * The meetings type code.
      */
@@ -72,9 +72,6 @@ class meeting extends \mod_webexactivity\local\type\base\meeting {
 
         if (!isset($this->type)) {
             $this->type = static::TYPE;
-        }
-        if (!isset($this->typecode)) {
-            $this->typecode = static::TYPE_CODE;
         }
     }
 
