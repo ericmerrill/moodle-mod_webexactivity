@@ -455,9 +455,17 @@ class xml_gen {
      * @return string   The XML.
      */
     public static function time_to_date_string($time) {
+        global $CFG;
+
         // Convert the time to GMT.
-        $dt = new \DateTime(date("o:m:d H:i:s", $time), \core_date::get_server_timezone_object());
-        $gmttime = $time - $dt->getOffset();
+        if (!isset($CFG->timezone) || $CFG->timezone == 99 || !is_numeric($CFG->timezone)) {
+            $dt = new \DateTime(date("o:m:d H:i:s", $time));
+            $offset = $dt->getOffset();
+        } else {
+            $offset = get_timezone_offset($CFG->timezone);
+        }
+
+        $gmttime = $time - $offset;
 
         return date('m/d/Y H:i:s', $gmttime);
     }
