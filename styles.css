@@ -1,77 +1,53 @@
-#recordings {
-    clear: both;
-    width: 100%;
-    text-align: center;
+.path-mod-webexactivity #recordings {
+  clear: both;
+  width: 100%;
+  text-align: center;
 }
-
-#recordings .recording {
-    /*border: 1px solid black;*/
-    margin-bottom: 20px;
+.path-mod-webexactivity #recordings .hiddenrecording .details {
+  color: gray;
 }
-
-#recordings #recordingsheader {
-    font-weight: bold;
-    font-size: 110%;
-    margin-bottom: 10px;
+.path-mod-webexactivity #recordings #recordingsheader {
+  font-weight: bold;
+  font-size: 110%;
+  margin-bottom: 10px;
 }
-
-#recordings .hiddenrecording .details {
-    color: gray;
+.path-mod-webexactivity #recordings .recording {
+  margin-bottom: 20px;
 }
-
-#recordings .hiddenrecording .details .name {
-    /*text-decoration: line-through;*/
+.path-mod-webexactivity #recordings .recording .recordingblock {
+  vertical-align: top;
+  display: inline-block;
 }
-
-#recordings .recording .recordingblock {
-    vertical-align: top;
-    display: inline-block;
-    /*border: 1px solid black;*/
+.path-mod-webexactivity #recordings .recording .actions .moodle-actionmenu {
+  white-space: nowrap;
 }
-
-#recordings .recording .buttons {
-    /*border: 1px solid black;*/
-    /*width: 200px;*/
-    text-align: right;
-    /*padding-right: 15px;*/
-    margin-right: 10px;
-    margin-left: 10px;
+.path-mod-webexactivity #recordings .recording .buttons {
+  text-align: right;
+  margin-right: 10px;
+  margin-left: 10px;
 }
-
-#recordings .recording .actions .moodle-actionmenu {
-    white-space: nowrap;
+.path-mod-webexactivity #recordings .recording .buttons .play {
+  display: inline-block;
 }
-
-
-#recordings .recording .buttons .play {
-    display: inline-block;
+.path-mod-webexactivity #recordings .recording .buttons .download {
+  display: inline-block;
 }
-
-#recordings .recording .buttons .download {
-    display: inline-block;
+.path-mod-webexactivity #recordings .recording .details {
+  max-width: 400px;
+  text-align: left;
 }
-
-#recordings .recording .details {
-    max-width: 400px;
-    text-align: left;
+.path-mod-webexactivity #recordings .recording .details .name {
+  font-weight: bold;
 }
-
-#recordings .recording .details .name {
-    font-weight: bold;
+.path-mod-webexactivity .webexerror {
+  padding: 10px;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 110%;
 }
-
-.webexerror {
-    /*background-color: #ffb4b4;*/
-    padding: 10px;
-    margin-bottom: 10px;
-    text-align: center;
-    font-size: 110%;
+.path-mod-webexactivity #editrecording #id_name {
+  width: 300px;
 }
-
-#editrecording #id_name {
-    width: 300px;
-}
-
-.webexrecordingdeleted {
-    color: gray;
+.path-mod-webexactivity .webexrecordingdeleted {
+  color: gray;
 }
