@@ -121,6 +121,7 @@ $string['recordingtrashtime'] = 'Recording trash time';
 $string['recordingtrashtime_help'] = 'Number of hours a recording will be held before being deleted permanently.';
 $string['requiremeetingpassword'] = 'Require meeting passwords';
 $string['requiremeetingpassword_help'] = 'Require a user to enter a meeting password. If unchecked, and the meeting type is marked as requiring a password above, a password will be randomly generated.';
+$string['search:activity'] = 'WebEx Meeting - activity information';
 $string['settings'] = 'WebEx Meeting settings';
 $string['sitename'] = 'Site Name';
 $string['sitename_help'] = 'The url part before .webex.com. If your site url was "https://example.webex.com", you would enter "example" above.';
