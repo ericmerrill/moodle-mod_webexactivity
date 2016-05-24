@@ -17,16 +17,23 @@
 /**
  * An activity to interface with WebEx.
  *
- * @package    mod_webexactvity
+ * @package    mod_webexactivity
  * @author     Eric Merrill <merrill@oakland.edu>
- * @copyright  2014 Oakland University
+ * @copyright  2016 Oakland University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_webexactivity\search;
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2016052400;
-$plugin->requires  = 2015051100; // Moodle 2.9.0.
-$plugin->component = 'mod_webexactivity';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '3.1';
+/**
+ * Search area for mod_webexactivity activities.
+ *
+ * @package    mod_webexactivity
+ * @author     Eric Merrill <merrill@oakland.edu>
+ * @copyright  2016 Oakland University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class activity extends \core_search\area\base_activity {
+}

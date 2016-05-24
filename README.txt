@@ -1,7 +1,7 @@
 WebEx Meeting activity (mod_webexactivity)
 
 Maintainer  Eric Merrill (merrill@oakland.edu)
-Copyright   2014 Oakland University
+Copyright   2016 Oakland University
 License     GNU GPL v3 or later http://www.gnu.org/copyleft/gpl.html
 =========
 
