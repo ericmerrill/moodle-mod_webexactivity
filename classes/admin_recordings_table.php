@@ -183,6 +183,24 @@ class admin_recordings_table extends \table_sql implements \renderable {
             return '-';
         }
     }
+    
+    /**
+     * Determine output for itemselect checkbox for bulk actions
+     *
+     * @param stdClass   $recording The recording row being worked on.
+     * @return string    The output to display.
+     */
+    public function col_itemselect($recording) {
+        if ($recording->id) {
+        	$disabled = "";
+        	if ($recording->deleted != 0){
+        		$disabled = " disabled";
+        	}
+            return '<input type="checkbox" name="recordingid[]" value="'.$recording->id.'"'.$disabled.'/>';
+        } else {
+            return '';
+        }
+    }
 
     /**
      * Get any extra classes names to add to this row in the HTML.
@@ -197,4 +215,39 @@ class admin_recordings_table extends \table_sql implements \renderable {
             return 'webexrecordingdeleted';
         }
     }
+    
+    public function wrap_html_start() {
+     	if ($this->is_downloading()){ 
+     		return; 
+     	}
+     	echo '<div id="tablecontainer">';
+     	echo '<form id="webexrecordingform" method="post" action="'.$this->baseurl.'">';
+     	echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
+    }
+     
+    public function wrap_html_finish() {
+     	if ($this->is_downloading()){ 
+     		return; 
+     	}
+     	echo '<div id="commands">';
+        echo '<a href="javascript:select_all_in(\'DIV\', null, \'tablecontainer\');">' .
+                get_string('selectall') . '</a> / ';
+        echo '<a href="javascript:deselect_all_in(\'DIV\', null, \'tablecontainer\');">' .
+                get_string('selectnone', 'webexactivity') . '</a> ';
+        echo '&nbsp;&nbsp;';
+        $this->submit_buttons();
+        echo '</div>';
+     	echo '</form></div>';
+    }
+     
+    /**
+    * Output any submit buttons required by the form.
+    */
+    protected function submit_buttons() {
+        global $PAGE;
+        echo '<input type="submit" id="deleterecbutton" name="delete" value="' .get_string('deleteselected') . '"/>';
+        $PAGE->requires->event_handler('#deleterecbutton', 'click', 'M.util.show_confirm_dialog',
+        	array('message' => get_string('confirmrecordingsdelete', 'webexactivity')));
+    }
+
 }
