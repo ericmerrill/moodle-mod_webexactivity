@@ -33,6 +33,7 @@ $pageurl = new moodle_url('/mod/webexactivity/admin_recordings.php');
 $action = optional_param('action', false, PARAM_ALPHA);
 $view = optional_param('view', false, PARAM_ALPHA);
 $download = optional_param('download', '', PARAM_ALPHA);
+$delete = optional_param('delete', 0, PARAM_BOOL);
 
 switch ($action) {
     case 'delete':
@@ -70,21 +71,26 @@ $table->define_baseurl($pageurl);
 // Content.
 $table->set_sql('*', '{webexactivity_recording}', '1=1', array());
 $table->define_columns(array('name', 'hostid', 'timecreated', 'duration', 'filesize', 'fileurl',
-                             'streamurl', 'deleted', 'webexid'));
+                             'streamurl', 'deleted', 'webexid', 'itemselect'));
 $table->define_headers(array(get_string('name'), get_string('host', 'webexactivity'), get_string('date'),
                              get_string('duration', 'search'), get_string('size'), get_string('download'),
-                             get_string('stream', 'webexactivity'), get_string('delete'), get_string('activity')));
+                             get_string('stream', 'webexactivity'), get_string('delete'), get_string('activity'), get_string('select')));
 
 // Options.
 $table->sortable(true, 'timecreated', SORT_DESC);
 $table->no_sorting('fileurl');
 $table->no_sorting('streamurl');
+$table->no_sorting('itemselect');
+$table->column_class('itemselect', 'itemselectcol');
 
 $table->is_downloadable(true);
 
 
 // Setup for downloading.
 if ($download) {
+	 // Redefine columns for download
+	$table->define_columns(array('name', 'hostid', 'timecreated', 'duration', 'filesize', 'fileurl',
+                             'streamurl', 'deleted', 'webexid'));
     // Redefine headers for download.
     $table->define_headers(array(get_string('name'), get_string('host', 'webexactivity'), get_string('date'),
                                  get_string('duration', 'search'), get_string('size'), get_string('download'),
@@ -93,6 +99,18 @@ if ($download) {
     $table->is_downloading($download, get_string('webexrecordings', 'webexactivity'));
     $table->out(50, false);
     die();
+}
+if ($delete && confirm_sesskey()){
+	if ($recordingids = optional_param_array('recordingid', array(), PARAM_INT)) {
+		foreach($recordingids as $recordingid){
+			$recording = new \mod_webexactivity\recording($recordingid);
+			if($recording->deleted != 0){
+		        // TODO Log event.
+		        $recording->delete();
+			}
+		}
+		redirect($pageurl->out(false));
+	}
 }
 
 // Standard page output.
