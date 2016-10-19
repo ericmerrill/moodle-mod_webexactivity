@@ -221,4 +221,23 @@ class meeting {
                 break;
         }
     }
+    
+    /**
+     * Returns if the meeting template is setup or not
+     *
+     * @param int      $type A meeting type constant.
+     * @return string  String with webex meeting template name
+     * @throws coding_exception on type error.
+     */
+    public static function get_meeting_type_template($type){
+    	switch ($type) {
+            case webex::WEBEXACTIVITY_TYPE_MEETING:
+                return get_config('webexactivity', 'meetingtemplate');
+            case webex::WEBEXACTIVITY_TYPE_TRAINING:
+                return get_config('webexactivity', 'trainingtemplate');
+            default:
+                throw new \coding_exception('Unknown meeting type passed to get_meeting_template.');
+                break;
+        }
+    }
 }
