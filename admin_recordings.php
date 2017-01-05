@@ -46,10 +46,25 @@ switch ($action) {
             $view = 'deleterecording';
             break;
         } else {
-            // TODO Log event.
+        	// Log event
+		    if($recording->webexid){
+			    $cm = get_coursemodule_from_instance('webexactivity', $recording->webexid);
+			    $context = \context_module::instance($cm->id);
+		    } else { 
+		    	//for recordings without webex activities set context to site level
+		    	$context = context_system::instance();
+		    }
+		    	
+            $params = array(
+                'context' => $context,
+                'objectid' => $recordingid
+            );
+            $event = \mod_webexactivity\event\recording_deleted::create($params);
+	        $event->add_record_snapshot('webexactivity_recording', $recording->record);
+	        $event->trigger();
 
-            $recording->delete();
-            redirect($pageurl->out(false));
+        	$recording->delete();
+        	redirect($pageurl->out(false));
         }
         break;
 
@@ -57,6 +72,24 @@ switch ($action) {
         // Mark recording as not deleted.
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\recording($recordingid);
+        
+        // Log event
+		if($recording->webexid){
+			$cm = get_coursemodule_from_instance('webexactivity', $recording->webexid);
+			$context = \context_module::instance($cm->id);
+		} else { 
+		  	//for recordings without webex activities set context to site level
+		   	$context = context_system::instance();
+		}
+		    	
+        $params = array(
+            'context' => $context,
+            'objectid' => $recordingid
+        );
+
+        $event = \mod_webexactivity\event\recording_undeleted::create($params);
+	    $event->add_record_snapshot('webexactivity_recording', $recording->record);
+	    $event->trigger();
 
         $recording->undelete();
         redirect($pageurl->out(false));
@@ -69,10 +102,10 @@ $table = new \mod_webexactivity\admin_recordings_table('webexactivityadminrecord
 $table->define_baseurl($pageurl);
 
 // Content.
-$table->set_sql('*', '{webexactivity_recording}', '1=1', array());
-$table->define_columns(array('name', 'hostid', 'timecreated', 'duration', 'filesize', 'fileurl',
+$table->set_sql('r.*,c.shortname AS course, c.id AS courseid', '{webexactivity_recording} r LEFT JOIN {webexactivity} w ON r.webexid = w.id LEFT JOIN {course} c ON c.id = w.course', '1=1', array());
+$table->define_columns(array('name', 'course', 'hostid', 'timecreated', 'duration', 'filesize', 'fileurl',
                              'streamurl', 'deleted', 'webexid', 'itemselect'));
-$table->define_headers(array(get_string('name'), get_string('host', 'webexactivity'), get_string('date'),
+$table->define_headers(array(get_string('name'), get_string('course'), get_string('host', 'webexactivity'), get_string('date'),
                              get_string('duration', 'search'), get_string('size'), get_string('download'),
                              get_string('stream', 'webexactivity'), get_string('delete'), get_string('activity'), get_string('select')));
 
@@ -89,10 +122,10 @@ $table->is_downloadable(true);
 // Setup for downloading.
 if ($download) {
 	 // Redefine columns for download
-	$table->define_columns(array('name', 'hostid', 'timecreated', 'duration', 'filesize', 'fileurl',
+	$table->define_columns(array('name', 'course', 'hostid', 'timecreated', 'duration', 'filesize', 'fileurl',
                              'streamurl', 'deleted', 'webexid'));
     // Redefine headers for download.
-    $table->define_headers(array(get_string('name'), get_string('host', 'webexactivity'), get_string('date'),
+    $table->define_headers(array(get_string('name'), get_string('course'), get_string('host', 'webexactivity'), get_string('date'),
                                  get_string('duration', 'search'), get_string('size'), get_string('download'),
                                  get_string('stream', 'webexactivity'), get_string('deletetime', 'webexactivity'),
                                  get_string('activity')));
@@ -102,11 +135,30 @@ if ($download) {
 }
 if ($delete && confirm_sesskey()){
 	if ($recordingids = optional_param_array('recordingid', array(), PARAM_INT)) {
+		
 		foreach($recordingids as $recordingid){
 			$recording = new \mod_webexactivity\recording($recordingid);
-			if($recording->deleted != 0){
-		        // TODO Log event.
-		        $recording->delete();
+
+			if($recording->deleted == 0){
+				// Log event
+				if($recording->webexid){
+					$cm = get_coursemodule_from_instance('webexactivity', $recording->webexid);
+					$context = \context_module::instance($cm->id);
+				} else { 
+					//for recordings without webex activities set context to site level
+					$context = context_system::instance();
+				}
+		    	
+				$params = array(
+					'context' => $context,
+					'objectid' => $recordingid
+				);
+
+				$event = \mod_webexactivity\event\recording_deleted::create($params);
+				$event->add_record_snapshot('webexactivity_recording', $recording->record);
+				$event->trigger();
+		    	
+				$recording->delete();
 			}
 		}
 		redirect($pageurl->out(false));

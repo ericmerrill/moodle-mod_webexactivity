@@ -50,6 +50,30 @@ class admin_recordings_table extends \table_sql implements \renderable {
         }
         return $recording->name;
     }
+    
+    /**
+     * Determine output for the course column.
+     *
+     * @param stdClass   $recording The recording row being worked on.
+     * @return string    The output to display.
+     */
+    public function col_course($recording) {
+        $coursename = "";
+        if($recording->courseid){
+        	$coursename = $recording->course;
+        	if (\core_text::strlen($coursename) > 60) {
+	           $coursename = \core_text::substr($coursename, 0, 55).'&#8230;';
+	        }
+        	
+            if ($this->is_downloading()) {
+                return $coursename;
+            } else {
+                $returnurl = new \moodle_url('/course/view.php', array('id' => $recording->courseid));
+                return '<a href="'.$returnurl->out(false).'">'.$coursename.'</a>';
+            }
+        }
+        return $coursename;
+    }
 
     /**
      * Determine output for the timecreated column.
