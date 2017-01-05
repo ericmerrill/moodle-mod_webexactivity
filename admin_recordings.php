@@ -46,25 +46,25 @@ switch ($action) {
             $view = 'deleterecording';
             break;
         } else {
-        	// Log event
-		    if($recording->webexid){
-			    $cm = get_coursemodule_from_instance('webexactivity', $recording->webexid);
-			    $context = \context_module::instance($cm->id);
-		    } else { 
-		    	//for recordings without webex activities set context to site level
-		    	$context = context_system::instance();
-		    }
+			// Log event
+			if($recording->webexid){
+				$cm = get_coursemodule_from_instance('webexactivity', $recording->webexid);
+				$context = \context_module::instance($cm->id);
+			} else { 
+				//for recordings without webex activities set context to site level
+				$context = context_system::instance();
+			}
 		    	
-            $params = array(
-                'context' => $context,
-                'objectid' => $recordingid
-            );
-            $event = \mod_webexactivity\event\recording_deleted::create($params);
-	        $event->add_record_snapshot('webexactivity_recording', $recording->record);
-	        $event->trigger();
+			$params = array(
+				'context' => $context,
+				'objectid' => $recordingid
+			);
+			$event = \mod_webexactivity\event\recording_deleted::create($params);
+			$event->add_record_snapshot('webexactivity_recording', $recording->record);
+			$event->trigger();
 
-        	$recording->delete();
-        	redirect($pageurl->out(false));
+			$recording->delete();
+			redirect($pageurl->out(false));
         }
         break;
 
@@ -73,27 +73,27 @@ switch ($action) {
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\recording($recordingid);
         
-        // Log event
+		// Log event
 		if($recording->webexid){
 			$cm = get_coursemodule_from_instance('webexactivity', $recording->webexid);
 			$context = \context_module::instance($cm->id);
 		} else { 
-		  	//for recordings without webex activities set context to site level
-		   	$context = context_system::instance();
+			//for recordings without webex activities set context to site level
+			$context = context_system::instance();
 		}
 		    	
-        $params = array(
-            'context' => $context,
-            'objectid' => $recordingid
-        );
+		$params = array(
+			'context' => $context,
+			'objectid' => $recordingid
+		);
 
-        $event = \mod_webexactivity\event\recording_undeleted::create($params);
-	    $event->add_record_snapshot('webexactivity_recording', $recording->record);
-	    $event->trigger();
+		$event = \mod_webexactivity\event\recording_undeleted::create($params);
+		$event->add_record_snapshot('webexactivity_recording', $recording->record);
+		$event->trigger();
 
-        $recording->undelete();
-        redirect($pageurl->out(false));
-        break;
+		$recording->undelete();
+		redirect($pageurl->out(false));
+		break;
 
 }
 
@@ -121,8 +121,8 @@ $table->is_downloadable(true);
 
 // Setup for downloading.
 if ($download) {
-	 // Redefine columns for download
-	$table->define_columns(array('name', 'course', 'hostid', 'timecreated', 'duration', 'filesize', 'fileurl',
+    // Redefine columns for download
+    $table->define_columns(array('name', 'course', 'hostid', 'timecreated', 'duration', 'filesize', 'fileurl',
                              'streamurl', 'deleted', 'webexid'));
     // Redefine headers for download.
     $table->define_headers(array(get_string('name'), get_string('course'), get_string('host', 'webexactivity'), get_string('date'),
