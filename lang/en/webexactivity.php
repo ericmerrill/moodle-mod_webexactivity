@@ -85,6 +85,7 @@ $string['event_meeting_joined'] = 'meeting joined ';
 $string['event_meeting_started'] = 'Meeting started';
 $string['event_recording_created'] = 'Recording created';
 $string['event_recording_deleted'] = 'Recording deleted';
+$string['event_recording_undeleted'] = 'Recording undeleted';
 $string['event_recording_downloaded'] = 'Recording downloaded';
 $string['event_recording_viewed'] = 'Recording viewed';
 $string['externallinktext'] = '<p>This link is for participants who are not enrolled in this course. Students in the course will not need to be emailed this link, as they can just click on the Join meeting link on the previous page. This link should be distributed carefully - anybody with this link will be able to access this meeting.  To invite others to the meeting, copy the URL below and send it to them.  If this is a public meeting, this link can also be placed on a web site.</p>';
