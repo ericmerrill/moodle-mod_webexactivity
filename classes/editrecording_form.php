@@ -68,7 +68,7 @@ class editrecording_form extends \moodleform {
 
     /**
      * Perform minimal validation on the settings form.
-     * 
+     *
      * @param array  $data Array of data from the form.
      * @param array  $files Array of files from the form.
      * @return array  Validation errors.

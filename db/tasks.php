@@ -23,7 +23,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- $tasks = array(
+defined('MOODLE_INTERNAL') || die();
+
+$tasks = array(
     array(
         'classname' => 'mod_webexactivity\task\remove_deleted_recordings',
         'blocking' => 0,
