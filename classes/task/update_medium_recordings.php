@@ -25,6 +25,7 @@
 
 namespace mod_webexactivity\task;
 
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Deletes recordings.

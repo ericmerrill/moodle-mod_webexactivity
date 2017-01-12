@@ -159,16 +159,16 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
 
         if (isset($data->name) || isset($data->template)) {
             $xml .= '<metaData>';
-            if(isset($data->name)){
-	            $xml .= '<confName>'.self::format_text($data->name, 400).'</confName>';
-	            if (isset($data->intro)) {
-	                $xml .= '<agenda>'.self::format_text($data->intro, 2250).'</agenda>';
-	            }
+            if (isset($data->name)) {
+                $xml .= '<confName>'.self::format_text($data->name, 400).'</confName>';
+                if (isset($data->intro)) {
+                    $xml .= '<agenda>'.self::format_text($data->intro, 2250).'</agenda>';
+                }
             }
-            if(isset($data->template) && $data->template != ""){
-            	$xml .= '<sessionTemplate><use>'.$data->template.'</use></sessionTemplate>';
+            if (isset($data->template) && $data->template != "") {
+                $xml .= '<sessionTemplate><use>'.$data->template.'</use></sessionTemplate>';
             }
-            
+
             $xml .= '</metaData>';
         }
 

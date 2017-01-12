@@ -50,7 +50,7 @@ class admin_recordings_table extends \table_sql implements \renderable {
         }
         return $recording->name;
     }
-    
+
     /**
      * Determine output for the course column.
      *
@@ -59,12 +59,12 @@ class admin_recordings_table extends \table_sql implements \renderable {
      */
     public function col_course($recording) {
         $coursename = "";
-        if($recording->courseid){
-        	$coursename = $recording->course;
-        	if (\core_text::strlen($coursename) > 60) {
-	           $coursename = \core_text::substr($coursename, 0, 55).'&#8230;';
-	        }
-        	
+        if ($recording->courseid) {
+            $coursename = $recording->course;
+            if (\core_text::strlen($coursename) > 60) {
+                $coursename = \core_text::substr($coursename, 0, 55).'&#8230;';
+            }
+
             if ($this->is_downloading()) {
                 return $coursename;
             } else {
@@ -207,7 +207,7 @@ class admin_recordings_table extends \table_sql implements \renderable {
             return '-';
         }
     }
-    
+
     /**
      * Determine output for itemselect checkbox for bulk actions
      *
@@ -216,10 +216,10 @@ class admin_recordings_table extends \table_sql implements \renderable {
      */
     public function col_itemselect($recording) {
         if ($recording->id) {
-        	$disabled = "";
-        	if ($recording->deleted != 0){
-        		$disabled = " disabled";
-        	}
+            $disabled = "";
+            if ($recording->deleted != 0) {
+                $disabled = " disabled";
+            }
             return '<input type="checkbox" name="recordingid[]" value="'.$recording->id.'"'.$disabled.'/>';
         } else {
             return '';
@@ -239,21 +239,21 @@ class admin_recordings_table extends \table_sql implements \renderable {
             return 'webexrecordingdeleted';
         }
     }
-    
+
     public function wrap_html_start() {
-     	if ($this->is_downloading()){ 
-     		return; 
-     	}
-     	echo '<div id="tablecontainer">';
-     	echo '<form id="webexrecordingform" method="post" action="'.$this->baseurl.'">';
-     	echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
+        if ($this->is_downloading()) {
+            return;
+        }
+        echo '<div id="tablecontainer">';
+        echo '<form id="webexrecordingform" method="post" action="'.$this->baseurl.'">';
+        echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
     }
-     
+
     public function wrap_html_finish() {
-     	if ($this->is_downloading()){ 
-     		return; 
-     	}
-     	echo '<div id="commands">';
+        if ($this->is_downloading()) {
+            return;
+        }
+        echo '<div id="commands">';
         echo '<a href="javascript:select_all_in(\'DIV\', null, \'tablecontainer\');">' .
                 get_string('selectall') . '</a> / ';
         echo '<a href="javascript:deselect_all_in(\'DIV\', null, \'tablecontainer\');">' .
@@ -261,17 +261,17 @@ class admin_recordings_table extends \table_sql implements \renderable {
         echo '&nbsp;&nbsp;';
         $this->submit_buttons();
         echo '</div>';
-     	echo '</form></div>';
+        echo '</form></div>';
     }
-     
+
     /**
-    * Output any submit buttons required by the form.
-    */
+     * Output any submit buttons required by the form.
+     */
     protected function submit_buttons() {
         global $PAGE;
         echo '<input type="submit" id="deleterecbutton" name="delete" value="' .get_string('deleteselected') . '"/>';
         $PAGE->requires->event_handler('#deleterecbutton', 'click', 'M.util.show_confirm_dialog',
-        	array('message' => get_string('confirmrecordingsdelete', 'webexactivity')));
+            array('message' => get_string('confirmrecordingsdelete', 'webexactivity')));
     }
 
 }

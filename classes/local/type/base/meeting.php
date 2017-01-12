@@ -727,7 +727,7 @@ class meeting {
 
         return implode($pass);
     }
-    
+
     /**
      * Check if this meeting type has a template
      *
