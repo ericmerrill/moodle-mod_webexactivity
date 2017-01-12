@@ -65,7 +65,7 @@ if ($ADMIN->fulltree) {
             array(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_PASSWORD_REQUIRED => 1),
             $typeopts);
     $settings->add($setting);
-    
+
     $settings->add(new admin_setting_configtext('webexactivity/meetingtemplate',
             get_string('meetingtemplate', 'mod_webexactivity'),
             get_string('meetingtemplate_help', 'mod_webexactivity'), ''));
@@ -76,7 +76,7 @@ if ($ADMIN->fulltree) {
             array(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_PASSWORD_REQUIRED => 1),
             $typeopts);
     $settings->add($setting);
-    
+
     $settings->add(new admin_setting_configtext('webexactivity/trainingtemplate',
             get_string('meetingtemplate', 'mod_webexactivity'),
             get_string('meetingtemplate_help', 'mod_webexactivity'), ''));
