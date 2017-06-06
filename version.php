@@ -25,8 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2016052400;
-$plugin->requires  = 2015051100; // Moodle 2.9.0.
+$plugin->version   = 2017060600;
+$plugin->requires  = 2016120500; // Moodle 3.2.0.
 $plugin->component = 'mod_webexactivity';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '3.1';
+$plugin->maturity  = MATURITY_BETA;
+$plugin->release   = '3.3.0 Beta';

@@ -386,6 +386,8 @@ class webex {
             $rec->filesize = (int)$size;
             $rec->duration = $recording['ep:duration'][0]['#'];
             $rec->timemodified = time();
+            $rec->visible = 1;
+            $rec->deleted = 0;
 
             if ($existing = $DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
                 $update = new \stdClass();

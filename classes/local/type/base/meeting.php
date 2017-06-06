@@ -65,6 +65,7 @@ class meeting {
             'studentdownload' => 1,
             'laststatuscheck' => 0,
             'status' => \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_NEVER_STARTED,
+            'template' => null,
             'timemodified' => 0);
 
     /** @var webex A webex object to do network connections and other support services. */
@@ -266,6 +267,7 @@ class meeting {
             // Creating meeting.
             $this->hostwebexid = $hostuser->webexid;
             $this->creatorwebexid = $creator->webexid;
+            $this->template = static::get_template_name();
 
             $xml = $gen::create_meeting($this);
         }
@@ -724,6 +726,15 @@ class meeting {
         }
 
         return implode($pass);
+    }
+
+    /**
+     * Check if this meeting type has a template
+     *
+     * @return string  Meeting template name
+     */
+    public static function get_template_name() {
+        return \mod_webexactivity\meeting::get_meeting_type_template(static::TYPE);
     }
 
     /**

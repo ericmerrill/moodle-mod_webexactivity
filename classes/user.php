@@ -488,7 +488,7 @@ class user {
         }
 
         $prefix = get_config('webexactivity', 'prefix');
-        if (strpos($info->webexid, $prefix) !== 0) {
+        if (!empty($prefix) && strpos($info->webexid, $prefix) !== 0) {
             // Not the same username prefix.
             $this->manual = 1;
         }
