@@ -27,6 +27,7 @@ namespace mod_webexactivity;
 
 use \mod_webexactivity\local\type;
 use \mod_webexactivity\local\exception;
+use \mod_webexactivity\local\type\base\xml_gen;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -303,33 +304,100 @@ class webex {
      * @return bool  True on success, false on failure.
      */
     public function update_recordings($daysback = 10) {
-        $params = new \stdClass();
+        global $DB;
+
+        // In WBS 32/XML API 11.0.0 SP7 WebEx set the max listing to 28 days.
+        // We use 15 to make sure we don't run into the cap (which throws a fatal error), and to reduce timeouts.
+        $maxtime = 15 * 24 * 3600;
+
+        // End time is the most recent time we are looking for. We look into the future in case of timezone issues.
+        $endtime = time() + (12 * 3600);
+
+        // Need to determine how far back to go.
         if ($daysback) {
-            $params->startdate = time() - ($daysback * 24 * 3600);
-            $params->enddate = time() + (12 * 3600);
-        }
+            $starttime = time() - ($daysback * 24 * 3600);
+        } else {
+            $processall = (boolean)\get_config('webexactivity', 'manageallrecordings');
+            if ($processall) {
+                // For this, we are going to go back a really long time. We have no way of knowing what the oldest is.
+                // Arbitrarily picking Jan 1 2008.
+                $starttime = 1199145600;
+            } else {
+                // In the case where we aren't doing all recordings, we can just use our meetings and recordings
+                // to determine how far back to go.
+                $sql = "SELECT MIN(cm.added) FROM {webexactivity} w
+                          JOIN {course_modules} cm ON w.id = cm.instance
+                          JOIN {modules} m ON m.id = cm.module
+                         WHERE m.name = 'webexactivity'";
+                $oldestmeeting = $DB->get_field_sql($sql);
+                $oldestrec = $DB->get_field_sql("SELECT MIN(timecreated) FROM {webexactivity_recording}");
 
-        $found = 0;
-        $start = 0;
-        $status = true;
-
-        do {
-            $params->start = $start;
-            $xml = type\base\xml_gen::list_recordings($params);
-
-            if (!($response = $this->get_response($xml))) {
-                return false;
+                if (empty($oldestmeeting) && empty($oldestrec)) {
+                    // If we don't have an oldest meeting/recording that we can determine, just go back 1 year.
+                    $starttime = time() - (365 * 24 * 3600);
+                } else {
+                    if (empty($oldestmeeting)) {
+                        $oldest = $oldestrec;
+                    } else if (empty($oldestrec)) {
+                        $oldest = $oldestmeeting;
+                    } else {
+                        $oldest = min($oldestmeeting, $oldestrec);
+                    }
+                    // Take the oldest meeting and go back an additional 120 days.
+                    $starttime = $oldest - (120 * 24 * 3600);
+                }
             }
 
-            list($found, $start, $count) = self::get_list_info($response);
-            $start += $count;
+        }
 
-            $status = $this->proccess_recording_response($response) && $status;
+        $originalstart = $starttime;
 
-        } while ($found > $start);
+        $moretime = true;
+        do {
+            // This outer loop steps through time, getting each $maxtime chunk of time until all chunks are done.
+            $params = new \stdClass();
+            $params->startdate = $starttime;
+            $params->count = 50;
+
+            // Break up the time into chunks.
+            if (($endtime - $starttime) > $maxtime) {
+                // Use the max time.
+                $params->enddate = $starttime + $maxtime - 1;
+                // Move the start forward in time for the next loop.
+                $starttime += $maxtime;
+            } else {
+                $moretime = false;
+                $params->enddate = $endtime;
+            }
+
+            mtrace("Getting WebEx recordings for ".xml_gen::time_to_date_string($params->startdate)." through ".
+                    xml_gen::time_to_date_string($params->enddate));
+
+            $found = 0;
+            $start = 0;
+            $status = true;
+
+            do {
+                // This inner loop steps through pages of results.
+                $params->start = $start;
+                $xml = type\base\xml_gen::list_recordings($params);
+
+                if (!($response = $this->get_response($xml))) {
+                    break;
+                }
+
+                list($found, $start, $count) = self::get_list_info($response);
+                $start += $count;
+
+                $status = $this->proccess_recording_response($response) && $status;
+
+            } while ($found > $start);
+
+        } while ($moretime);
+
 
         if ($status && !$daysback) {
-            $this->remove_missing_recordings();
+            $this->remove_missing_recordings($originalstart);
         }
 
         return $status;
@@ -447,12 +515,14 @@ class webex {
 
     /**
      * Removes records for recordings that we haven't seen in a long time.
+     *
+     * @param int  $oldest The time
      */
-    public function remove_missing_recordings() {
+    public function remove_missing_recordings($oldest) {
         global $DB;
 
-        $select = 'timemodified < ?';
-        $params = array(time() - (7 * 24 * 3600));
+        $select = 'timemodified < ? AND timecreated > ?';
+        $params = array(time() - (7 * 24 * 3600), $oldest + (7 * 24 * 3600));
 
         $DB->delete_records_select('webexactivity_recording', $select, $params);
     }
