@@ -69,7 +69,7 @@ if ($webexres['ST'] === 'FAIL') {
         switch ($webexres['RS']) {
             case 'MeetingNotInProgress':
                 // If running, mark meeting as stopped, WebEx wouldn't let us join.
-                if ($webexmeeting->status === \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+                if ($webexmeeting->status == \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
                     $webexmeeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_STOPPED;
                     $webexmeeting->save();
                 }
