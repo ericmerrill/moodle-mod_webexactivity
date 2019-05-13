@@ -200,9 +200,6 @@ class meeting {
             case 'creatorwebexid':
             case 'hostwebexid':
                 if ((!isset($this->$name) && !is_null($val)) || ($this->$name !== $val)) {
-                    error_log($name);
-                    error_log(var_export($this->$name, true));
-                    error_log(var_export($val, true));
                     $this->webexchange = true;
                 }
                 break;
