@@ -275,8 +275,22 @@ class xml_gen {
      * @param string    $meetingkey Meeting key to lookup.
      * @return string   The XML.
      */
-    public static function get_meeting_info($meeingkey) {
+    public static function get_meeting_info($meetingkey) {
         debugging('Function get_meeting_info must be implemented by child class.', DEBUG_DEVELOPER);
+    }
+
+    /**
+     * Provide the xml to get information about a meeting. Must be overridden.
+     *
+     * @param string    $meetingkey Meeting key to lookup.
+     * @return string   The XML.
+     */
+    public static function get_session_info($meetingkey) {
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.GetSessionInfo">'.
+               '<sessionKey>'.$meetingkey.'</sessionKey>'.
+               '</bodyContent></body>';
+
+        return $xml;
     }
 
     /**
