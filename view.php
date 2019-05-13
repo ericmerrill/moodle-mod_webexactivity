@@ -69,7 +69,7 @@ if ($webexres['ST'] === 'FAIL') {
         switch ($webexres['RS']) {
             case 'MeetingNotInProgress':
                 // If running, mark meeting as stopped, WebEx wouldn't let us join.
-                if ($webexmeeting->status === \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
+                if ($webexmeeting->status == \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_PROGRESS) {
                     $webexmeeting->status = \mod_webexactivity\webex::WEBEXACTIVITY_STATUS_IN_STOPPED;
                     $webexmeeting->save();
                 }
@@ -207,8 +207,9 @@ switch ($action) {
 
         if (empty($SESSION->mod_webexactivity_sestype) || ($SESSION->mod_webexactivity_sestype != $webexmeeting::TYPE_CODE)) {
             $SESSION->mod_webexactivity_sestype = $webexmeeting::TYPE_CODE;
-            $hostreturnurl = $returnurl."&action=hostmeeting";
-            $switchmturl = $webexmeeting->get_switch_meeting_type_ulr($webexmeeting::TYPE_CODE, $hostreturnurl);
+            $hostreturnurl = new moodle_url($returnurl);
+            $hostreturnurl->param('action', 'hostmeeting');
+            $switchmturl = $webexmeeting->get_switch_meeting_type_ulr($webexmeeting::TYPE_CODE, $hostreturnurl->out(false));
             redirect($switchmturl);
         } else {
             redirect($authurl);

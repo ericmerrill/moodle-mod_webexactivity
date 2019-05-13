@@ -163,3 +163,24 @@ $string['webexid'] = 'WebEx ID';
 $string['webexrecordings'] = 'WebEx Recordings';
 $string['webexusercollision'] = 'Collision with existing WebEx user.';
 $string['webexxmlexception'] = 'An error occurred in WebEx while processing XML: {$a->errorcode} {$a->error}';
+
+
+// Privacy.
+
+$string['privacy:metadata:username'] = 'The username of the user hosting a meeting.';
+$string['privacy:metadata:webexpassword'] = 'A Webex password used to negotiate on behalf of the user. Only used on sites with very very old installs of this plugin.';
+$string['privacy:metadata:firstname'] = 'The first name of the user accessing Webex';
+$string['privacy:metadata:lastname'] = 'The last name of the user accessing Webex';
+$string['privacy:metadata:email'] = 'The email address of the user accessing Webex';
+$string['privacy:metadata:webexhost'] = 'WebEx host information';
+$string['privacy:metadata:webexparticipant'] = 'Webex participant information';
+$string['privacy:metadata:webexactivity'] = 'Webex activity instance';
+$string['privacy:metadata:webexactivity:hostwebexid'] = 'The Webex user id of the host user';
+$string['privacy:metadata:webexactivity:password'] = 'The meeting password';
+$string['privacy:metadata:timemodified'] = 'The time a record was modified in the database';
+$string['privacy:metadata:timecreated'] = 'The time a record was created';
+$string['privacy:metadata:webexactivity_user'] = 'Webex host users';
+$string['privacy:metadata:webexactivity_user:webexuserid'] = 'Webex user id of a Webex user';
+$string['privacy:metadata:webexactivity_user:webexid'] = 'Webex username of a Webex user';
+$string['privacy:metadata:webexactivity_recording'] = 'Webex recording';
+$string['privacy:metadata:webexactivity_recording:hostid'] = 'Host username of a recording';

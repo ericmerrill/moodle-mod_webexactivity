@@ -54,10 +54,11 @@ class meeting {
             'hostwebexid' => null,
             'type' => null,
             'meetingkey' => null,
-            'guestkey' => null,
-            'eventid' => null,
+            'guestkey' => null, // Unused.
+            'eventid' => null, // Unused.
             'hostkey' => null, // Unused?
             'password' => null,
+            'meetinglink' => null,
             'starttime' => null,
             'endtime' => null,
             'duration' => null,
@@ -198,7 +199,7 @@ class meeting {
             case 'password':
             case 'creatorwebexid':
             case 'hostwebexid':
-                if (!isset($this->$name) || ($this->$name !== $val)) {
+                if ((!isset($this->$name) && !is_null($val)) || ($this->$name !== $val)) {
                     $this->webexchange = true;
                 }
                 break;
@@ -357,6 +358,37 @@ class meeting {
     }
 
     /**
+     * Fetch meeting information from WebEx.
+     *
+     * @param bool     $save True to save to the db.
+     * @return bool    True on success, false on failure.
+     */
+    public function get_session_info($save = false) {
+        if (!isset($this->meetingkey)) {
+            return false;
+        }
+
+        $gen = static::GENERATOR;
+
+        $xml = $gen::get_session_info($this->meetingkey);
+        $creator = $this->get_creator_webex_user();
+
+        if (!$response = $this->webex->get_response($xml, $creator)) {
+            return false;
+        }
+
+        if (!$this->process_session_info_response($response)) {
+            return false;
+        }
+
+        if ($save) {
+            $this->save();
+        }
+
+        return $response;
+    }
+
+    /**
      * Return the time status (upcoming, in progress, past, long past, available).
      *
      * @return int   Constant represents status.
@@ -452,6 +484,64 @@ class meeting {
 
         return true;
 
+    }
+
+    /**
+     * Process a info (GetSessionInfo) response from WebEx into the DB.
+     *
+     * @param array    $response XML array of the response from WebEx for meeting information.
+     * @return bool    True on success, false on failure/error.
+     */
+    protected function process_session_info_response($response) {
+        if ($response === false) {
+            return false;
+        }
+
+        if (empty($response)) {
+            return true;
+        }
+
+        if (isset($response['ep:hostKey']['0']['#'])) {
+            $this->hostkey = $response['ep:hostKey']['0']['#'];
+        }
+
+        $passreq = null;
+        if (isset($response['ep:accessControl']['0']['#']['ep:passwordReq']['0']['#'])) {
+            $passreq = $response['ep:accessControl']['0']['#']['ep:passwordReq']['0']['#'];
+
+            if (strcasecmp($passreq, 'true') === 0) {
+                $passreq = true;
+            } else if (strcasecmp($passreq, 'false') === 0) {
+                $passreq = false;
+            } else {
+                $passreq = null;
+            }
+        }
+
+        $password = null;
+        if (isset($response['ep:accessControl']['0']['#']['ep:sessionPassword']['0']['#'])) {
+            $password = $response['ep:accessControl']['0']['#']['ep:sessionPassword']['0']['#'];
+
+            if (trim($password) === '') {
+                $password = null;
+            }
+        }
+
+        if (is_null($password)) {
+            if ($passreq === false) {
+                // If we didn't get a password, and no password is required, clear it from the DB.
+                $this->password = null;
+            }
+        } else {
+            // Update the password, incase WebEx changed it.
+            $this->password = $password;
+        }
+
+        if (isset($response['ep:meetingLink']['0']['#'])) {
+            $this->meetinglink = $response['ep:meetingLink']['0']['#'];
+        }
+
+        return true;
     }
 
     /**
@@ -648,6 +738,23 @@ class meeting {
      * @return string    The external join url.
      */
     public function get_external_join_url() {
+        if (!isset($this->meetinglink)) {
+            $this->get_session_info(true);
+        }
+
+        if (empty($this->meetinglink)) {
+            return $this->get_old_external_join_url();
+        }
+
+        return $this->meetinglink;
+    }
+
+    /**
+     * Get the link for external users to join the meeting.
+     *
+     * @return string    The external join url.
+     */
+    public function get_old_external_join_url() {
         $baseurl = \mod_webexactivity\webex::get_base_url();
 
         if (!isset($this->eventid)) {

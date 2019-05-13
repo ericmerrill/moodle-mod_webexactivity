@@ -163,5 +163,21 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2016020402, 'webexactivity');
     }
 
+    if ($oldversion < 2019051300) {
+
+        // Define field meetinglink to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('meetinglink', XMLDB_TYPE_TEXT, null, null, null, null, null, 'password');
+
+        // Conditionally launch add field meetinglink.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webexactivity savepoint reached.
+        upgrade_mod_savepoint(true, 2019051300, 'webexactivity');
+    }
+
+
     return true;
 }
