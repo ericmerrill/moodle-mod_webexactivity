@@ -29,6 +29,8 @@ use \mod_webexactivity\local\exception;
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/calendar/lib.php');
+
 /**
  * Class that represents and controls a meeting instance.
  *
@@ -74,6 +76,8 @@ class meeting {
 
     /** @var bool Track if there is a change that needs to go to WebEx. */
     protected $webexchange;
+
+    public $cmid = null;
 
     /**
      * The XML generator class name to use. Can be redefined by child classes.
@@ -909,7 +913,7 @@ class meeting {
         if (!$this->save_to_db()) {
             return false;
         }
-
+$this->save_calendar_event();
         return true;
     }
 
@@ -977,5 +981,61 @@ class meeting {
         unset($this->id);
         unset($this->meetingrecord);
         return true;
+    }
+
+    public function save_calendar_event() {
+        global $DB, $USER;
+
+        // TODO - setting for public to timeline.
+
+        if (empty($this->cmid)) {
+            $cm = get_coursemodule_from_instance('webexactivity', $this->id, $this->course);
+            if (empty($cm)) {
+                return false;
+            }
+            $this->cmid = $cm->id;
+        }
+
+        $event = new \stdClass();
+        $params = ['modulename' => 'webexactivity', 'instance' => $this->id, 'eventtype' => WEBEXACTIVITY_EVENT_TYPE_MEETINGTIME];
+        if ($event->id = $DB->get_field('event', 'id', $params)) {
+            // Update an existing event.
+            $event->type         = CALENDAR_EVENT_TYPE_ACTION;
+            $event->name         = $this->name;
+            $event->description  = format_module_intro('webexactivity', $this, $this->cmid);
+            $event->timestart    = $this->starttime;
+            $event->timesort     = $this->starttime;
+            $event->timeduration = $this->duration * 60;
+
+            $calendarevent = \calendar_event::load($event->id);
+            $calendarevent->update($event, false);
+        } else {
+            // Create a new event.
+
+
+            $event = new \stdClass();
+            $event->type         = CALENDAR_EVENT_TYPE_ACTION;
+            $event->name         = $this->name;
+            $event->description  = format_module_intro('webexactivity', $this, $this->cmid);
+            $event->courseid     = $this->course;
+            $event->groupid      = 0;
+            $event->userid       = 0;
+            $event->modulename   = 'webexactivity';
+            $event->instance     = $this->id;
+            $event->eventtype    = WEBEXACTIVITY_EVENT_TYPE_MEETINGTIME;
+            $event->timestart    = $this->starttime;
+            $event->timesort     = $this->starttime;
+            $event->timeduration = $this->duration * 60;
+
+            \calendar_event::create($event, false);
+        }
+
+
+
+        //$cm = get_fast_modinfo($event->courseid, $user->id)->instances['chat'][$event->instance];
+        //$cm = get_fast_modinfo($this->course, $USER->id)->instances['webexactivity'][$this->id];
+
+
+
     }
 }

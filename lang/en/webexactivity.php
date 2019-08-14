@@ -66,6 +66,7 @@ $string['duration'] = 'Expected duration';
 $string['duration_help'] = 'The anticipated duration of the meeting. It is just for informational purposes, and does not effect how long the meeting can run for.';
 $string['enablecallin'] = 'Enable Telephone Callin';
 $string['enablecallin_help'] = 'Enable telephony callin support for newly created meetings. Do not enable unless you have CALLIN telephony support.';
+$string['entermeeting'] = 'Enter meeting';
 $string['errordeletingrecording'] = 'Error deleting recording';
 $string['error_HM_AccessDenied'] = 'Access was denied to host this meeting.';
 $string['error_JM_InvalidMeetingKey'] = 'There was a meeting key error in WebEx and you cannot join this meeting.';
