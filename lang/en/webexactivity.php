@@ -45,6 +45,8 @@ $string['apiusername_help'] = 'The username for an admin account on your site. T
 $string['availabilityendtime'] = 'Extended availability end time';
 $string['badpasswordexception'] = 'Your WebEx password is incorrect and could not be updated.';
 $string['badpassword'] = 'Your WebEx username and password do not match.';
+$string['calpublish'] = 'Publish meeting to calendar';
+$string['calpublish_help'] = 'Publish the meeting to the courses Moodle calendar and display it on user\'s dashboard pages. Extended Availability meetings will not be published.';
 $string['confirmrecordingdelete'] = 'Are you sure you want to delete the recording <b>{$a->name}</b>, with a length of {$a->time}? This cannot be undone.';
 $string['confirmrecordingsdelete'] = 'Are you sure you want to delete the selected recordings? This cannot be undone.';
 $string['selectnone'] = 'Deselect all';
@@ -151,6 +153,7 @@ $string['typetrainingcenter'] = 'Training Center';
 $string['typetrainingcenter_desc'] = '';
 $string['undeletelink'] = '<a href="{$a->url}">Undelete</a>';
 $string['unknownhostwebexidexception'] = 'WebEx Host ID doesn\'t exist';
+$string['updatewebexcalendarsxofy'] = 'Updating Webex meeting calendar events ({$a->done}/{$a->total})';
 $string['usereditauto'] = 'Your WebEx user is managed internally, and cannot be edited.';
 $string['usereditbad'] = 'You should not have arrived at this page.';
 $string['usereditunabletoload'] = 'Unable to load your user from WebEx.';

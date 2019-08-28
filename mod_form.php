@@ -100,6 +100,11 @@ class mod_webexactivity_mod_form extends \moodleform_mod {
         $mform->setDefault('studentdownload', 1);
         $mform->addHelpButton('studentdownload', 'studentdownload', 'webexactivity');
 
+        $mform->addElement('checkbox', 'calpublish', get_string('calpublish', 'webexactivity'));
+        $mform->setDefault('calpublish', 1);
+        $mform->addHelpButton('calpublish', 'calpublish', 'webexactivity');
+        $mform->disabledIf('calpublish', 'longavailability', 'checked');
+
         $mform->addElement('checkbox', 'longavailability', get_string('longavailability', 'webexactivity'));
         $mform->setDefault('longavailability', 0);
         $mform->addHelpButton('longavailability', 'longavailability', 'webexactivity');

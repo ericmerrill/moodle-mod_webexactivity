@@ -64,6 +64,7 @@ class meeting {
             'starttime' => null,
             'endtime' => null,
             'duration' => null,
+            'calpublish' => 1,
             'allchat' => 1, // Used for MC.
             'studentdownload' => 1,
             'laststatuscheck' => 0,
@@ -913,7 +914,9 @@ class meeting {
         if (!$this->save_to_db()) {
             return false;
         }
-$this->save_calendar_event();
+
+        $this->save_calendar_event();
+
         return true;
     }
 
@@ -986,56 +989,56 @@ $this->save_calendar_event();
     public function save_calendar_event() {
         global $DB, $USER;
 
-        // TODO - setting for public to timeline.
-
-        if (empty($this->cmid)) {
-            $cm = get_coursemodule_from_instance('webexactivity', $this->id, $this->course);
-            if (empty($cm)) {
-                return false;
-            }
-            $this->cmid = $cm->id;
-        }
-
         $event = new \stdClass();
         $params = ['modulename' => 'webexactivity', 'instance' => $this->id, 'eventtype' => WEBEXACTIVITY_EVENT_TYPE_MEETINGTIME];
-        if ($event->id = $DB->get_field('event', 'id', $params)) {
-            // Update an existing event.
-            $event->type         = CALENDAR_EVENT_TYPE_ACTION;
-            $event->name         = $this->name;
-            $event->description  = format_module_intro('webexactivity', $this, $this->cmid);
-            $event->timestart    = $this->starttime;
-            $event->timesort     = $this->starttime;
-            $event->timeduration = $this->duration * 60;
+        $event->id = $DB->get_field('event', 'id', $params);
 
-            $calendarevent = \calendar_event::load($event->id);
-            $calendarevent->update($event, false);
+        if (!$this->calpublish || !is_null($this->endtime)) {
+            // This means there should not be an event.
+            if ($event->id) {
+                // But there is one, so remove it.
+                $calendarevent = \calendar_event::load($event->id);
+                $calendarevent->delete();
+            }
         } else {
-            // Create a new event.
+            // This means there should be an event.
 
+            if (empty($this->cmid)) {
+                $cm = get_coursemodule_from_instance('webexactivity', $this->id, $this->course);
+                if (empty($cm)) {
+                    return false;
+                }
+                $this->cmid = $cm->id;
+            }
+            if ($event->id) {
+                // Update an existing event.
+                $event->type         = CALENDAR_EVENT_TYPE_ACTION;
+                $event->name         = $this->name;
+                $event->description  = format_module_intro('webexactivity', $this, $this->cmid);
+                $event->timestart    = $this->starttime;
+                $event->timesort     = $this->starttime;
+                $event->timeduration = $this->duration * 60;
 
-            $event = new \stdClass();
-            $event->type         = CALENDAR_EVENT_TYPE_ACTION;
-            $event->name         = $this->name;
-            $event->description  = format_module_intro('webexactivity', $this, $this->cmid);
-            $event->courseid     = $this->course;
-            $event->groupid      = 0;
-            $event->userid       = 0;
-            $event->modulename   = 'webexactivity';
-            $event->instance     = $this->id;
-            $event->eventtype    = WEBEXACTIVITY_EVENT_TYPE_MEETINGTIME;
-            $event->timestart    = $this->starttime;
-            $event->timesort     = $this->starttime;
-            $event->timeduration = $this->duration * 60;
+                $calendarevent = \calendar_event::load($event->id);
+                $calendarevent->update($event, false);
+            } else {
+                // Create a new event.
+                $event = new \stdClass();
+                $event->type         = CALENDAR_EVENT_TYPE_ACTION;
+                $event->name         = $this->name;
+                $event->description  = format_module_intro('webexactivity', $this, $this->cmid);
+                $event->courseid     = $this->course;
+                $event->groupid      = 0;
+                $event->userid       = 0;
+                $event->modulename   = 'webexactivity';
+                $event->instance     = $this->id;
+                $event->eventtype    = WEBEXACTIVITY_EVENT_TYPE_MEETINGTIME;
+                $event->timestart    = $this->starttime;
+                $event->timesort     = $this->starttime;
+                $event->timeduration = $this->duration * 60;
 
-            \calendar_event::create($event, false);
+                \calendar_event::create($event, false);
+            }
         }
-
-
-
-        //$cm = get_fast_modinfo($event->courseid, $user->id)->instances['chat'][$event->instance];
-        //$cm = get_fast_modinfo($this->course, $USER->id)->instances['webexactivity'][$this->id];
-
-
-
     }
 }

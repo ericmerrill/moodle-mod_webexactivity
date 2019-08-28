@@ -75,8 +75,10 @@ function webexactivity_add_instance($data, $mform) {
     $meeting = \mod_webexactivity\meeting::create_new($data->type);
     $meeting->starttime = $data->starttime;
     $meeting->duration = $data->duration;
+    $meeting->calpublish = !empty($data->calpublish) ? 1 : 0;
     if (isset($data->longavailability)) {
         $meeting->endtime = $data->endtime;
+        $meeting->calpublish = 0;
     } else {
         $meeting->endtime = null;
     }
@@ -124,8 +126,10 @@ function webexactivity_update_instance($data, $mform) {
 
     $meeting->starttime = $data->starttime;
     $meeting->duration = $data->duration;
+    $meeting->calpublish = !empty($data->calpublish) ? 1 : 0;
     if (isset($data->longavailability)) {
         $meeting->endtime = $data->endtime;
+        $meeting->calpublish = 0;
     } else {
         $meeting->endtime = null;
     }

@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2019051300;
+$plugin->version   = 2019082701;
 $plugin->requires  = 2016120500; // Moodle 3.2.0.
 $plugin->component = 'mod_webexactivity';
 $plugin->maturity  = MATURITY_BETA;

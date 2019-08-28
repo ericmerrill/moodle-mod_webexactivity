@@ -178,6 +178,53 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2019051300, 'webexactivity');
     }
 
+    if ($oldversion < 2019082700) {
+        // Define field calpublish to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('calpublish', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'duration');
+
+        // Conditionally launch add field calpublish.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Set extended availability meetings, and long past meetings to not calender publish.
+        $DB->set_field_select('webexactivity', 'calpublish', 0, 'endtime IS NOT NULL OR starttime < ?', [time() - 86400 * 30]);
+
+        // Webexactivity savepoint reached.
+        upgrade_mod_savepoint(true, 2019082700, 'webexactivity');
+    }
+
+    if ($oldversion < 2019082701) {
+        // Take recent and future meetings and make calendar events.
+
+        // Get the count and records.
+        $total = $DB->count_records('webexactivity', ['calpublish' => 1]);
+        $records = $DB->get_recordset('webexactivity', ['calpublish' => 1]);
+
+        $a = new stdClass();
+        $a->total = $total;
+        $a->done = 0;
+        $pbar = new progress_bar('updatewebexcalendars', 500, true);
+        foreach ($records as $record) {
+            try {
+                $meeting = \mod_webexactivity\meeting::load($record);
+                $meeting->save_calendar_event();
+            } catch (Exception $e) {
+                // Do nothing, just keep going.
+                mtrace("Exception thrown while working on meeting {$record->id}");
+            }
+
+            $a->done++;
+            $pbar->update($a->done, $a->total, get_string('updatewebexcalendarsxofy', 'webexactivity', $a));
+        }
+
+        $records->close();
+
+        // Webexactivity savepoint reached.
+        upgrade_mod_savepoint(true, 2019082701, 'webexactivity');
+    }
+
 
     return true;
 }
