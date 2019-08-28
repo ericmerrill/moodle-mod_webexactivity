@@ -196,30 +196,18 @@ function xmldb_webexactivity_upgrade($oldversion) {
     }
 
     if ($oldversion < 2019082701) {
-        // Take recent and future meetings and make calendar events.
+        // Create adhoc task to create the calendar events.
+        // Doing it this way should avoid problems with calling the manager during upgrades.
+        $record = new \stdClass();
+        $record->classname = '\mod_webexactivity\task\upgrade_calendars';
+        $record->component = 'mod_webexactivity';
 
-        // Get the count and records.
-        $total = $DB->count_records('webexactivity', ['calpublish' => 1]);
-        $records = $DB->get_recordset('webexactivity', ['calpublish' => 1]);
+        // Next run time based from nextruntime computation in \core\task\manager::queue_adhoc_task().
+        $nextruntime = time() - 1;
+        $record->nextruntime = $nextruntime;
+        $record->customdata = json_encode('core_course-mycourse');
 
-        $a = new stdClass();
-        $a->total = $total;
-        $a->done = 0;
-        $pbar = new progress_bar('updatewebexcalendars', 500, true);
-        foreach ($records as $record) {
-            try {
-                $meeting = \mod_webexactivity\meeting::load($record);
-                $meeting->save_calendar_event();
-            } catch (Exception $e) {
-                // Do nothing, just keep going.
-                mtrace("Exception thrown while working on meeting {$record->id}");
-            }
-
-            $a->done++;
-            $pbar->update($a->done, $a->total, get_string('updatewebexcalendarsxofy', 'webexactivity', $a));
-        }
-
-        $records->close();
+        $DB->insert_record('task_adhoc', $record);
 
         // Webexactivity savepoint reached.
         upgrade_mod_savepoint(true, 2019082701, 'webexactivity');

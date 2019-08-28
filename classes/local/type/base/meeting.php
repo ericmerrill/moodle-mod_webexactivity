@@ -990,7 +990,7 @@ class meeting {
         global $DB, $USER;
 
         $event = new \stdClass();
-        $params = ['modulename' => 'webexactivity', 'instance' => $this->id, 'eventtype' => WEBEXACTIVITY_EVENT_TYPE_MEETINGTIME];
+        $params = ['modulename' => 'webexactivity', 'instance' => $this->id, 'eventtype' => 'meetingtime'];
         $event->id = $DB->get_field('event', 'id', $params);
 
         if (!$this->calpublish || !is_null($this->endtime)) {
@@ -1032,7 +1032,7 @@ class meeting {
                 $event->userid       = 0;
                 $event->modulename   = 'webexactivity';
                 $event->instance     = $this->id;
-                $event->eventtype    = WEBEXACTIVITY_EVENT_TYPE_MEETINGTIME;
+                $event->eventtype    = 'meetingtime';
                 $event->timestart    = $this->starttime;
                 $event->timesort     = $this->starttime;
                 $event->timeduration = $this->duration * 60;

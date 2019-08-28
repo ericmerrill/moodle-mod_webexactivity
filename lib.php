@@ -27,9 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/calendar/lib.php');
 
-// Event types.
-define('WEBEXACTIVITY_EVENT_TYPE_MEETINGTIME', 'meetingtime');
-
 /**
  * Return the list if Moodle features this module supports
  *
