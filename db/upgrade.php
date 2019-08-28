@@ -188,8 +188,8 @@ function xmldb_webexactivity_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Set extended availability meetings, and long past meetings to not calender publish.
-        $DB->set_field_select('webexactivity', 'calpublish', 0, 'endtime IS NOT NULL OR starttime < ?', [time() - 86400 * 30]);
+        // Set extended availability meetings to not calender publish.
+        $DB->set_field_select('webexactivity', 'calpublish', 0, 'endtime IS NOT NULL');
 
         // Webexactivity savepoint reached.
         upgrade_mod_savepoint(true, 2019082700, 'webexactivity');
