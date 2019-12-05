@@ -25,6 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/calendar/lib.php');
+
 /**
  * Return the list if Moodle features this module supports
  *
@@ -70,8 +72,10 @@ function webexactivity_add_instance($data, $mform) {
     $meeting = \mod_webexactivity\meeting::create_new($data->type);
     $meeting->starttime = $data->starttime;
     $meeting->duration = $data->duration;
+    $meeting->calpublish = !empty($data->calpublish) ? 1 : 0;
     if (isset($data->longavailability)) {
         $meeting->endtime = $data->endtime;
+        $meeting->calpublish = 0;
     } else {
         $meeting->endtime = null;
     }
@@ -93,11 +97,14 @@ function webexactivity_add_instance($data, $mform) {
         $meeting->studentdownload = 0;
     }
 
-    if ($meeting->save()) {
-        return $meeting->id;
+    $meeting->cmid = $data->coursemodule;
+
+    if (!$meeting->save()) {
+        return false;
     }
 
-    return false;
+    return $meeting->id;
+
 }
 
 /**
@@ -116,8 +123,10 @@ function webexactivity_update_instance($data, $mform) {
 
     $meeting->starttime = $data->starttime;
     $meeting->duration = $data->duration;
+    $meeting->calpublish = !empty($data->calpublish) ? 1 : 0;
     if (isset($data->longavailability)) {
         $meeting->endtime = $data->endtime;
+        $meeting->calpublish = 0;
     } else {
         $meeting->endtime = null;
     }
@@ -138,6 +147,8 @@ function webexactivity_update_instance($data, $mform) {
         $meeting->studentdownload = 0;
     }
 
+    $meeting->cmid = $data->coursemodule;
+
     try {
         return $meeting->save();
     } catch (Exception $e) {
@@ -150,6 +161,8 @@ function webexactivity_update_instance($data, $mform) {
         }
         throw $e;
     }
+
+    // TODO - update cal event
 }
 
 /**
@@ -223,4 +236,38 @@ function webexactivity_print_overview($courses, &$htmlarray) {
 function webexactivity_delete_instance($id) {
     $meeting = \mod_webexactivity\meeting::load($id);
     return $meeting->delete();
+}
+
+
+/**
+ * This function receives a calendar event and returns the action associated with it, or null if there is none.
+ *
+ * This is used by block_myoverview in order to display the event appropriately. If null is returned then the event
+ * is not displayed on the block.
+ *
+ * @param calendar_event $event
+ * @param \core_calendar\action_factory $factory
+ * @param int $userid User id to use for all capability checks, etc. Set to 0 for current user (default).
+ * @return \core_calendar\local\event\entities\action_interface|null
+ */
+function mod_webexactivity_core_calendar_provide_event_action(calendar_event $event,
+                                                     \core_calendar\action_factory $factory,
+                                                     int $userid = 0) {
+    global $USER, $DB;
+
+    if ($userid) {
+        $user = core_user::get_user($userid, 'id, timezone');
+    } else {
+        $user = $USER;
+    }
+
+    $cm = get_fast_modinfo($event->courseid, $user->id)->instances['webexactivity'][$event->instance];
+
+    return $factory->create_instance(
+        get_string('entermeeting', 'webexactivity'),
+        new \moodle_url('/mod/webexactivity/view.php', ['id' => $cm->id]),
+        1,
+        false
+    );
+
 }

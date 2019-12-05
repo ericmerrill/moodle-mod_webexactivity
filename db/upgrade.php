@@ -178,6 +178,41 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2019051300, 'webexactivity');
     }
 
+    if ($oldversion < 2019082700) {
+        // Define field calpublish to be added to webexactivity.
+        $table = new xmldb_table('webexactivity');
+        $field = new xmldb_field('calpublish', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'duration');
+
+        // Conditionally launch add field calpublish.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Set extended availability meetings to not calender publish.
+        $DB->set_field_select('webexactivity', 'calpublish', 0, 'endtime IS NOT NULL');
+
+        // Webexactivity savepoint reached.
+        upgrade_mod_savepoint(true, 2019082700, 'webexactivity');
+    }
+
+    if ($oldversion < 2019082701) {
+        // Create adhoc task to create the calendar events.
+        // Doing it this way should avoid problems with calling the manager during upgrades.
+        $record = new \stdClass();
+        $record->classname = '\mod_webexactivity\task\upgrade_calendars';
+        $record->component = 'mod_webexactivity';
+
+        // Next run time based from nextruntime computation in \core\task\manager::queue_adhoc_task().
+        $nextruntime = time() - 1;
+        $record->nextruntime = $nextruntime;
+        $record->customdata = json_encode('core_course-mycourse');
+
+        $DB->insert_record('task_adhoc', $record);
+
+        // Webexactivity savepoint reached.
+        upgrade_mod_savepoint(true, 2019082701, 'webexactivity');
+    }
+
 
     return true;
 }
