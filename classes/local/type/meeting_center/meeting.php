@@ -99,24 +99,4 @@ class meeting extends \mod_webexactivity\local\type\base\meeting {
         return true;
     }
 
-    // ---------------------------------------------------
-    // URL Functions.
-    // ---------------------------------------------------
-    /**
-     * Get the link for external users to join the meeting.
-     *
-     * @return string    The external join url.
-     */
-    public function get_old_external_join_url() {
-        $baseurl = \mod_webexactivity\webex::get_base_url();
-
-        if (!isset($this->eventid)) {
-            $this->get_info(true);
-        }
-
-        $url = $baseurl.'/j.php?ED='.$this->eventid.'&UID=1';
-
-        return $url;
-    }
-
 }
