@@ -62,7 +62,9 @@ if ($ADMIN->fulltree) {
     $setting = new admin_setting_configmulticheckbox('webexactivity/typemeetingcenter',
             get_string('typemeetingcenter', 'mod_webexactivity'),
             get_string('typemeetingcenter_desc', 'mod_webexactivity'),
-            array(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_PASSWORD_REQUIRED => 1),
+            array(\mod_webexactivity\webex::WEBEXACTIVITY_TYPE_INSTALLED => 1,
+                  \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_ALL => 1,
+                  \mod_webexactivity\webex::WEBEXACTIVITY_TYPE_PASSWORD_REQUIRED => 1),
             $typeopts);
     $settings->add($setting);
 
