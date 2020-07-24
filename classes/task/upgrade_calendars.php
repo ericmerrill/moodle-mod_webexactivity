@@ -36,7 +36,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class upgrade_calendars extends \core\task\adhoc_task {
-    use \core\task\logging_trait;
 
     /**
      * Do the task.
@@ -44,7 +43,7 @@ class upgrade_calendars extends \core\task\adhoc_task {
     public function execute() {
         global $DB;
 
-        $this->log_start("Adding calendar events for existing meetings");
+        mtrace("Adding calendar events for existing meetings");
 
         // Take recent and future meetings and make calendar events.
 
@@ -54,22 +53,22 @@ class upgrade_calendars extends \core\task\adhoc_task {
 
         $done = 1;
         foreach ($records as $record) {
-            $this->log_start("Working on meeting {$record->id} ($done of $total)", 1);
+            mtrace("  Working on meeting {$record->id} ($done of $total)");
             try {
                 $meeting = \mod_webexactivity\meeting::load($record);
                 $meeting->save_calendar_event();
             } catch (Exception $e) {
                 // Log it and keep going.
-                $this->log("Exception thrown while working on meeting {$record->id}", 2);
-                $this->log($e->getMessage(), 2);
+                mtrace("    Exception thrown while working on meeting {$record->id}");
+                mtrace("    " . $e->getMessage());
             }
-            $this->log_finish("Done with meeting {$record->id}", 1);
+            mtrace("  Done with meeting {$record->id}");
 
             $done++;
         }
 
         $records->close();
 
-        $this->log_finish("Done processing events.");
+        mtrace("Done processing events.");
     }
 }
