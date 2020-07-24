@@ -246,16 +246,21 @@ class xml_gen {
 
     /**
      * Provide the xml to retrieve the participant join url for a meeting.
+     * Works with TC and MC.
      *
-     * @param meeting   $meeting The meeting to get the host URL for.
-     * @param object    $user The user object
-     * @return string   The XML.
+     * @param meeting       $meeting The meeting to get the host URL for.
+     * @param object|null   $user The user object. If null, get external participant link.
+     * @return string       The XML.
      */
-    public static function get_join_url($meeting, $user) {
+    public static function get_join_url($meeting, $user = null) {
         $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.meeting.GetjoinurlMeeting">'.
-               '<sessionKey>'.$meeting->meetingkey.'</sessionKey>'.
-               '<attendeeEmail>'.$user->email.'</attendeeEmail>'.
-               '<attendeeName>'.fullname($user).'</attendeeName>';
+               '<sessionKey>'.$meeting->meetingkey.'</sessionKey>';
+
+        // User is optional.
+        if (!is_null($user)) {
+            $xml .= '<attendeeEmail>'.$user->email.'</attendeeEmail>'.
+                    '<attendeeName>'.fullname($user).'</attendeeName>';
+        }
 
         if (!empty($meeting->password)) {
             $xml .= '<meetingPW>'.$meeting->password.'</meetingPW>';
