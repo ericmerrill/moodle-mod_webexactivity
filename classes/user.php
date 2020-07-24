@@ -446,14 +446,20 @@ class user {
             } else {
                 $errors = $webex->get_latest_errors();
 
-                // Failure creating user. Check to see if exists.
+                // Failure creating user.
                 if (!isset($errors['exception'])) {
-                    throw new \invalid_response_exception('No errors found when creating users. Error expected.');
+                    throw new \invalid_response_exception('No exception found when creating users. Exception code expected.');
                 }
 
                 $exception = $errors['exception'];
+                $message = 'WebEx exception '.$exception.' when creating new user.';
+                if (isset($errors['message'])) {
+                    $message .= ' Reason given: "' . $message . '"';
+                }
 
-                throw new \coding_exception('WebEx exception '.$exception.' when creating new user.');
+                $message .= "\n".get_string('user_create_exception', 'mod_webexactivity');
+
+                throw new \coding_exception($message);
             }
 
             throw new \coding_exception('Unknown error when creating new user.');
