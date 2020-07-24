@@ -174,6 +174,8 @@ class xml_gen extends \mod_webexactivity\local\type\base\xml_gen {
 
         $xml .= '<enableOptions>';
 
+        $xml .= '<attendeeSendVideo>true</attendeeSendVideo>';
+
         /*if (isset($data->allchat)) {
             if ($data->allchat) {
                 $xml .= '<chatAllAttendees>true</chatAllAttendees>';
