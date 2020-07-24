@@ -710,11 +710,11 @@ class meeting {
     /**
      * Get the link for a moodle user to join the meeting.
      *
-     * @param stdClass   $user Moodle user record.
-     * @param string     $returnurl The url to return the use to.
-     * @return string    The moodle join url.
+     * @param object|null   $user Moodle user record.
+     * @param string        $returnurl The url to return the use to.
+     * @return string       The moodle join url.
      */
-    public function get_moodle_join_url($user, $returnurl = false) {
+    public function get_moodle_join_url($user = null, $returnurl = false) {
         $gen = static::GENERATOR;
 
         $xml = $gen::get_join_url($this, $user);
@@ -743,12 +743,10 @@ class meeting {
      * @return string    The external join url.
      */
     public function get_external_join_url() {
-        if (!isset($this->meetinglink)) {
-            $this->get_session_info(true);
-        }
-
-        if (empty($this->meetinglink)) {
-            return $this->get_old_external_join_url();
+        // See if the link appears to be the new style already. If not, create.
+        if (stristr($this->meetinglink, 'e.php') === false) {
+            $this->meetinglink = $this->get_moodle_join_url();
+            $this->save_to_db();
         }
 
         return $this->meetinglink;
