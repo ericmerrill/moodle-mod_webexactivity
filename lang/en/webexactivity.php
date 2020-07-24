@@ -153,7 +153,7 @@ $string['typetrainingcenter'] = 'Training Center';
 $string['typetrainingcenter_desc'] = '';
 $string['undeletelink'] = '<a href="{$a->url}">Undelete</a>';
 $string['unknownhostwebexidexception'] = 'WebEx Host ID doesn\'t exist';
-$string['user_create_exception'] = 'For more information about this error, see <a href="https://github.com/merrill-oakland/moodle-mod_webexactivity/wiki/Manual#webex-exception-000001-when-creating-new-user" target="_blank">this page</a>.';
+$string['user_create_exception'] = 'For more information about this error, see <a href="https://github.com/merrill-oakland/moodle-mod_webexactivity/wiki/Manual#webex-exception-xxxxxxx-when-creating-new-user" target="_blank">this page</a>.';
 $string['usereditauto'] = 'Your WebEx user is managed internally, and cannot be edited.';
 $string['usereditbad'] = 'You should not have arrived at this page.';
 $string['usereditunabletoload'] = 'Unable to load your user from WebEx.';
