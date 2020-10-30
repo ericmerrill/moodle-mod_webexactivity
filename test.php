@@ -1,11 +1,14 @@
 <?php
 
+use mod_webexactivity\recording;
+use mod_webexactivity\recording_downloader;
+
 define('CLI_SCRIPT', true);
 
 require(__DIR__ . '/../../config.php');
 require_once("{$CFG->libdir}/clilib.php");
 require_once("{$CFG->libdir}/cronlib.php");
-require_once($CFG->dirroot . '/repository/lib.php');
+
 
 list($options, $unrecognized) = cli_get_params(
     [
@@ -43,8 +46,13 @@ EOT;
 }
 
 
-$curl = new curl();
+// $curl = new curl();
+//
+// $res = $curl->download_one("https://oakland.webex.com/mw3300/mywebex/nbrPrepare.do?siteurl=oakland&recordid=204951382&prepareTicket=SDJTSwAAAASTTbyfg6E7osQSF%2BAFBN4sFpWfY8sNC%2BdFv3vn4rOHJg%3D%3D&timestamp=1604020911350", []);
+// var_dump(strlen($res));
+// var_dump($curl->get_raw_response());
 
-$res = $curl->download_one("https://oakland.webex.com/mw3300/mywebex/nbrPrepare.do?siteurl=oakland&recordid=204951382&prepareTicket=SDJTSwAAAASTTbyfg6E7osQSF%2BAFBN4sFpWfY8sNC%2BdFv3vn4rOHJg%3D%3D&timestamp=1604020911350", []);
-var_dump(strlen($res));
-var_dump($curl->get_raw_response());
+$recording = new recording(1);
+
+$dl = new recording_downloader($recording);
+$dl->get_recording();
