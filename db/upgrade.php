@@ -228,5 +228,18 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2020102900, 'webexactivity');
     }
 
+    if ($oldversion < 2020110300) {
+
+        // Rename field fileinternal on table webexactivity_recording to filestatus.
+        $table = new xmldb_table('webexactivity_recording');
+        $field = new xmldb_field('fileinternal', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'deleted');
+
+        // Launch rename field filestatus.
+        $dbman->rename_field($table, $field, 'filestatus');
+
+        // Webexactivity savepoint reached.
+        upgrade_mod_savepoint(true, 2020110300, 'webexactivity');
+    }
+
     return true;
 }

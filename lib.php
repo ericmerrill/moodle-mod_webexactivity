@@ -166,6 +166,67 @@ function webexactivity_update_instance($data, $mform) {
 }
 
 /**
+ * Serves recording files.
+ *
+ * @param mixed $course course or id of the course
+ * @param mixed $cm course module or id of the course module
+ * @param context $context
+ * @param string $filearea
+ * @param array $args
+ * @param bool $forcedownload
+ * @param array $options additional options affecting the file serving
+ * @return bool false if file not found, does not return if found - just send the file
+ */
+function webexactivity_pluginfile($course,
+                $cm,
+                context $context,
+                $filearea,
+                $args,
+                $forcedownload,
+                array $options=array()) {
+    global $CFG;
+
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return false;
+    }
+
+    require_login($course, false, $cm);
+    if (!has_capability('mod/webexactivity:view', $context)) {
+        return false;
+    }
+
+    $itemid = (int)array_shift($args);
+    if (empty($itemid)) {
+        return false;
+    }
+
+    $recording = new \mod_webexactivity\recording($itemid);
+
+    if (!$recording->visible && !has_capability('mod/webexactivity:hostmeeting', $context)) {
+        return false;
+    }
+
+    //require_once($CFG->dirroot . '/mod/assign/locallib.php');
+    //$assign = new assign($context, $cm, $course);
+
+    if ($filearea !== 'recordings') {
+        return false;
+    }
+
+
+
+    $relativepath = implode('/', $args);
+
+    $fullpath = "/{$context->id}/mod_webexactivity/$filearea/$itemid/$relativepath";
+
+    $fs = get_file_storage();
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+        return false;
+    }
+    send_stored_file($file, 0, 0, $forcedownload, $options);
+}
+
+/**
  * Print an overview of all WebEx Meetings for the courses.
  *
  * @param mixed   $courses The list of courses to print the overview for

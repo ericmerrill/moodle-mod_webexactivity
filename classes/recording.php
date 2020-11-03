@@ -25,8 +25,10 @@
 
 namespace mod_webexactivity;
 
-use \mod_webexactivity\local\type;
-use \mod_webexactivity\local\exception;
+use mod_webexactivity\local\type;
+use mod_webexactivity\local\exception;
+use context_system;
+use context_module;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -39,11 +41,33 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class recording {
+    /**
+     *
+     */
+    const RECORDING_FILE_STATUS_WEBEX = 0;
+
+    /**
+     *
+     */
+    const RECORDING_FILE_STATUS_INTERNAL_AND_WEBEX = 1;
+
+    /**
+     *
+     */
+    const RECORDING_FILE_STATUS_INTERNAL = 2;
+
+    /**
+     *
+     */
+    const RECORDING_FILE_STATUS_NONE = 3;
+
     /** @var stdClass The database record this object represents. */
     private $recording = null;
 
     /** @var bool Track if there is a change that needs to go to WebEx. */
     private $webexchange = false;
+
+    private $context = false;
 
     /**
      * Builds the recording object.
@@ -67,6 +91,30 @@ class recording {
         }
 
         throw new \coding_exception('Unexpected parameter type passed to recording constructor.');
+    }
+
+    /**
+     * Get the context for this recording.
+     *
+     * @return object    The context that relates to this recording.
+     */
+    public function get_context() {
+        if ($this->context !== false) {
+            return $this->context;
+        }
+
+        // Get the context for this recording.
+        if (empty($this->webexid)) {
+            // This is a recording with no internal meeting.
+            $context = context_system::instance();
+        } else {
+            list($course, $cm) = get_course_and_cm_from_instance($this->webexid, 'webexactivity');
+            $context = context_module::instance($cm->id);
+        }
+
+        $this->context = $context;
+
+        return $context;
     }
 
     /**
@@ -106,6 +154,49 @@ class recording {
     public function true_delete() {
         global $DB;
 
+        $this->delete_remote_recording();
+
+        $DB->delete_records('webexactivity_recording', array('id' => $this->__get('id')));
+
+        return true;
+    }
+
+    public function get_internal_fileurl($forcedownload = true) {
+        global $CFG;
+//    http://localhost/webex_39/pluginfile.php/24/mod_webexactivity/recordings/2/Test%20MC-20201029%201410-1.mp4
+        $context = $this->get_context();
+
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($context->id, 'mod_webexactivity', 'recordings', $this->id, 'sortorder DESC, id ASC', false);
+        $file = reset($files);
+
+        if (empty($files)) {
+            return false;
+        }
+
+        $path = '/' . $context->id . '/mod_webexactivity/recordings/' . $this->id . '/' . $file->get_filename();
+        $url = file_encode_url("$CFG->wwwroot/pluginfile.php", $path, $forcedownload);
+
+        return $url;
+    }
+
+    /**
+     * Delete the internal recording file.
+     *
+     * @return bool    True on success
+     */
+    public function delete_internal_recording() {
+        return $fs->delete_area_files($this->get_context()->id, 'mod_webexactivity', 'recordings', $this->id);
+    }
+
+    /**
+     * Delete this recording from WebEx, but leave the internal version.
+     *
+     * @return bool    True on success, false on failure.
+     * @throws webexactivity_exception on error.
+     */
+    public function delete_remote_recording() {
+
         $xml = type\base\xml_gen::delete_recording($this->__get('recordingid'));
 
         $webex = new webex();
@@ -115,7 +206,15 @@ class recording {
             throw new exception\webexactivity_exception('errordeletingrecording');
         }
 
-        $DB->delete_records('webexactivity_recording', array('id' => $this->__get('id')));
+        if ($this->filestatus == self::RECORDING_FILE_STATUS_INTERNAL_AND_WEBEX) {
+            $this->filestatus = self::RECORDING_FILE_STATUS_INTERNAL;
+        } else if ($this->filestatus == self::RECORDING_FILE_STATUS_WEBEX) {
+            $this->filestatus = self::RECORDING_FILE_STATUS_NONE;
+        }
+
+        $this->fileurl = null;
+        $this->streamurl = null;
+        $this->save_to_db();
 
         return true;
     }
@@ -164,6 +263,11 @@ class recording {
      * @return bool    True on success, false on failure.
      */
     public function save_to_webex() {
+        if ($this->filestatus == self::RECORDING_FILE_STATUS_NONE || $this->filestatus == self::RECORDING_FILE_STATUS_INTERNAL) {
+            // There is no longer a remote recording. It is now internal, so we don't need to save changes to webex.
+            return true;
+        }
+
         $params = new \stdClass;
         $params->recordingid = $this->__get('recordingid');
         $params->name = $this->recording->name;

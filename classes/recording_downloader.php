@@ -28,8 +28,9 @@ namespace mod_webexactivity;
 require_once($CFG->libdir . '/filelib.php');
 
 // use \mod_webexactivity\local\type;
-// use \mod_webexactivity\local\exception;
+use mod_webexactivity\recording;
 use curl;
+use stdClass;
 
 
 defined('MOODLE_INTERNAL') || die();
@@ -59,75 +60,221 @@ class recording_downloader {
     }
 
 
-    public function get_recording() {
-        $fileurl = $this->recording->fileurl;
+    public function download_recording($force = false, $deleteremote = false) {
+        // Get the context for this recording.
+        $context = $this->recording->get_context();
 
-        $trueurl = $this->get_download_url($fileurl);
+        // Check if we have already downloaded this recording.
+        $fs = get_file_storage();
+        $exists = false;
+        if (!$fs->is_area_empty($context->id, 'mod_webexactivity', 'recordings', $this->recording->id)) {
+            // Recording already exists.
+            if ($force) {
+                $exists = true;
+            } else {
+                return true;
+            }
+        }
+
+        if (empty($this->recording->fileurl)) {
+            // We don't have a url to download. Abort.
+            return false;
+        }
+
+        if (!($downloadurl = $this->get_download_url($this->recording->fileurl))) {
+            // Don't seem to have a download URL.
+            return false;
+        }
+
+        $filerecord = new stdClass();
+        $filerecord->contextid = $context->id;
+        $filerecord->component = 'mod_webexactivity';
+        $filerecord->filearea = 'recordings';
+        $filerecord->itemid = $this->recording->id;
+        $filerecord->filepath = '/';
+
+        $dir = make_request_directory();
+        $dir = make_temp_directory('webex');
+        var_dump($dir);
+        $tmpfile = $dir.'/tmp';
+
+        $response = download_file_content($downloadurl, null, null, true, 3000, 20, false, $tmpfile);
+
+        if (empty($response) || !empty($response->error)) {
+            // Download error of some form.
+            @unlink($tmpfile);
+            return false;
+        }
+
+        // Lets find the filename.
+        $matches = [];
+        $filename = false;
+        foreach ($response->headers as $header) {
+            if (preg_match('/Content-Disposition:.*?filename="(.*?)"/im', $header, $matches)) {
+                $filename = basename($matches[1]);
+                $filename = clean_param($filename, PARAM_FILE);
+                break;
+            }
+        }
+
+        if (empty($filename)) {
+            // Couldn't determine the filename to download.
+            @unlink($tmpfile);
+            return false;
+        }
+
+        $filerecord->filename = $filename;
+
+        if ($exists) {
+            // Delete the existing files.
+            $fs->delete_area_files($context->id, 'mod_webexactivity', 'recordings', $this->recording->id);
+        }
+
+        // Convert the downloaded temp file
+        try {
+            $newfile = $fs->create_file_from_pathname($filerecord, $tmpfile);
+            @unlink($tmpfile);
+        } catch (Exception $e) {
+            @unlink($tmpfile);
+            //throw $e;
+            return false;
+        }
+
+        if (empty($this->recording->fileurl)) {
+            $this->recording->filestatus = recording::RECORDING_FILE_STATUS_INTERNAL_AND_WEBEX;
+        } else {
+            $this->recording->filestatus = recording::RECORDING_FILE_STATUS_INTERNAL;
+        }
+
+        $this->recording->save();
+
+        if ($deleteremote) {
+            $this->recording->delete_remote_recording();
+        }
     }
 
     protected function get_download_url($fileurl) {
         $curl = new curl();
 
-        $response = $curl->get($fileurl);
+        $mainpage = $curl->get($fileurl);
 
-        if (empty($response)) {
+        if (empty($mainpage)) {
             return false;
         }
 
-        if (empty($firsturl = $this->get_download_step_1_url($response))) {
+        $downloadurl = $this->process_prepare_url($mainpage);
+
+        var_dump($downloadurl);
+
+        if (empty($downloadurl)) {
+            // Couldn't get the download URL.
             return false;
         }
 
-        //var_dump($firsturl);
-        $response = $curl->get($firsturl);
-
-        if (empty($response)) {
-            return false;
-        }
-
-        var_dump($response);
-
-
-//         if (preg_match('/function\s*func_prepare\s*\([a-zA-Z ,]*\)\s*{([\S\s]*?)}/im', $response, $matches) == 0) {
-//             return false;
-//         }
-//
-//         $prepfunc = $matches[1];
-
-        // var_dump($downloadfunc);
-//         var_dump($prepfunc);
+        return $downloadurl;
     }
 
 
     protected function get_download_step_1_url(string $page) {
 
-
         $matches = [];
-        if (preg_match('/function\s*download\s*\(\s*\)\s*{([\S\s]*?)}/im', $page, $matches) == 0) {
+        if (!preg_match('/function\s*download\s*\(\s*\)\s*{([\S\s]*?)}/im', $page, $matches)) {
             return false;
         }
         $downloadfunc = $matches[1];
 
-        // Get all variable lines out of it.
-        $params = [];
-        preg_match_all('/var\s*([a-z0-9_$]*)\s*=\s*([\'"]?)(.*)\g2\;/im', $downloadfunc, $matches);
-        foreach ($matches[1] as $key => $name) {
-            $params[$name] = $matches[3][$key];
-        }
+        $parts = $this->get_js_definitions($downloadfunc);
 
-        // Get the URL line, it is a bit special;
-        if (preg_match('/var\s*url\s*=\s*(["\'][^\n]*)\;/im', $downloadfunc, $matches) == 0) {
+        if (empty($parts) || empty($parts['url'])) {
             return false;
         }
-        $baseurl = $matches[1];
 
-        $resulturl = $this->parse_js_string($baseurl, $params);
+        return $parts['url'];
+    }
 
-        return $resulturl;
+    protected function process_prepare_url($mainpage) {
+        if (empty($pageurl = $this->get_download_step_1_url($mainpage))) {
+            return false;
+        }
+
+        $count = 0;
+        while (true) {
+            $count++;
+            $curl = new curl();
+
+            if (empty($statuspage = $curl->get($pageurl))) {
+                return false;
+            }
+
+            $prepareparams = $this->get_prepare_statement($statuspage);
+            $prepareparams = $this->process_prepare_statement($mainpage, $prepareparams);
+
+            if (!empty($prepareparams['downloadUrl'])) {
+                return $prepareparams['downloadUrl'];
+            } else if (!empty($prepareparams['temUrl'])) {
+                if ($count > 10) {
+                    // Took too many tries to fetch.
+                    return false;
+                }
+                $pageurl = $prepareparams['temUrl'];
+                // Sleep for 3 seconds before trying again.
+                sleep(3);
+                continue;
+            }
+
+            // If we got down here, then something went wrong.
+            return false;
+        }
     }
 
     protected function get_prepare_statement(string $page) {
+        $matches = [];
 
+        $pattern = '/func_prepare\(\s*([\'"]?)(.*?)\g1\s*,\s*([\'"]?)(.*?)\g3\s*,\s*([\'"]?)(.*?)\g5\s*\)/im';
+        if (!preg_match($pattern, $page, $matches)) {
+            return false;
+        }
+
+        $return['status'] = $matches[2];
+        $return['url'] = $matches[4];
+        $return['ticket'] = $matches[6];
+
+        return $return;
+    }
+
+    protected function process_prepare_statement($page, $params) {
+        $status = $params['status'];
+
+        $matches = [];
+        if (!preg_match('/function\s*func_prepare\s*\(.*?\)\s*{([\S\s]*?)}/im', $page, $matches)) {
+            return false;
+        }
+        $preparefunc = $matches[1];
+
+        if (!preg_match('/case\s*([\'"])' . $status . '\g1\s*:([\s\S]*?)break;/im', $preparefunc, $matches)) {
+            return false;
+        }
+        $prepstatement = trim($matches[2]);
+
+        $params = $this->get_js_definitions($prepstatement, $params);
+
+        if ($status == 'Preparing' && isset($params['temUrl']) && isset($params['url'])) {
+            $params['temUrl'] = $params['temUrl'] . $params['url'];
+        } else if ($status != 'OKOK') {
+            return false;
+        }
+
+        return $params;
+    }
+
+    protected function get_js_definitions($input, $params = []) {
+        $matches = [];
+        preg_match_all('/var\s*([a-z0-9_$]*)\s*=\s*(([\'"]?).*\g3)\;/im', $input, $matches);
+        foreach ($matches[1] as $key => $name) {
+            $params[$name] = $this->parse_js_string($matches[2][$key], $params);
+        }
+
+        return $params;
     }
 
     protected function parse_js_string(string $input, array $params = []) {
@@ -167,7 +314,13 @@ class recording_downloader {
                 continue;
             }
 
-            if (preg_match('/([a-z0-9_$]*)/i', $input, $matches)) {
+            if (preg_match('/([a-z_][a-z0-9_$\.]*\(.*?\))/i', $input, $matches)) {
+                $funcname = $matches[1];
+                $input = substr($funcname, strlen($funcname));
+
+                $output .= $funcname;
+                continue;
+            } else if (preg_match('/([a-z_$][a-z0-9_$]*)/i', $input, $matches)) {
                 $varname = $matches[1];
                 $input = substr($input, strlen($varname));
 
@@ -176,6 +329,12 @@ class recording_downloader {
                 } else {
                     debugging("Could not find $varname");
                 }
+                continue;
+            } else if (preg_match('/([0-9]*)/i', $input, $matches)) {
+                $number = $matches[1];
+                $input = substr($input, strlen($number));
+
+                $output .= $number;
                 continue;
             }
 

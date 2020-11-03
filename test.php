@@ -52,7 +52,7 @@ EOT;
 // var_dump(strlen($res));
 // var_dump($curl->get_raw_response());
 
-$recording = new recording(1);
+$recording = new recording(2);
 
 $dl = new recording_downloader($recording);
-$dl->get_recording();
+$dl->download_recording(true);
