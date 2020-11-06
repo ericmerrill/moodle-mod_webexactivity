@@ -277,7 +277,11 @@ switch ($action) {
         $event->add_record_snapshot('webexactivity_recording', $recording->record);
         $event->trigger();
 
-        redirect($recording->fileurl);
+        if (empty($fileurl = $recording->get_internal_fileurl())) {
+            $fileurl = $recording->fileurl;
+        }
+
+        redirect($fileurl);
         break;
 
     case 'hiderecording':
@@ -503,21 +507,29 @@ if (!$view) {
             // Playback buttons.
             echo '<div class="recordingblock buttons">';
             // Play button.
-            echo '<div class="play">';
-            $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'viewrecording');
-            $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-            echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('play', 'Play', 'mod_webexactivity'),
-                    null, array('target' => '_blank'));
-            echo '</div>';
+            if (!empty($recording->streamurl)) {
+                echo '<div class="play">';
+                $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'viewrecording');
+                $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
+                echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('play', 'Play', 'mod_webexactivity'),
+                        null, array('target' => '_blank'));
+                echo '</div>';
+            }
 
             // Download Button.
             if ($candownload) {
-                echo '<div class="download">';
-                $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'downloadrecording');
-                $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-                echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('download', 'Download', 'mod_webexactivity'),
-                        null, array('target' => '_blank'));
-                echo '</div>';
+                if (empty($fileurl = $recording->get_internal_fileurl())) {
+                    $fileurl = $recording->fileurl;
+                }
+
+                if (!empty($fileurl)) {
+                    echo '<div class="download">';
+                    $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'downloadrecording');
+                    $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
+                    echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('download', 'Download', 'mod_webexactivity'),
+                            null, array('target' => '_blank'));
+                    echo '</div>';
+                }
             }
 
             echo '</div>';

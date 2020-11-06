@@ -54,6 +54,8 @@ $string['connectionexception'] = 'An error occurred while trying to connect: {$a
 $string['curlsetupexception'] = 'An error occurred while setting up curl.';
 $string['defaultmeetingtype'] = 'Default meeting type';
 $string['defaultmeetingtype_help'] = 'The meeting type that will be preselected when creating a new meeting.';
+$string['deletedownloadrecordings'] = 'Delete downloaded recordings from Webex';
+$string['deletedownloadrecordings_help'] = 'When a recording is downloaded into Moodle, if successful, delete the recording from the Webex server.';
 $string['deletelink'] = '<a href="{$a->url}">Delete</a>';
 $string['deletionin'] = '<div>{$a->time} until deletion.</div>';
 $string['deletionsoon'] = '<div>Will be deleted soon.</div>';
@@ -64,6 +66,8 @@ $string['directlinkstext'] = '<p>These links provide direct access to the record
 Streaming: <a target="_blank" href="{$a->streamurl}" alt="Streaming link">{$a->streamurl}</a><br />
 Download: <a target="_blank" href="{$a->fileurl}" alt="Streaming link">{$a->fileurl}</a><br />
 ';
+$string['downloadnewrecordings'] = 'Auto download new recordings';
+$string['downloadnewrecordings_help'] = 'When new recordings are detected that are associated with an activity in Moodle, download into Moodle';
 $string['duration'] = 'Expected duration';
 $string['duration_help'] = 'The anticipated duration of the meeting. It is just for informational purposes, and does not effect how long the meeting can run for.';
 $string['enablecallin'] = 'Enable Telephone Callin';

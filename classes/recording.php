@@ -27,6 +27,7 @@ namespace mod_webexactivity;
 
 use mod_webexactivity\local\type;
 use mod_webexactivity\local\exception;
+use mod_webexactivity\task\download_recording;
 use context_system;
 use context_module;
 
@@ -163,7 +164,7 @@ class recording {
 
     public function get_internal_fileurl($forcedownload = true) {
         global $CFG;
-//    http://localhost/webex_39/pluginfile.php/24/mod_webexactivity/recordings/2/Test%20MC-20201029%201410-1.mp4
+
         $context = $this->get_context();
 
         $fs = get_file_storage();
@@ -283,6 +284,26 @@ class recording {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Create download adhoc task for this recording.
+     *
+     * @param bool|null     $force  Redownload if the recording is already present. Use default if null.
+     * @param bool|null     $deleteremote  Delete remote if download succeeds. Use default if null.
+     */
+    public function create_download_task($force = null, $deleteremote = null) {
+        $data = new \stdClass();
+        $data->recordingid = $this->id;
+        $data->forcedownload = $force;
+        $data->deleteremote = $deleteremote;
+
+        $task = new download_recording();
+        $task->set_custom_data($data);
+        $task->set_component('mod_webexactivity');
+
+
+        \core\task\manager::queue_adhoc_task($task);
     }
 
     // ---------------------------------------------------

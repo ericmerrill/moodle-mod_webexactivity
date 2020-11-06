@@ -416,6 +416,8 @@ class webex {
             return true;
         }
 
+        $download = get_config('webexactivity', 'downloadnewrecordings');
+
         $recordings = $response['ep:recording'];
 
         $processall = (boolean)\get_config('webexactivity', 'manageallrecordings');
@@ -480,6 +482,12 @@ class webex {
                     $event->add_record_snapshot('webexactivity_recording', $rec);
                     $event->add_record_snapshot('webexactivity', $meeting);
                     $event->trigger();
+
+                    if ($download) {
+                        // Make task for download.
+                        $recobj = new recording($rec);
+                        $recobj->create_download_task();
+                    }
                 }
 
             }

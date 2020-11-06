@@ -60,7 +60,16 @@ class recording_downloader {
     }
 
 
-    public function download_recording($force = false, $deleteremote = false) {
+    public function download_recording($force = null, $deleteremote = null) {
+        if (is_null($force)) {
+            // TODO - setting;
+            $force = true;
+        }
+
+        if (is_null($deleteremote)) {
+            $deleteremote = get_config('webexactivity', 'deletedownloadrecordings');;
+        }
+
         // Get the context for this recording.
         $context = $this->recording->get_context();
 
@@ -94,8 +103,7 @@ class recording_downloader {
         $filerecord->filepath = '/';
 
         $dir = make_request_directory();
-        $dir = make_temp_directory('webex');
-        var_dump($dir);
+
         $tmpfile = $dir.'/tmp';
 
         $response = download_file_content($downloadurl, null, null, true, 3000, 20, false, $tmpfile);

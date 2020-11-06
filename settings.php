@@ -120,6 +120,14 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('webexactivity/manageallrecordings',
             get_string('manageallrecordings', 'mod_webexactivity'),
             get_string('manageallrecordings_help', 'mod_webexactivity'), 0));
+
+    $settings->add(new admin_setting_configcheckbox('webexactivity/downloadnewrecordings',
+            get_string('downloadnewrecordings', 'mod_webexactivity'),
+            get_string('downloadnewrecordings_help', 'mod_webexactivity'), 0));
+
+    $settings->add(new admin_setting_configcheckbox('webexactivity/deletedownloadrecordings',
+            get_string('deletedownloadrecordings', 'mod_webexactivity'),
+            get_string('deletedownloadrecordings_help', 'mod_webexactivity'), 0));
 }
 
 // Add reports.
