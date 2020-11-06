@@ -306,6 +306,11 @@ class recording {
         \core\task\manager::queue_adhoc_task($task);
     }
 
+    public function download_recording($force = null, $deleteremote = null) {
+        $downloader = new recording_downloader($this);
+        $downloader->download_recording($force, $deleteremote);
+    }
+
     // ---------------------------------------------------
     // Magic Methods.
     // ---------------------------------------------------

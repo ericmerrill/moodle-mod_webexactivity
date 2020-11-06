@@ -57,8 +57,7 @@ class download_recording extends \core\task\adhoc_task {
 
         $recording = new recording($data->recordingid);
 
-        $downloader = new recording_downloader($recording);
-        $downloader->download_recording($data->forcedownload, $data->deleteremote);
+        $recording->download_recording($data->forcedownload, $data->deleteremote);
 
     }
 }
