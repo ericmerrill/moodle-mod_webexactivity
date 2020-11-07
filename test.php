@@ -55,6 +55,13 @@ EOT;
 $recording = new recording(1);
 
 $recording->create_download_task();
+// var_dump(isset($recording->something));
+// if (isset($recording->something)) {
+//     var_dump($recording->something);
+// }
+//
+// unset($recording->something);
+// $recording->save_to_db();
 
 //$dl = new recording_downloader($recording);
 //$dl->download_recording(true);

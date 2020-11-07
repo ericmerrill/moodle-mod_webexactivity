@@ -45,22 +45,43 @@ class recording {
     /**
      *
      */
-    const RECORDING_FILE_STATUS_WEBEX = 0;
+    const FILE_STATUS_WEBEX = 0;
 
     /**
      *
      */
-    const RECORDING_FILE_STATUS_INTERNAL_AND_WEBEX = 1;
+    const FILE_STATUS_INTERNAL_AND_WEBEX = 1;
 
     /**
      *
      */
-    const RECORDING_FILE_STATUS_INTERNAL = 2;
+    const FILE_STATUS_INTERNAL = 2;
 
     /**
      *
      */
-    const RECORDING_FILE_STATUS_NONE = 3;
+    const FILE_STATUS_NONE = 3;
+
+    /** @var array Array of keys that go in the database object */
+    protected $dbkeys = ['id',
+                         'webexid',
+                         'meetingkey',
+                         'recordingid',
+                         'hostid',
+                         'name',
+                         'timecreated',
+                         'streamurl',
+                         'fileurl',
+                         'filesize',
+                         'duration',
+                         'visible',
+                         'deleted',
+                         'filestatus',
+                         'additional',
+                         'timemodified'];
+
+    /** @var object Object that contains additional data about the object. This will be JSON encoded. */
+    protected $additionaldata;
 
     /** @var stdClass The database record this object represents. */
     private $recording = null;
@@ -87,11 +108,16 @@ class recording {
             $this->recording = $DB->get_record('webexactivity_recording', array('id' => $recording));
         }
 
-        if ($this->recording) {
-            return;
+        if (!$this->recording) {
+            throw new \coding_exception('Unexpected parameter type passed to recording constructor.');
         }
 
-        throw new \coding_exception('Unexpected parameter type passed to recording constructor.');
+        if (empty($this->recording->additional)) {
+            $this->additionaldata = new \stdClass();
+        } else {
+            $this->additionaldata = json_decode($this->recording->additional);
+        }
+
     }
 
     /**
@@ -207,10 +233,10 @@ class recording {
             throw new exception\webexactivity_exception('errordeletingrecording');
         }
 
-        if ($this->filestatus == self::RECORDING_FILE_STATUS_INTERNAL_AND_WEBEX) {
-            $this->filestatus = self::RECORDING_FILE_STATUS_INTERNAL;
-        } else if ($this->filestatus == self::RECORDING_FILE_STATUS_WEBEX) {
-            $this->filestatus = self::RECORDING_FILE_STATUS_NONE;
+        if ($this->filestatus == self::FILE_STATUS_INTERNAL_AND_WEBEX) {
+            $this->filestatus = self::FILE_STATUS_INTERNAL;
+        } else if ($this->filestatus == self::FILE_STATUS_WEBEX) {
+            $this->filestatus = self::FILE_STATUS_NONE;
         }
 
         $this->fileurl = null;
@@ -264,7 +290,7 @@ class recording {
      * @return bool    True on success, false on failure.
      */
     public function save_to_webex() {
-        if ($this->filestatus == self::RECORDING_FILE_STATUS_NONE || $this->filestatus == self::RECORDING_FILE_STATUS_INTERNAL) {
+        if ($this->filestatus == self::FILE_STATUS_NONE || $this->filestatus == self::FILE_STATUS_INTERNAL) {
             // There is no longer a remote recording. It is now internal, so we don't need to save changes to webex.
             return true;
         }
@@ -322,6 +348,12 @@ class recording {
      * @param mixed     $val  The value to be set.
      */
     public function __set($name, $val) {
+        if (!in_array($name, $this->dbkeys)) {
+            $this->additionaldata->$name = $val;
+            $this->recording->additional = json_encode($this->additionaldata, JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
         switch ($name) {
             case 'name':
                 if (strcmp($val, $this->recording->name) === 0) {
@@ -350,6 +382,10 @@ class recording {
      * @param string    $name The name of the value to be retrieved.
      */
     public function __get($name) {
+        if (!in_array($name, $this->dbkeys)) {
+            return $this->additionaldata->$name;
+        }
+
         switch ($name) {
             case 'visible':
                 if ($this->recording->deleted > 0) {
@@ -369,6 +405,10 @@ class recording {
      * @param string    $name The name of the value to be checked.
      */
     public function __isset($name) {
+        if (!in_array($name, $this->dbkeys)) {
+            return isset($this->additionaldata->$name);
+        }
+
         switch ($name) {
             case 'record':
                 return isset($this->recording);
@@ -382,6 +422,12 @@ class recording {
      * @param string    $name The name of the value to be unset.
      */
     public function __unset($name) {
+        if (!in_array($name, $this->dbkeys)) {
+            unset($this->additionaldata->$name);
+            $this->recording->additional = json_encode($this->additionaldata, JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
         unset($this->recording->$name);
     }
 }

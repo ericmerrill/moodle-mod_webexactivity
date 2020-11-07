@@ -241,5 +241,21 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2020110300, 'webexactivity');
     }
 
+    if ($oldversion < 2020110600) {
+
+        // Define field additional to be added to webexactivity_recording.
+        $table = new xmldb_table('webexactivity_recording');
+        $field = new xmldb_field('additional', XMLDB_TYPE_TEXT, null, null, null, null, null, 'filestatus');
+
+        // Conditionally launch add field additional.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Webexactivity savepoint reached.
+        upgrade_mod_savepoint(true, 2020110600, 'webexactivity');
+    }
+
+
     return true;
 }

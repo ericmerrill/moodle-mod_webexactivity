@@ -31,6 +31,7 @@ require_once($CFG->libdir . '/filelib.php');
 use mod_webexactivity\recording;
 use curl;
 use stdClass;
+use core\lock\lock_config;
 
 
 defined('MOODLE_INTERNAL') || die();
@@ -45,6 +46,25 @@ defined('MOODLE_INTERNAL') || die();
  */
 class recording_downloader {
 
+    /**
+     *
+     */
+    const DOWNLOAD_STATUS_PENDING = 0;
+
+    /**
+     *
+     */
+    const DOWNLOAD_STATUS_INPROGRESS = 1;
+
+    /**
+     *
+     */
+    const DOWNLOAD_STATUS_COMPLETE = 2;
+
+    /**
+     *
+     */
+    const DOWNLOAD_STATUS_ERROR = -1;
 
     /** @var recording The recording object we are downloading. */
     private $recording = null;
@@ -61,10 +81,40 @@ class recording_downloader {
 
 
     public function download_recording($force = null, $deleteremote = null) {
+        \core_php_time_limit::raise();
+
         if (is_null($force)) {
             // TODO - setting;
             $force = true;
         }
+
+        $lock = $this->get_lock();
+
+        if (empty($lock)) {
+            $this->log("Could not get recording lock.");
+            return false;
+        }
+
+        // Now that we have a lock, get an updated copy of the recording.
+        $this->recording = new recording($this->recording->id);
+
+        if ($this->get_status() == self::DOWNLOAD_STATUS_COMPLETE && !$force) {
+            if (!$fs->is_area_empty($context->id, 'mod_webexactivity', 'recordings', $this->recording->id)) {
+                $this->log("This recording was already downloaded. Skipping.");
+                $lock->release();
+                return true;
+            }
+        }
+
+        if ($this->get_status() == self::DOWNLOAD_STATUS_INPROGRESS) {
+            $this->log("Download is already in progress.");
+            $lock->release();
+            return false;
+        }
+
+        // Now show that we are in progress, and release the lock.
+        $this->set_status(self::DOWNLOAD_STATUS_INPROGRESS);
+        $lock->release();
 
         if (is_null($deleteremote)) {
             $deleteremote = get_config('webexactivity', 'deletedownloadrecordings');;
@@ -77,21 +127,20 @@ class recording_downloader {
         $fs = get_file_storage();
         $exists = false;
         if (!$fs->is_area_empty($context->id, 'mod_webexactivity', 'recordings', $this->recording->id)) {
-            // Recording already exists.
-            if ($force) {
-                $exists = true;
-            } else {
-                return true;
-            }
+            $exists = true;
         }
 
         if (empty($this->recording->fileurl)) {
             // We don't have a url to download. Abort.
+            $this->set_status(self::DOWNLOAD_STATUS_ERROR);
+            $this->set_error("Recording has no fileurl. Aborting.");
             return false;
         }
 
         if (!($downloadurl = $this->get_download_url($this->recording->fileurl))) {
             // Don't seem to have a download URL.
+            $this->set_status(self::DOWNLOAD_STATUS_ERROR);
+            $this->set_error("Failure getting download URL.");
             return false;
         }
 
@@ -110,6 +159,10 @@ class recording_downloader {
 
         if (empty($response) || !empty($response->error)) {
             // Download error of some form.
+            $this->set_status(self::DOWNLOAD_STATUS_ERROR);
+            $this->set_error("Error during download.");
+            $this->log(var_export($response, false));
+
             @unlink($tmpfile);
             return false;
         }
@@ -127,6 +180,10 @@ class recording_downloader {
 
         if (empty($filename)) {
             // Couldn't determine the filename to download.
+            $this->set_status(self::DOWNLOAD_STATUS_ERROR);
+            $this->set_error("Couldn't determine downloads filename.");
+            $this->log(var_export($response, false));
+
             @unlink($tmpfile);
             return false;
         }
@@ -143,16 +200,21 @@ class recording_downloader {
             $newfile = $fs->create_file_from_pathname($filerecord, $tmpfile);
             @unlink($tmpfile);
         } catch (Exception $e) {
+            $this->set_status(self::DOWNLOAD_STATUS_ERROR);
+            $this->set_error("Error when attempting to create file.");
+
             @unlink($tmpfile);
             //throw $e;
             return false;
         }
 
         if (empty($this->recording->fileurl)) {
-            $this->recording->filestatus = recording::RECORDING_FILE_STATUS_INTERNAL_AND_WEBEX;
+            $this->recording->filestatus = recording::FILE_STATUS_INTERNAL_AND_WEBEX;
         } else {
-            $this->recording->filestatus = recording::RECORDING_FILE_STATUS_INTERNAL;
+            $this->recording->filestatus = recording::FILE_STATUS_INTERNAL;
         }
+
+        $this->set_status(self::DOWNLOAD_STATUS_COMPLETE);
 
         $this->recording->save();
 
@@ -286,7 +348,6 @@ class recording_downloader {
     }
 
     protected function parse_js_string(string $input, array $params = []) {
-        // "https://oakland.webex.com/mw3300/mywebex/nbrPrepare.do?siteurl=oakland" + "&recordid=" + recordId+"&prepareTicket=" + prepareTicket
         $output = "";
         $matches = [];
 
@@ -335,7 +396,7 @@ class recording_downloader {
                 if (isset($params[$varname])) {
                     $output .= $params[$varname];
                 } else {
-                    debugging("Could not find $varname");
+                    $this->log("Could not find $varname");
                 }
                 continue;
             } else if (preg_match('/([0-9]*)/i', $input, $matches)) {
@@ -346,85 +407,43 @@ class recording_downloader {
                 continue;
             }
 
-            debugging("Unknown char found $curr");
+            $this->log("Unknown char found $curr");
             $input = substr($input, 1);
         }
 
         return $output;
-//
-//         while (false) {
-//             $input = trim($input, " \t\n\r\0\x0B+");
-//
-//             $firstchar = substr($input, 0, 1);
-//             if ($firstchar == "'" || $firstchar == '"') {
-//                 // This means we are parsing a string.
-//
-//                 // An escaped quite character in the source string will totally break this...
-//                 preg_match('/(["\'])(.*?)(\g1)/im', $input, $matches);
-//
-//                 $string = $matches[2];
-//
-//                 $output .= $string;
-//
-//                 $input = substr($input, strlen($input) + 2);
-//             } else {
-//
-//             }
-//         }
-//         //$input = str_replace(' ', '', $input);
-//         //$parts = explode('+', $input)
-//
-//         return $output;
+
     }
 
-    /**
-     * Fetch the response for the provided XML.
-     *
-     * @param string        $url The url to access.
-     * @return string|bool  String on success, false on failure.
-     * @throws curl_setup_exception on curl setup failure.
-     * @throws connection_exception on connection failure.
-     */
-//     public function retrieve($url) {
-//         $handle = $this->create_curl_handle($url);
-//
-//         if (!$handle) {
-//             throw new exception\curl_setup_exception();
-//         }
-//
-//         $response = curl_exec($handle);
-//
-//         if ($response === false) {
-//             $error = curl_errno($handle) .':'. curl_error($handle);
-//             throw new exception\connection_exception($error);
-//         }
-//         curl_close($handle);
-//
-//         return $response;
-//     }
+    public function log($msg) {
+        if (defined('CLI_SCRIPT')) {
+            mtrace('Recording ' . $this->recording->id . ': ' . $msg);
+        }
+    }
 
+    public function set_status($status) {
+        $this->recording->downloadstatus = $status;
+        $this->recording->save_to_db();
+    }
 
+    public function get_status() {
+        if (isset($this->recording->downloadstatus)) {
+            return $this->recording->downloadstatus;
+        } else {
+            return self::DOWNLOAD_STATUS_PENDING;
+        }
+    }
 
-    /**
-     * Setup a new curl handle for use.
-     *
-     * @return object    The configured curl handle.
-     */
-//     private function create_curl_handle($url) {
-//
-//
-//         $handle = curl_init($url);
-//         curl_setopt($handle, CURLOPT_TIMEOUT, 120);
-//         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-//         curl_setopt($handle, CURLOPT_POST, true);
-//         curl_setopt($handle, CURLOPT_USERAGENT, 'Moodle');
-//         curl_setopt($handle, CURLOPT_HTTPHEADER, array("Content-Type: text/xml charset=UTF-8"));
-//         curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, false);
-//         curl_setopt($handle, CURLOPT_SSL_VERIFYHOST, 0);
-//
-//         return $handle;
-//     }
+    public function set_error($msg) {
+        $this->log($msg);
+        $this->recording->downloaderror = $msg;
+        $this->recording->save_to_db();
+    }
 
+    public function get_lock() {
+        $factory = lock_config::get_lock_factory('enrol_lmb');
 
-
+        $resource = 'downloadrecording'.$this->recording->id;
+        return $factory->get_lock($resource, 10, 100);
+    }
 }
