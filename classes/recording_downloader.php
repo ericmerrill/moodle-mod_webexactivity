@@ -205,7 +205,7 @@ class recording_downloader {
             $fs->delete_area_files($context->id, 'mod_webexactivity', 'recordings', $this->recording->id);
         }
 
-        // Convert the downloaded temp file
+        // Convert the downloaded temp file.
         try {
             $newfile = $fs->create_file_from_pathname($filerecord, $tmpfile);
             @unlink($tmpfile);
