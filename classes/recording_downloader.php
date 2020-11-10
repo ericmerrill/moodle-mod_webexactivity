@@ -144,6 +144,16 @@ class recording_downloader {
             return false;
         }
 
+        // Download the recording details.
+        if (!$details = $this->get_recording_detail()) {
+            // Failed to get the details.
+            $this->set_status(self::DOWNLOAD_STATUS_ERROR);
+            $this->set_error("Failure getting recording details.");
+            return false;
+        }
+
+        $this->recording->downloaddetails = $details;
+
         $filerecord = new stdClass();
         $filerecord->contextid = $context->id;
         $filerecord->component = 'mod_webexactivity';
@@ -209,9 +219,9 @@ class recording_downloader {
         }
 
         if (empty($this->recording->fileurl)) {
-            $this->recording->filestatus = recording::FILE_STATUS_INTERNAL_AND_WEBEX;
-        } else {
             $this->recording->filestatus = recording::FILE_STATUS_INTERNAL;
+        } else {
+            $this->recording->filestatus = recording::FILE_STATUS_INTERNAL_AND_WEBEX;
         }
 
         $this->set_status(self::DOWNLOAD_STATUS_COMPLETE);
@@ -233,8 +243,6 @@ class recording_downloader {
         }
 
         $downloadurl = $this->process_prepare_url($mainpage);
-
-        var_dump($downloadurl);
 
         if (empty($downloadurl)) {
             // Couldn't get the download URL.
@@ -414,6 +422,41 @@ class recording_downloader {
         return $output;
 
     }
+
+    protected function get_recording_detail() {
+        $webex = new webex();
+
+        $xml = local\type\base\xml_gen::recording_detail($this->recording->recordingid);
+        $response = $webex->get_response($xml);
+
+        if (!$response || !isset($response['ep:recording'][0]['#'])) {
+            return false;
+        }
+
+        $base = $response['ep:recording'][0]['#'];
+
+        return $base;
+    }
+
+//     protected function recursive_info($input) {
+//         if (!is_array($input)) {
+//             return $input;
+//         }
+//
+//
+//         $output = [];
+//         foreach ($input as $key => $value) {
+//             if (is_array($value) && count($value) == 0) {
+//                 $output[$key] = [];
+//             } else if (is_array($value) && count($value) == 1) {
+//                 $output[$key] = $this->recursive_info($value);
+//             } else {
+//                 $output[$key] = $value;
+//             }
+//         }
+//
+//         return $output;
+//     }
 
     public function log($msg) {
         if (defined('CLI_SCRIPT')) {

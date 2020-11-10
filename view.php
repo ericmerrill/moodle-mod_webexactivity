@@ -28,6 +28,8 @@
 require('../../config.php');
 require_once($CFG->libdir.'/completionlib.php');
 
+use mod_webexactivity\local\exception\webexactivity_exception;
+
 $id = optional_param('id', 0, PARAM_INT); // Course module ID.
 $action = optional_param('action', false, PARAM_ALPHA);
 $view = optional_param('view', false, PARAM_ALPHA);
@@ -269,6 +271,16 @@ switch ($action) {
             break;
         }
 
+        $fileurl = false;
+        if ($recording->has_internal_file()) {
+            $fileurl = $recording->get_internal_fileurl();
+        } else if ($recording->has_external_file()) {
+            $fileurl = $recording->fileurl;
+        }
+        if (empty($fileurl)) {
+            throw new webexactivity_exception('Recording has no file associated with it.', '', $recording->record);
+        }
+
         $params = array(
             'context' => $context,
             'objectid' => $recordingid
@@ -276,10 +288,6 @@ switch ($action) {
         $event = \mod_webexactivity\event\recording_downloaded::create($params);
         $event->add_record_snapshot('webexactivity_recording', $recording->record);
         $event->trigger();
-
-        if (empty($fileurl = $recording->get_internal_fileurl())) {
-            $fileurl = $recording->fileurl;
-        }
 
         redirect($fileurl);
         break;

@@ -1,5 +1,7 @@
 <?php
 
+use mod_webexactivity\webex;
+use mod_webexactivity\local\type;
 use mod_webexactivity\recording;
 use mod_webexactivity\recording_downloader;
 
@@ -52,9 +54,9 @@ EOT;
 // var_dump(strlen($res));
 // var_dump($curl->get_raw_response());
 
-$recording = new recording(1);
-
-$recording->create_download_task();
+$recording = new recording(3);
+//
+// $recording->create_download_task();
 // var_dump(isset($recording->something));
 // if (isset($recording->something)) {
 //     var_dump($recording->something);
@@ -63,5 +65,17 @@ $recording->create_download_task();
 // unset($recording->something);
 // $recording->save_to_db();
 
-//$dl = new recording_downloader($recording);
+$dl = new recording_downloader($recording);
 //$dl->download_recording(true);
+//$res = $dl->get_recording_detail();
+
+//$webex = new webex();
+// $params = new stdClass();
+// $params->meetingkey = '1786950687';
+// $xml = type\base\xml_gen::list_recordings($params);
+// $xml = type\base\xml_gen::recording_detail('206273582');
+// $res = $webex->get_response($xml);
+
+//var_dump($res);
+
+var_dump(pathinfo('seomthing.asdf.mp4', PATHINFO_EXTENSION));

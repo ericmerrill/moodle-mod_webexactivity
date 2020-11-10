@@ -28,6 +28,7 @@ namespace mod_webexactivity;
 use mod_webexactivity\local\type;
 use mod_webexactivity\local\exception;
 use mod_webexactivity\task\download_recording;
+use mod_webexactivity\task\delete_remote_recording;
 use context_system;
 use context_module;
 
@@ -188,16 +189,60 @@ class recording {
         return true;
     }
 
-    public function get_internal_fileurl($forcedownload = true) {
-        global $CFG;
+    public function has_internal_file($verify = false) {
+        if ($this->filestatus != self::FILE_STATUS_INTERNAL && $this->filestatus != self::FILE_STATUS_INTERNAL_AND_WEBEX) {
+            return false;
+        }
 
+        if ($verify) {
+            $file = $this->get_internal_file();
+
+            if (empty($file)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function get_internal_file() {
         $context = $this->get_context();
 
         $fs = get_file_storage();
         $files = $fs->get_area_files($context->id, 'mod_webexactivity', 'recordings', $this->id, 'sortorder DESC, id ASC', false);
         $file = reset($files);
 
-        if (empty($files)) {
+        if (empty($file)) {
+            return false;
+        }
+
+        return $file;
+    }
+
+    public function has_external_file() {
+        if ($this->filestatus != self::FILE_STATUS_WEBEX && $this->filestatus != self::FILE_STATUS_INTERNAL_AND_WEBEX) {
+            return false;
+        }
+
+        if (empty($this->fileurl)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function get_internal_fileurl($forcedownload = true) {
+        global $CFG;
+
+        if (!$this->has_internal_file(false)) {
+            return false;
+        }
+
+        $context = $this->get_context();
+
+        $file = $this->get_internal_file();
+
+        if (empty($file)) {
             return false;
         }
 
@@ -290,8 +335,9 @@ class recording {
      * @return bool    True on success, false on failure.
      */
     public function save_to_webex() {
-        if ($this->filestatus == self::FILE_STATUS_NONE || $this->filestatus == self::FILE_STATUS_INTERNAL) {
+        if (!$this->has_external_file()) {
             // There is no longer a remote recording. It is now internal, so we don't need to save changes to webex.
+            $this->webexchange = false;
             return true;
         }
 
@@ -328,6 +374,22 @@ class recording {
         $task->set_custom_data($data);
         $task->set_component('mod_webexactivity');
 
+        \core\task\manager::queue_adhoc_task($task);
+    }
+
+    /**
+     * Create delete adhoc task for this recording.
+     *
+     * @param bool|null     $force  Delete even if not currently downloaded.
+     */
+    public function create_delete_task($force = null) {
+        $data = new \stdClass();
+        $data->recordingid = $this->id;
+        $data->forcedelete = $force;
+
+        $task = new delete_remote_recording();
+        $task->set_custom_data($data);
+        $task->set_component('mod_webexactivity');
 
         \core\task\manager::queue_adhoc_task($task);
     }
@@ -335,6 +397,22 @@ class recording {
     public function download_recording($force = null, $deleteremote = null) {
         $downloader = new recording_downloader($this);
         $downloader->download_recording($force, $deleteremote);
+    }
+
+    protected function rename_internal_file($newname) {
+        if (!$file = $this->get_internal_file()) {
+            return;
+        }
+
+        // Get the extension to put on the end.
+        $extension = pathinfo($file->get_filename(), PATHINFO_EXTENSION);
+        $newname = clean_param($newname . '.' . $extension, PARAM_FILE);
+
+        if (strcmp($newname, $file->get_filename()) === 0) {
+            return;
+        }
+
+        $file->rename($file->get_filepath(), $newname);
     }
 
     // ---------------------------------------------------
@@ -359,6 +437,7 @@ class recording {
                 if (strcmp($val, $this->recording->name) === 0) {
                     return;
                 }
+                $this->rename_internal_file($val);
                 $this->webexchange = true;
                 break;
             case 'visible':
@@ -382,6 +461,10 @@ class recording {
      * @param string    $name The name of the value to be retrieved.
      */
     public function __get($name) {
+        if ($name == 'record') {
+            return $this->recording;
+        }
+
         if (!in_array($name, $this->dbkeys)) {
             return $this->additionaldata->$name;
         }
@@ -392,8 +475,6 @@ class recording {
                     return 0;
                 }
                 break;
-            case 'record':
-                return $this->recording;
         }
 
         return $this->recording->$name;

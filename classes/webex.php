@@ -458,6 +458,8 @@ class webex {
             $rec->timemodified = time();
             $rec->visible = 1;
             $rec->deleted = 0;
+            $rec->filestatus = recording::FILE_STATUS_WEBEX;
+            $rec->additional = null;
 
             if ($existing = $DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
                 $update = new \stdClass();
@@ -529,8 +531,8 @@ class webex {
     public function remove_missing_recordings($oldest) {
         global $DB;
 
-        $select = 'timemodified < ? AND timecreated > ?';
-        $params = array(time() - (7 * 24 * 3600), $oldest + (7 * 24 * 3600));
+        $select = 'timemodified < ? AND timecreated > ? AND filestatus = ?';
+        $params = [time() - (7 * 24 * 3600), $oldest + (7 * 24 * 3600), recording::FILE_STATUS_WEBEX];
 
         $DB->delete_records_select('webexactivity_recording', $select, $params);
     }

@@ -415,7 +415,7 @@ class xml_gen {
      * @return string   The XML.
      */
     public static function recording_detail($recordingid) {
-        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.GetRecordingInfo">';
+        $xml = '<body><bodyContent xsi:type="java:com.webex.service.binding.ep.LstRecording">';
         $xml .= '<recordingID>'.$recordingid.'</recordingID>';
         $xml .= '</bodyContent></body>';
 
