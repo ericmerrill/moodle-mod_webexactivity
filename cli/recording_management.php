@@ -35,12 +35,16 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'delete-remote-force' => false,
                                                 'download' => false,
                                                 'endtime' => false,
+                                                'limit' => 0,
+                                                'offset' => 0,
                                                 'recordingid' => false,
                                                 'starttime' => false,
                                                 'help' => false],
                                                ['a' => 'all',
                                                 'd' => 'download',
                                                 'e' => 'endtime',
+                                                'l' => 'limit',
+                                                'o' => 'offset',
                                                 'r' => 'recordingid',
                                                 's' => 'starttime',
                                                 'h' => 'help']);
@@ -54,15 +58,20 @@ if ($options['help']) {
     $help = "Script to manage Webex recordings.
 Lists recordings found if no action options included.
 
-Options:
+Selection options:
 -r, --recordingid
+-s, --starttime
+-e, --endtime
+-l, --limit
+-o, --offset
+-a, --all               If set, include all recordings in DB, even those not associated with a
+                        activity instance.
+
+Actions:
 -d, --download
 --delete-remote
 --delete-remote-force
--s, --starttime
--e, --endtime
--a, --all               If set, include all recordings in DB, even those not associated with a
-                        activity instance.
+
 --force
 -h, --help              Print out this help
 
@@ -110,7 +119,10 @@ if ($recordingid) {
         $select .= 'AND webexid IS NOT NULL';
     }
 
-    $records = $DB->get_recordset_select('webexactivity_recording', $select, $params);
+    $limit = $options['limit'];
+    $start = $options['offset'];
+
+    $records = $DB->get_recordset_select('webexactivity_recording', $select, $params, 'id ASC', '*', $start, $limit);
 }
 
 $delete = (bool)$options['delete-remote'];
@@ -140,5 +152,25 @@ foreach ($records as $rec) {
 
 
 function render_recording($recording) {
-    mtrace(var_export($recording->record, true));
+    $keys = ['id',
+             'webexid',
+             'recordingid',
+             'hostid',
+             'name',
+             'timecreated',
+             'timemodified',
+             'fileurl',
+             'filesize',
+             'visible',
+             'filestatus'];
+
+    mtrace('--------------------------------------------');
+    foreach ($keys as $key) {
+        $val = $recording->$key;
+        if (is_null($val)) {
+            $val = '*NULL*';
+        }
+        mtrace(str_pad($key, 13).' : '.$val);
+    }
+//     mtrace(var_export($recording->record, true));
 }
