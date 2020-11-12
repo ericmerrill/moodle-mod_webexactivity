@@ -35,6 +35,11 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'delete-remote-force' => false,
                                                 'download' => false,
                                                 'endtime' => false,
+                                                'file-external' => false,
+                                                'file-internal' => false,
+                                                'file-both' => false,
+                                                'moodle-meeting' => false,
+                                                'no-moodle-meeting' => false,
                                                 'limit' => 0,
                                                 'offset' => 0,
                                                 'recordingid' => false,
@@ -64,6 +69,11 @@ Selection options:
 -e, --endtime
 -l, --limit
 -o, --offset
+--file-external
+--file-internal
+--file-both
+--moodle-meeting
+--no-moodle-meeting
 -a, --all               If set, include all recordings in DB, even those not associated with a
                         activity instance.
 
@@ -115,8 +125,29 @@ if ($recordingid) {
         $select .= ' AND timecreated <= ?';
         $params[] = $endtime;
     }
-    if (!$options['all']) {
-        $select .= 'AND webexid IS NOT NULL';
+
+    // TODO - maybe OR groups?
+    if ($options['moodle-meeting']) {
+        $select .= ' AND webexid IS NOT NULL';
+    }
+    if ($options['no-moodle-meeting']) {
+        $select .= ' AND webexid IS NULL';
+    } else if (!$options['all']) {
+        $select .= ' AND webexid IS NOT NULL';
+    }
+
+    // TODO - maybe OR groups?
+    if ($options['file-external']) {
+        $select .= ' AND filestatus = ?';
+        $params[] = recording::FILE_STATUS_WEBEX;
+    }
+    if ($options['file-internal']) {
+        $select .= ' AND filestatus = ?';
+        $params[] = recording::FILE_STATUS_INTERNAL;
+    }
+    if ($options['file-both']) {
+        $select .= ' AND filestatus = ?';
+        $params[] = recording::FILE_STATUS_INTERNAL_AND_WEBEX;
     }
 
     $limit = $options['limit'];
