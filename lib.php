@@ -190,11 +190,6 @@ function webexactivity_pluginfile($course,
         return false;
     }
 
-    require_login($course, false, $cm);
-    if (!has_capability('mod/webexactivity:view', $context)) {
-        return false;
-    }
-
     $itemid = (int)array_shift($args);
     if (empty($itemid)) {
         return false;
@@ -202,27 +197,38 @@ function webexactivity_pluginfile($course,
 
     $recording = new \mod_webexactivity\recording($itemid);
 
-    if (!$recording->visible && !has_capability('mod/webexactivity:hostmeeting', $context)) {
-        return false;
-    }
+    if (empty($recording->publicview) || !$recording->visible) {
+        require_login($course, false, $cm);
+        if (!has_capability('mod/webexactivity:view', $context)) {
+            return false;
+        }
 
-    //require_once($CFG->dirroot . '/mod/assign/locallib.php');
-    //$assign = new assign($context, $cm, $course);
+        if (!$recording->visible && !has_capability('mod/webexactivity:hostmeeting', $context)) {
+            return false;
+        }
+    }
 
     if ($filearea !== 'recordings') {
         return false;
     }
+//
+//
+//
+//     $relativepath = implode('/', $args);
+//
+//     $fullpath = "/{$context->id}/mod_webexactivity/$filearea/$itemid/$relativepath";
+//
+//     $fs = get_file_storage();
+//     if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+//         return false;
+//     }
+//
+    $file = $recording->get_internal_file();
 
-
-
-    $relativepath = implode('/', $args);
-
-    $fullpath = "/{$context->id}/mod_webexactivity/$filearea/$itemid/$relativepath";
-
-    $fs = get_file_storage();
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+    if (!$file) {
         return false;
     }
+
     send_stored_file($file, 0, 0, $forcedownload, $options);
 }
 

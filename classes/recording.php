@@ -412,7 +412,11 @@ class recording {
             return;
         }
 
-        $file->rename($file->get_filepath(), $newname);
+        try {
+            $file->rename($file->get_filepath(), $newname);
+        } catch (\Exception $e) {
+            return;
+        }
     }
 
     // ---------------------------------------------------

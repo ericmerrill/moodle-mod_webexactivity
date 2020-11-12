@@ -54,7 +54,7 @@ EOT;
 // var_dump(strlen($res));
 // var_dump($curl->get_raw_response());
 
-$recording = new recording(3);
+$recording = new recording(1);
 //
 // $recording->create_download_task();
 // var_dump(isset($recording->something));
@@ -64,8 +64,9 @@ $recording = new recording(3);
 //
 // unset($recording->something);
 // $recording->save_to_db();
+echo $recording->get_internal_fileurl()."\n";
 
-$dl = new recording_downloader($recording);
+//$dl = new recording_downloader($recording);
 //$dl->download_recording(true);
 //$res = $dl->get_recording_detail();
 
