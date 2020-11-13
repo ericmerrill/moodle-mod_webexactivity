@@ -180,12 +180,13 @@ class recording_downloader {
         }
 
         if ($response->status == '400') {
+            // Sometimes we get a 400 error of unknown reasons. But just trying again later will clear it up.
             $this->set_status(self::DOWNLOAD_STATUS_ERROR);
             $this->set_error("Error during download.");
             $this->log(var_export($response, false));
 
             @unlink($tmpfile);
-            // Throw exception to reenrol adhoc task.
+            // Throw exception to reenrol adhoc task for later processing.
             throw new exception\webexactivity_exception('errordownloadingrecording');
         }
 
