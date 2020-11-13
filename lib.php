@@ -184,18 +184,28 @@ function webexactivity_pluginfile($course,
                 $args,
                 $forcedownload,
                 array $options=array()) {
-    global $CFG;
+    global $CFG, $DB;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
         return false;
     }
 
-    $itemid = (int)array_shift($args);
+    $itemid = array_shift($args);
     if (empty($itemid)) {
         return false;
     }
 
-    $recording = new \mod_webexactivity\recording($itemid);
+    $rec = $DB->get_record('webexactivity_recording', ['uniqueid' => $itemid]);
+
+    if (empty($rec)) {
+        return false;
+    }
+
+    $recording = new \mod_webexactivity\recording($rec);
+
+    if (!empty($recording->deleted)) {
+        return false;
+    }
 
     if (empty($recording->publicview) || !$recording->visible) {
         require_login($course, false, $cm);
@@ -208,7 +218,7 @@ function webexactivity_pluginfile($course,
         }
     }
 
-    if ($filearea !== 'recordings') {
+    if ($filearea !== 'rec') {
         return false;
     }
 //

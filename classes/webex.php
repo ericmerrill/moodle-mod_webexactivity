@@ -460,6 +460,7 @@ class webex {
             $rec->deleted = 0;
             $rec->filestatus = recording::FILE_STATUS_WEBEX;
             $rec->additional = null;
+            $rec->uniqueid = null;
 
             if ($existing = $DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
                 $update = new \stdClass();

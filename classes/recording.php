@@ -78,6 +78,7 @@ class recording {
                          'visible',
                          'deleted',
                          'filestatus',
+                         'uniqueid',
                          'additional',
                          'timemodified'];
 
@@ -234,19 +235,13 @@ class recording {
     public function get_internal_fileurl($forcedownload = true) {
         global $CFG;
 
-        if (!$this->has_internal_file(false)) {
+        if (!$this->has_internal_file(true)) {
             return false;
         }
 
         $context = $this->get_context();
 
-        $file = $this->get_internal_file();
-
-        if (empty($file)) {
-            return false;
-        }
-
-        $path = '/' . $context->id . '/mod_webexactivity/recordings/' . $this->id . '/' . $file->get_filename();
+        $path = '/' . $context->id . '/mod_webexactivity/rec/' . $this->uniqueid;
         $url = file_encode_url("$CFG->wwwroot/pluginfile.php", $path, $forcedownload);
 
         return $url;
@@ -277,6 +272,14 @@ class recording {
         if ($response === false) {
             throw new exception\webexactivity_exception('errordeletingrecording');
         }
+
+        $params = [
+            'context' => $this->get_context(),
+            'objectid' => $this->id
+        ];
+        $event = event\recording_remote_deleted::create($params);
+        $event->add_record_snapshot('webexactivity_recording', $this->record);
+        $event->trigger();
 
         if ($this->filestatus == self::FILE_STATUS_INTERNAL_AND_WEBEX) {
             $this->filestatus = self::FILE_STATUS_INTERNAL;
@@ -515,4 +518,5 @@ class recording {
 
         unset($this->recording->$name);
     }
+
 }

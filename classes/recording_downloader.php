@@ -32,6 +32,7 @@ use mod_webexactivity\recording;
 use curl;
 use stdClass;
 use core\lock\lock_config;
+use mod_webexactivity\local\exception;
 
 
 defined('MOODLE_INTERNAL') || die();
@@ -165,12 +166,37 @@ class recording_downloader {
 
         $tmpfile = $dir.'/tmp';
 
+        $this->log('Downloading ~' . display_size($this->recording->filesize) . ' into '.$tmpfile);
         $response = download_file_content($downloadurl, null, null, true, 3000, 20, false, $tmpfile);
 
         if (empty($response) || !empty($response->error)) {
             // Download error of some form.
             $this->set_status(self::DOWNLOAD_STATUS_ERROR);
             $this->set_error("Error during download.");
+            $this->log(var_export($response, false));
+
+            @unlink($tmpfile);
+            return false;
+        }
+
+        if ($response->status == '400') {
+            $this->set_status(self::DOWNLOAD_STATUS_ERROR);
+            $this->set_error("Error during download.");
+            $this->log(var_export($response, false));
+
+            @unlink($tmpfile);
+            // Throw exception to reenrol adhoc task.
+            throw new exception\webexactivity_exception('errordownloadingrecording');
+        }
+
+        $downloadedsize = filesize($tmpfile);
+        $diff = $downloadedsize - $this->recording->filesize;
+        $this->log('Downloaded ~' . display_size($downloadedsize));
+        $this->log('Difference ' . $diff . ' bytes');
+
+        if ($diff < -20000) {
+            $this->set_status(self::DOWNLOAD_STATUS_ERROR);
+            $this->set_error("File downloaded was too small.");
             $this->log(var_export($response, false));
 
             @unlink($tmpfile);
@@ -223,10 +249,24 @@ class recording_downloader {
         } else {
             $this->recording->filestatus = recording::FILE_STATUS_INTERNAL_AND_WEBEX;
         }
+        // Generate a uniqueid if the recording doesn't already have one.
+        if (empty($this->recording->uniqueid)) {
+            $this->recording->uniqueid = self::generate_unique_id();
+        }
+
+        unset($this->recording->downloaderror);
 
         $this->set_status(self::DOWNLOAD_STATUS_COMPLETE);
 
         $this->recording->save();
+
+        $params = [
+            'context' => $this->recording->get_context(),
+            'objectid' => $this->recording->id
+        ];
+        $event = event\recording_made_internal::create($params);
+        $event->add_record_snapshot('webexactivity_recording', $this->recording->record);
+        $event->trigger();
 
         if ($deleteremote) {
             $this->recording->delete_remote_recording();
@@ -488,5 +528,22 @@ class recording_downloader {
 
         $resource = 'downloadrecording'.$this->recording->id;
         return $factory->get_lock($resource, 10, 100);
+    }
+
+    public static function generate_unique_id($len = 8) {
+        global $DB;
+        $chars = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
+
+        while (true) {
+            $output = '';
+            for ($i = 0; $i < $len; $i++) {
+                $index = rand(0, strlen($chars) - 1);
+                $output .= $chars[$index];
+            }
+
+            if (!$DB->record_exists('webexactivity_recording', ['uniqueid' => $output])) {
+                return $output;
+            }
+        }
     }
 }

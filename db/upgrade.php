@@ -256,6 +256,38 @@ function xmldb_webexactivity_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2020110600, 'webexactivity');
     }
 
+    if ($oldversion < 2020111200) {
+
+        // Define field uniqueid to be added to webexactivity_recording.
+        $table = new xmldb_table('webexactivity_recording');
+        $field = new xmldb_field('uniqueid', XMLDB_TYPE_CHAR, '10', null, null, null, null, 'filestatus');
+
+        // Conditionally launch add field uniqueid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define key uniqueid (unique) to be added to webexactivity_recording.
+        $table = new xmldb_table('webexactivity_recording');
+        $key = new xmldb_key('uniqueid', XMLDB_KEY_UNIQUE, ['uniqueid']);
+
+        // Launch add key uniqueid.
+        $dbman->add_key($table, $key);
+
+        // Now lets give any recordings that exist unique keys.
+        $select = '(filestatus = 1 OR filestatus = 2) AND uniqueid IS NULL';
+        if ($records = $DB->get_records_select('webexactivity_recording', $select)) {
+            foreach ($records as $record) {
+                $unique = \mod_webexactivity\recording_downloader::generate_unique_id();
+                $DB->set_field('webexactivity_recording', 'uniqueid', $unique, ['id' => $record->id]);
+            }
+        }
+
+        // Webexactivity savepoint reached.
+        upgrade_mod_savepoint(true, 2020111200, 'webexactivity');
+    }
+
+
 
     return true;
 }
