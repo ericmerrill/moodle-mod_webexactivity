@@ -130,6 +130,7 @@ $string['recordingfileurl'] = 'Download';
 $string['recordinglength'] = '({$a->time}, {$a->size})';
 $string['recordingname'] = 'Recording name';
 $string['recordings'] = 'Recordings';
+$string['recordingsnotavailable'] = 'Some of these recordings will not be accessable to students.<br/>Change the "Allow students to download recordings" setting to correct.';
 $string['recordingsettings'] = 'Recordings Settings';
 $string['recordingstreamurl'] = 'Play';
 $string['recordingtrashtime'] = 'Recording trash time';

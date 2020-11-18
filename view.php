@@ -501,6 +501,18 @@ if (!$view) {
         echo get_string('recordings', 'webexactivity');
         echo '</div>';
 
+        if ($canhost && !$webexmeeting->studentdownload) {
+            // Show a message if some meetings won't be visible to students.
+            $noonline = false;
+            foreach ($recordings as $recording) {
+                if (!$recording->has_external_file()) {
+                    $msg = get_string('recordingsnotavailable', 'webexactivity');
+                    echo "<div><div style=\"display: inline-block\" class=\"alert alert-danger\">{$msg}</div></div>";
+                    break;
+                }
+            }
+        }
+
         foreach ($recordings as $recording) {
             if ($recording->visible) {
                 echo '<div class="recording">';
