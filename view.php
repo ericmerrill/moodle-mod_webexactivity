@@ -237,6 +237,7 @@ switch ($action) {
         break;
 
     case 'viewrecording':
+        // Not really needed anymore. Kept for backwards compat with old link.
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\recording($recordingid);
         $recwebexid = $recording->webexid;
@@ -248,18 +249,11 @@ switch ($action) {
             break;
         }
 
-        $params = array(
-            'context' => $context,
-            'objectid' => $recordingid
-        );
-        $event = \mod_webexactivity\event\recording_viewed::create($params);
-        $event->add_record_snapshot('webexactivity_recording', $recording->record);
-        $event->trigger();
-
-        redirect($recording->streamurl);
+        redirect($recording->get_recording_url(false, true));
         break;
 
     case 'downloadrecording';
+        // Not really needed anymore. Kept for backwards compat with old link.
         $recordingid = required_param('recordingid', PARAM_INT);
         $recording = new \mod_webexactivity\recording($recordingid);
         $recwebexid = $recording->webexid;
@@ -271,25 +265,7 @@ switch ($action) {
             break;
         }
 
-        $fileurl = false;
-        if ($recording->has_internal_file()) {
-            $fileurl = $recording->get_internal_fileurl();
-        } else if ($recording->has_external_file()) {
-            $fileurl = $recording->fileurl;
-        }
-        if (empty($fileurl)) {
-            throw new webexactivity_exception('Recording has no file associated with it.', '', $recording->record);
-        }
-
-        $params = array(
-            'context' => $context,
-            'objectid' => $recordingid
-        );
-        $event = \mod_webexactivity\event\recording_downloaded::create($params);
-        $event->add_record_snapshot('webexactivity_recording', $recording->record);
-        $event->trigger();
-
-        redirect($fileurl);
+        redirect($recording->get_recording_url(true));
         break;
 
     case 'hiderecording':
@@ -344,7 +320,13 @@ switch ($action) {
             $action = false;
             $view = false;
         } else if ($fromform = $mform->get_data()) {
+            // Save form data.
             $recording->name = $fromform->name;
+            if (isset($fromform->publicview)) {
+                $recording->publicview = 1;
+            } else {
+                $recording->publicview = 0;
+            }
             if (isset($fromform->visible)) {
                 $recording->visible = 1;
             } else {
@@ -360,6 +342,9 @@ switch ($action) {
             $data->recordingid = $recording->id;
             $data->action = 'editrecording';
             $data->visible = $recording->visible;
+            $data->publicview = empty($recording->publicview) ? 0 : 1;
+            $url = $recording->get_recording_url();
+            $data->url = '<a href="'.$url.'" target="_blank">'.$url.'</a>';
             $mform->set_data($data);
             break;
         }
@@ -513,7 +498,6 @@ if (!$view) {
 
         if ($canhost && !$webexmeeting->studentdownload) {
             // Show a message if some meetings won't be visible to students.
-            $noonline = false;
             foreach ($recordings as $recording) {
                 if (!$recording->has_external_file()) {
                     $msg = get_string('recordingsnotavailable', 'webexactivity');
@@ -537,29 +521,21 @@ if (!$view) {
             // Playback buttons.
             echo '<div class="recordingblock buttons">';
             // Play button.
-            if (!empty($recording->streamurl)) {
+            if ($recording->is_streamable()) {
                 echo '<div class="play">';
-                $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'viewrecording');
-                $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-                echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('play', 'Play', 'mod_webexactivity'),
+                $url = $recording->get_recording_url(false, true);
+                echo $OUTPUT->action_icon($url, new \pix_icon('play', 'Play', 'mod_webexactivity'),
                         null, array('target' => '_blank'));
                 echo '</div>';
             }
 
             // Download Button.
-            if ($candownload) {
-                if (empty($fileurl = $recording->get_internal_fileurl())) {
-                    $fileurl = $recording->fileurl;
-                }
-
-                if (!empty($fileurl)) {
-                    echo '<div class="download">';
-                    $params = array('id' => $id, 'recordingid' => $recording->id, 'action' => 'downloadrecording');
-                    $urlobj = new moodle_url('/mod/webexactivity/view.php', $params);
-                    echo $OUTPUT->action_icon($urlobj->out(false), new \pix_icon('download', 'Download', 'mod_webexactivity'),
-                            null, array('target' => '_blank'));
-                    echo '</div>';
-                }
+            if ($candownload && $recording->is_downloadable()) {
+                echo '<div class="download">';
+                $url = $recording->get_recording_url(true);
+                echo $OUTPUT->action_icon($url, new \pix_icon('download', 'Download', 'mod_webexactivity'),
+                        null, array('target' => '_blank'));
+                echo '</div>';
             }
 
             echo '</div>';

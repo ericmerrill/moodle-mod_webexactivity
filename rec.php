@@ -30,8 +30,10 @@ require_once($CFG->libdir.'/completionlib.php');
 
 use mod_webexactivity\local\exception\webexactivity_exception;
 
+
 $recording = false;
 $download = false;
+$stream = false;
 $sendfile = false;
 
 // Get the id and arguments.
@@ -43,6 +45,9 @@ if (!empty($args)) {
     foreach ($parts as $item) {
         if ($item === 'download') {
             $download = true;
+        }
+        if ($item === 'stream') {
+            $stream = true;
         }
         if ($item === 'file') {
             $sendfile = true;
@@ -83,25 +88,104 @@ if (empty($recording->publicview)) {
     require_login($course, false, $cm);
 }
 
-$canview = has_capability('mod/webexactivity:view', $context);
 $canhost = has_capability('mod/webexactivity:hostmeeting', $context);
+
+$candownload = true;
+if ($meeting) {
+    $candownload = $meeting->studentdownload;
+    $candownload = $candownload || $canhost;
+
+
+}
 
 if ((!$recording->visible || $recording->deleted) && !$canhost) {
     throw new webexactivity_exception('recordingnotavailable');
 }
 
-$file = $recording->get_internal_file();
+// Determine whether to stream or download.
+if ($stream) {
+    if (!$recording->is_streamable()) {
+        $stream = false;
+    } else {
+        $download = false;
+    }
+}
+if ($download) {
+    if (!$recording->is_downloadable()) {
+        $download = false;
+    } else {
+        $stream = false;
+    }
+    if (!$candownload) {
+        $download = false;
+    }
+}
 
-if (!$file) {
+// Pick a default if nothing selected.
+if (!$download && !$stream) {
+    // Pick the default behaviour.
+    if ($recording->is_streamable()) {
+        $stream = true;
+    } else if ($recording->is_downloadable() && $candownload) {
+        $download = true;
+    }
+
+}
+
+$filename = $recording->name;
+if ($download) {
+
+    $file = $recording->get_internal_file();
+
+    if (!$file) {
+        if (!empty($recording->fileurl)) {
+            // We don't have an internal file, and we do have a remote one, so send them away to download it.
+            $params = array(
+                'context' => $context,
+                'objectid' => $recording->id
+            );
+            $event = \mod_webexactivity\event\recording_downloaded::create($params);
+            $event->add_record_snapshot('webexactivity_recording', $recording->record);
+            $event->trigger();
+            redirect($recording->fileurl);
+        }
+
+        throw new webexactivity_exception('recordingnotavailable');
+    }
+
+    $filename = $file->get_filename();
+
+    if ($sendfile) {
+        // This indicates to send the actual file.
+        // Record the file download to the log.
+        $params = array(
+            'context' => $context,
+            'objectid' => $recording->id
+        );
+        $event = \mod_webexactivity\event\recording_downloaded::create($params);
+        $event->add_record_snapshot('webexactivity_recording', $recording->record);
+        $event->trigger();
+
+        // Send the file.
+        send_stored_file($file, 0, 0, $download);
+        exit();
+    }
+} else if ($stream) {
+    $params = array(
+        'context' => $context,
+        'objectid' => $recording->id
+    );
+    $event = \mod_webexactivity\event\recording_viewed::create($params);
+    $event->add_record_snapshot('webexactivity_recording', $recording->record);
+    $event->trigger();
+
+    redirect($recording->get_stream_url());
+} else {
+    // Seems we can't stream or download this file.
     throw new webexactivity_exception('recordingnotavailable');
 }
 
-if ($sendfile) {
-    // Send the file.
-    // TODO - log event.
-    send_stored_file($file, 0, 0, $download);
-    exit();
-}
+
 
 $returnurl = new moodle_url('/mod/webexactivity/rec.php'.$args);
 $PAGE->set_url($returnurl);
@@ -110,17 +194,34 @@ if ($cm) {
 } else {
     $PAGE->set_context($context);
 }
+$heading = get_string('downloadingfile', 'webexactivity', $filename);
+$title = $heading;
+if ($course && $meeting) {
+    $title = $course->shortname.': '.$meeting->name.': '.$title;
+}
+$PAGE->set_title($heading);
 
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string(get_string('downloadingfile', 'webexactivity', $recording->name)), 2);
+echo $OUTPUT->heading($heading, 2);
+
+$downloadurl = $recording->get_true_fileurl($download);
+
+$PAGE->requires->js_call_amd('mod_webexactivity/downloader', 'init', [$downloadurl]);
 
 // TODO - Don't show for mp4 files.
-echo '<div class="downloadinfo">'.get_string('playerinfo', 'webexactivity').'</div>';
+echo '<div class="downloadalt">'.get_string('downloadalt', 'webexactivity', $downloadurl).'</div>';
+
+$extension = pathinfo($file->get_filename(), PATHINFO_EXTENSION);
+$extension = strtoupper($extension);
+if ((strcasecmp($extension, 'arf') === 0) || (strcasecmp($extension, 'wrf') === 0)) {
+    echo '<div class="downloadinfo">'.get_string('playerinfo', 'webexactivity', $extension).'</div>';
+}
+
 
 echo '<div class="t-btns">
-    <button type="button" class="btn btn-default" id="mw-btn-recording-download" onclick="javascript:window.close()">Close Window</button>
-</div>';
+    <button type="button" class="btn btn-default" onclick="javascript:window.close()">'.get_string('closewindow', 'webexactivity').
+        '</button></div>';
 
 // echo var_export($context, true);
 

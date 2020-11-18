@@ -27,38 +27,109 @@
  * Grunt configuration
  */
 module.exports = function(grunt) {
+    // We need to include the core Moodle grunt file too, otherwise we can't run tasks like "amd".
+    require("grunt-load-gruntfile")(grunt);
+    grunt.loadGruntfile("../../Gruntfile.js");
+
+    const sass = require('node-sass');
+
     var cwd = process.cwd();
 
+    var uglifyRename = function(destPath, srcPath) {
+        destPath = srcPath.replace('src', 'build');
+        destPath = destPath.replace('.js', '.min.js');
+        return destPath;
+    };
+
     grunt.initConfig({
-        less: {
-            // Compile moodle styles.
-            mod_webex: {
+        exec: {
+            decachetheme: {
+                cmd: 'php "../../admin/cli/purge_caches.php" --theme && php "../../admin/cli/build_theme_css.php" --themes=boost --direction=ltr',
+                callback: function(error) {
+                    if (!error) {
+                        grunt.log.writeln("Moodle theme cache reset.");
+                    }
+                }
+            },
+        },
+        sass: {
+            dist: {
+                files: {
+                    "styles.css": "scss/styles.scss"
+                }
+            },
+            options: {
+                implementation: sass
+            }
+        },
+        stylelint: {
+            scss: {
                 options: {
-                    compress: false
+                    syntax: 'scss',
+
                 },
-                src: 'less/styles.less',
-                dest: 'styles.css'
+                src: ['scss/styles.scss']
+            },
+            css: {
+                src: ['styles.css'],
+                options: {
+                    configOverrides: {
+                        rules: {
+                            // These rules have to be disabled in .stylelintrc for scss compat.
+                            "at-rule-no-unknown": true,
+                        }
+                    }
+                }
             }
         },
         watch: {
-            // Watch for any changes to less files and compile.
-            files: ["less/**/*.less"],
-            tasks: ["lessmwx"],
+
             options: {
                 spawn: false,
                 livereload: true
+            },
+            scss: {
+                // Watch for any changes to less files and compile.
+                files: ["**/scss/**/*.scss"],
+                tasks: ["cssdecache"],
+            },
+            amd: {
+                // If any .js file changes in directory "amd/src" then run the "amd" task.
+                files: ["**/amd/src/*.js"],
+                tasks: ["amd"]
+            },
+        },
+        uglify: {
+            amd: {
+                files: [{
+                    expand: true,
+                    src: ['amd/src/*.js'],
+                    rename: uglifyRename
+                }],
+                options: {report: 'none'}
             }
-        }
+        },
+        eslint: {
+            // Setup the local AMD source files.
+            amd: {src: 'amd/src/*.js'},
+            options: {report: 'none'}
+        },
+
     });
 
     // Load contrib tasks from Moodle.
-    process.chdir(__dirname + '/../..');
-    grunt.loadNpmTasks("grunt-contrib-less");
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    process.chdir(cwd);
+//     process.chdir(__dirname + '/../..');
+//     grunt.loadNpmTasks("grunt-contrib-less");
+//     grunt.loadNpmTasks('grunt-contrib-watch');
+//     process.chdir(cwd);
+
+    grunt.loadNpmTasks("grunt-exec");
 
     // Register tasks.
+    grunt.registerTask('amd', ['eslint:amd', 'uglify']);
+    grunt.registerTask('css', ['sass']);
+    grunt.registerTask('cssdecache', ['css', 'exec:decachetheme']);
+    grunt.registerTask('csscheck', ['sass', 'stylelint:scss']);
     grunt.registerTask("default", ["watch"]);
-    grunt.registerTask("lessmwx", ['less:mod_webex']);
 
 };

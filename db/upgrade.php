@@ -275,10 +275,10 @@ function xmldb_webexactivity_upgrade($oldversion) {
         $dbman->add_key($table, $key);
 
         // Now lets give any recordings that exist unique keys.
-        $select = '(filestatus = 1 OR filestatus = 2) AND uniqueid IS NULL';
+        $select = 'uniqueid IS NULL';
         if ($records = $DB->get_records_select('webexactivity_recording', $select)) {
             foreach ($records as $record) {
-                $unique = \mod_webexactivity\recording_downloader::generate_unique_id();
+                $unique = \mod_webexactivity\recording::generate_unique_id();
                 $DB->set_field('webexactivity_recording', 'uniqueid', $unique, ['id' => $record->id]);
             }
         }

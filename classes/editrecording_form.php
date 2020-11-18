@@ -61,6 +61,10 @@ class editrecording_form extends \moodleform {
 
         $mform->addElement('checkbox', 'visible', get_string('studentvisible', 'webexactivity'));
 
+        $mform->addElement('checkbox', 'publicview', get_string('recordingpublicview', 'webexactivity'));
+
+        $mform->addElement('static', 'url', get_string('recordingdirecturl', 'webexactivity'));
+
         $this->add_action_buttons();
 
         $mform->addElement('html', '</div>');

@@ -190,6 +190,12 @@ class recording {
         return true;
     }
 
+    /**
+     * Check if the recording has an internal file associated with it.
+     *
+     * @param bool      $verify If true, then check that the file exists in the filestore.
+     * @return bool     True on if yes, false if no.
+     */
     public function has_internal_file($verify = false) {
         if ($this->filestatus != self::FILE_STATUS_INTERNAL && $this->filestatus != self::FILE_STATUS_INTERNAL_AND_WEBEX) {
             return false;
@@ -206,6 +212,11 @@ class recording {
         return true;
     }
 
+    /**
+     * Get the actual internal file for this recording from the filestore.
+     *
+     * @return stored_file|false    File on success, false on failure.
+     */
     public function get_internal_file() {
         $context = $this->get_context();
 
@@ -220,6 +231,29 @@ class recording {
         return $file;
     }
 
+    /**
+     * Get the URL to the access page of this recording.
+     *
+     * @param bool      $download If true, create link specifying download.
+     * @param bool      $stream If true, create link specifying streaming.
+     * @return string   The URL.
+     */
+    public function get_recording_url($download = false, $stream = false) {
+        $forcedownload = true;
+
+        $args = '';
+        if ($download) {
+            $args .= '/download';
+        }
+        if ($stream) {
+            $args .= '/stream';
+        }
+
+        $url = new \moodle_url('/mod/webexactivity/rec.php');
+        $url->set_slashargument('/'.$this->uniqueid.$args);
+        return $url->out(false);
+    }
+
     public function has_external_file() {
         if ($this->filestatus != self::FILE_STATUS_WEBEX && $this->filestatus != self::FILE_STATUS_INTERNAL_AND_WEBEX) {
             return false;
@@ -232,19 +266,44 @@ class recording {
         return true;
     }
 
-    public function get_internal_fileurl($forcedownload = true) {
+    public function is_downloadable() {
+        if ($this->has_internal_file(true)) {
+            return true;
+        }
+        if (!empty($this->fileurl)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function is_streamable() {
+        if (!empty($this->streamurl)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function get_true_fileurl($forcedownload = true) {
         global $CFG;
 
         if (!$this->has_internal_file(true)) {
             return false;
         }
 
-        $context = $this->get_context();
+        $args = '';
+        if ($forcedownload) {
+            $args .= '/download';
+        }
 
-        $path = '/' . $context->id . '/mod_webexactivity/rec/' . $this->uniqueid;
-        $url = file_encode_url("$CFG->wwwroot/pluginfile.php", $path, $forcedownload);
+        $url = new \moodle_url('/mod/webexactivity/rec.php');
+        $url->set_slashargument('/'.$this->uniqueid.$args.'/file');
+        return $url->out(false);
+    }
 
-        return $url;
+    public function get_stream_url() {
+        return $this->streamurl;
     }
 
     /**
@@ -285,6 +344,13 @@ class recording {
             $this->filestatus = self::FILE_STATUS_INTERNAL;
         } else if ($this->filestatus == self::FILE_STATUS_WEBEX) {
             $this->filestatus = self::FILE_STATUS_NONE;
+        }
+
+        if (!empty($this->fileurl)) {
+            $this->oldfileurl = $this->fileurl;
+        }
+        if (!empty($this->streamurl)) {
+            $this->oldstreamurl = $this->streamurl;
         }
 
         $this->fileurl = null;
@@ -419,6 +485,23 @@ class recording {
             $file->rename($file->get_filepath(), $newname);
         } catch (\Exception $e) {
             return;
+        }
+    }
+
+    public static function generate_unique_id($len = 8) {
+        global $DB;
+        $chars = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
+
+        while (true) {
+            $output = '';
+            for ($i = 0; $i < $len; $i++) {
+                $index = rand(0, strlen($chars) - 1);
+                $output .= $chars[$index];
+            }
+
+            if (!$DB->record_exists('webexactivity_recording', ['uniqueid' => $output])) {
+                return $output;
+            }
         }
     }
 

@@ -3,10 +3,10 @@
         clear: both;
         width: 100%;
         text-align: center;
-    
+
         .hiddenrecording .details {
             color: gray;
-            
+
             .name {
             }
         }
@@ -16,10 +16,10 @@
             font-size: 110%;
             margin-bottom: 10px;
         }
-        
+
         .recording {
             margin-bottom: 20px;
-        
+
 
             .recordingblock {
                 vertical-align: top;
@@ -34,7 +34,7 @@
                 text-align: right;
                 margin-right: 10px;
                 margin-left: 10px;
-                
+
                 .play {
                     display: inline-block;
                 }
@@ -47,7 +47,7 @@
             .details {
                 max-width: 400px;
                 text-align: left;
-                
+
                 .name {
                     font-weight: bold;
                 }
@@ -69,4 +69,10 @@
     .webexrecordingdeleted {
         color: gray;
     }
+
+    .downloadinfo, .downloadalt {
+        padding-bottom: 15px;
+    }
+
+
 }

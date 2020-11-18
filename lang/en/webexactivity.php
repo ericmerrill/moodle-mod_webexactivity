@@ -47,6 +47,7 @@ $string['badpasswordexception'] = 'Your WebEx password is incorrect and could no
 $string['badpassword'] = 'Your WebEx username and password do not match.';
 $string['calpublish'] = 'Publish meeting to calendar';
 $string['calpublish_help'] = 'Publish the meeting to the courses Moodle calendar and display it on user\'s dashboard pages. Extended Availability meetings will not be published.';
+$string['closewindow'] = 'Close Window';
 $string['confirmrecordingdelete'] = 'Are you sure you want to delete the recording <b>{$a->name}</b>, with a length of {$a->time}? This cannot be undone.';
 $string['confirmrecordingsdelete'] = 'Are you sure you want to delete the selected recordings? This cannot be undone.';
 $string['selectnone'] = 'Deselect all';
@@ -66,6 +67,7 @@ $string['directlinkstext'] = '<p>These links provide direct access to the record
 Streaming: <a target="_blank" href="{$a->streamurl}" alt="Streaming link">{$a->streamurl}</a><br />
 Download: <a target="_blank" href="{$a->fileurl}" alt="Streaming link">{$a->fileurl}</a><br />
 ';
+$string['downloadalt'] = 'If the download doesn\'t, you can <a href="{$a}">click here</a>';
 $string['downloadingfile'] = 'Downloading file: {$a}';
 $string['downloadnewrecordings'] = 'Auto download new recordings';
 $string['downloadnewrecordings_help'] = 'When new recordings are detected that are associated with an activity in Moodle, download into Moodle';
@@ -126,14 +128,17 @@ $string['meetingtypes_desc'] = 'These are WebEx meeting types supported by this 
 $string['meetingupcoming'] = 'This meeting is not yet available to join.';
 $string['page_managerecordings'] = 'Manage Recordings';
 $string['page_manageusers'] = 'Manage Users';
-$string['playerinfo'] = '<B>Note:</B> The Webex ARF player is required to playback the recording.
+$string['playerinfo'] = '<B>Note:</B> The Webex {$a} player is required to playback the recording.
     <a href="https://www.webex.com/video-recording.html" target="_blank">
-        Download ARF player
+        Download {$a} player
     </a>';
 $string['prefix'] = 'Username Prefix';
 $string['prefix_help'] = 'This string will be prefixed to all usernames created by this module.';
+$string['recordingdownloadnotallowed'] = 'You are not allowed to download this recording.';
 $string['recordingfileurl'] = 'Download';
 $string['recordinglength'] = '({$a->time}, {$a->size})';
+$string['recordingpublicview'] = 'Accessible to public';
+$string['recordingdirecturl'] = 'Direct URL to recording';
 $string['recordingname'] = 'Recording name';
 $string['recordingnotavailable'] = 'Recording not available';
 $string['recordingnotfound'] = 'Recording was not found.';

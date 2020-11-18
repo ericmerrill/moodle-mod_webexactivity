@@ -250,10 +250,8 @@ class recording_downloader {
         } else {
             $this->recording->filestatus = recording::FILE_STATUS_INTERNAL_AND_WEBEX;
         }
-        // Generate a uniqueid if the recording doesn't already have one.
-        if (empty($this->recording->uniqueid)) {
-            $this->recording->uniqueid = self::generate_unique_id();
-        }
+
+        $this->recording->truefilesize = $downloadedsize;
 
         unset($this->recording->downloaderror);
 
@@ -531,20 +529,5 @@ class recording_downloader {
         return $factory->get_lock($resource, 10, 100);
     }
 
-    public static function generate_unique_id($len = 8) {
-        global $DB;
-        $chars = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
 
-        while (true) {
-            $output = '';
-            for ($i = 0; $i < $len; $i++) {
-                $index = rand(0, strlen($chars) - 1);
-                $output .= $chars[$index];
-            }
-
-            if (!$DB->record_exists('webexactivity_recording', ['uniqueid' => $output])) {
-                return $output;
-            }
-        }
-    }
 }

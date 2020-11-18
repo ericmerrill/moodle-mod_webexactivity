@@ -38,6 +38,7 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'file-external' => false,
                                                 'file-internal' => false,
                                                 'file-both' => false,
+                                                'generate-missing-ids' => false,
                                                 'moodle-meeting' => false,
                                                 'make-public' => false,
                                                 'make-private' => false,
@@ -85,6 +86,7 @@ Actions:
 --delete-remote-force
 --make-public
 --make-private
+--generate-missing-ids
 
 --force
 -h, --help              Print out this help
@@ -181,6 +183,20 @@ foreach ($records as $rec) {
         $recording->save();
         mtrace("Made recording private.");
     }
+    if ($options['generate-missing-ids']) {
+        // We refetch the recording, just to make sure the unique ID hasn't since been added.
+        $newrec = new recording($rec->id);
+        if (empty($newrec->uniqueid)) {
+            $newrec->uniqueid = recording::generate_unique_id();
+            $newrec->save();
+            $recording->uniqueid = $newrec->uniqueid;
+            mtrace("Created unique id ".$newrec->uniqueid);
+        } else {
+            mtrace("Recording already has uniqueid ".$recording->uniqueid);
+        }
+
+    }
+
 
     if ($download) {
         mtrace("Creating download adhoc task " . ($delete ? "with" : "without") . " delete");

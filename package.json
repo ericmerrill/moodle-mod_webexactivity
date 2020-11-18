@@ -1,0 +1,8 @@
+{
+   "name": "moodle-mod_webexactivity",
+   "private": true,
+   "devDependencies": {
+      "grunt-exec": "^3.0.0",
+      "grunt-load-gruntfile": "0.0.2"
+   }
+}

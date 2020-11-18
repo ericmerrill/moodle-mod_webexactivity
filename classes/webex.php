@@ -460,7 +460,7 @@ class webex {
             $rec->deleted = 0;
             $rec->filestatus = recording::FILE_STATUS_WEBEX;
             $rec->additional = null;
-            $rec->uniqueid = null;
+            $rec->uniqueid = null;//recording::generate_unique_id();
 
             if ($existing = $DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
                 $update = new \stdClass();
@@ -540,10 +540,22 @@ class webex {
 
         $params[2] = recording::FILE_STATUS_INTERNAL_AND_WEBEX;
         // Clear some fields.
-        $DB->set_field_select('webexactivity_recording', 'fileurl', null, $select, $params);
-        $DB->set_field_select('webexactivity_recording', 'streamurl', null, $select, $params);
-        // Update the file status.
-        $DB->set_field_select('webexactivity_recording', 'filestatus', recording::FILE_STATUS_INTERNAL, $select, $params);
+        $records = $DB->get_recordset_select('webexactivity_recording', $select, $params);
+
+        foreach ($records as $record) {
+            $recording = new recording($record);
+            if (!empty($recording->fileurl)) {
+                $recording->oldfileurl = $recording->fileurl;
+            }
+            if (!empty($recording->streamurl)) {
+                $recording->oldstreamurl = $recording->streamurl;
+            }
+
+            $recording->filestatus = recording::FILE_STATUS_INTERNAL;
+            $recording->fileurl = null;
+            $recording->streamurl = null;
+            $recording->save_to_db();
+        }
     }
 
 

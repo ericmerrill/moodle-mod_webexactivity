@@ -64,12 +64,10 @@ $recording = new recording(1);
 //
 // unset($recording->something);
 // $recording->save_to_db();
-//echo $recording->get_internal_fileurl()."\n";
-echo recording_downloader::generate_unique_id()."\n";
+//echo recording_downloader::generate_unique_id()."\n";
 //$dl = new recording_downloader($recording);
 //$dl->download_recording(true);
 //$res = $dl->get_recording_detail();
-
 //$webex = new webex();
 // $params = new stdClass();
 // $params->meetingkey = '1786950687';
