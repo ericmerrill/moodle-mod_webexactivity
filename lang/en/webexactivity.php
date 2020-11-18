@@ -104,6 +104,7 @@ $string['getexternallink'] = '<a href="{$a->url}">Get external participant link<
 $string['host'] = 'Host';
 $string['hostmeetinglink'] = '<a href="{$a->url}">Host Meeting</a>';
 $string['hostschedulingexception'] = 'User cannot scheduling a meeting for this host.';
+$string['hostwarning'] = '-';
 $string['inprogress'] = 'In progress';
 $string['invalidtype'] = 'Invalid type';
 $string['joinmeetinglink'] = '<a href="{$a->url}">Join Meeting</a>';

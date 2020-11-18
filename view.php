@@ -450,6 +450,16 @@ if (!$view) {
         echo '</tr>' . "\n";
     }
 
+    if ($canhost) {
+        $stringmgr = get_string_manager();
+        if ($stringmgr->string_exists('hostwarning', 'webexactivity')) {
+            $msg = $stringmgr->get_string('hostwarning', 'webexactivity');
+            if (!empty($msg) && $msg != '-') {
+                echo "<tr><td colspan=2><div class=\"alert alert-danger\">{$msg}</div></td><tr>";
+            }
+        }
+    }
+
     // Output links.
     $timestatus = $webexmeeting->get_time_status();
     if ($canhost && $webexmeeting->is_available(true)) {
