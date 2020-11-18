@@ -66,6 +66,7 @@ $string['directlinkstext'] = '<p>These links provide direct access to the record
 Streaming: <a target="_blank" href="{$a->streamurl}" alt="Streaming link">{$a->streamurl}</a><br />
 Download: <a target="_blank" href="{$a->fileurl}" alt="Streaming link">{$a->fileurl}</a><br />
 ';
+$string['downloadingfile'] = 'Downloading file: {$a}';
 $string['downloadnewrecordings'] = 'Auto download new recordings';
 $string['downloadnewrecordings_help'] = 'When new recordings are detected that are associated with an activity in Moodle, download into Moodle';
 $string['duration'] = 'Expected duration';
@@ -125,11 +126,17 @@ $string['meetingtypes_desc'] = 'These are WebEx meeting types supported by this 
 $string['meetingupcoming'] = 'This meeting is not yet available to join.';
 $string['page_managerecordings'] = 'Manage Recordings';
 $string['page_manageusers'] = 'Manage Users';
+$string['playerinfo'] = '<B>Note:</B> The Webex ARF player is required to playback the recording.
+    <a href="https://www.webex.com/video-recording.html" target="_blank">
+        Download ARF player
+    </a>';
 $string['prefix'] = 'Username Prefix';
 $string['prefix_help'] = 'This string will be prefixed to all usernames created by this module.';
 $string['recordingfileurl'] = 'Download';
 $string['recordinglength'] = '({$a->time}, {$a->size})';
 $string['recordingname'] = 'Recording name';
+$string['recordingnotavailable'] = 'Recording not available';
+$string['recordingnotfound'] = 'Recording was not found.';
 $string['recordings'] = 'Recordings';
 $string['recordingsnotavailable'] = 'Some of these recordings will not be accessable to students.<br/>Change the "Allow students to download recordings" setting to correct.';
 $string['recordingsettings'] = 'Recordings Settings';

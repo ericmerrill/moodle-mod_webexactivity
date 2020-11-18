@@ -39,6 +39,8 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'file-internal' => false,
                                                 'file-both' => false,
                                                 'moodle-meeting' => false,
+                                                'make-public' => false,
+                                                'make-private' => false,
                                                 'no-moodle-meeting' => false,
                                                 'limit' => 0,
                                                 'offset' => 0,
@@ -81,6 +83,8 @@ Actions:
 -d, --download
 --delete-remote
 --delete-remote-force
+--make-public
+--make-private
 
 --force
 -h, --help              Print out this help
@@ -160,10 +164,23 @@ $delete = (bool)$options['delete-remote'];
 $deleteforce = (bool)$options['delete-remote-force'];
 $download = (bool)$options['download'];
 
+$count = 0;
 foreach ($records as $rec) {
+    $count++;
     $recording = new recording($rec);
 
     render_recording($recording);
+
+    if ($options['make-public']) {
+        $recording->publicview = 1;
+        $recording->save();
+        mtrace("Made recording public.");
+    }
+    if ($options['make-private']) {
+        $recording->publicview = 0;
+        $recording->save();
+        mtrace("Made recording private.");
+    }
 
     if ($download) {
         mtrace("Creating download adhoc task " . ($delete ? "with" : "without") . " delete");
@@ -180,7 +197,8 @@ foreach ($records as $rec) {
         }
     }
 }
-
+mtrace('--------------------------------------------');
+mtrace($count.' matching records found.');
 
 function render_recording($recording) {
     $keys = ['id',
