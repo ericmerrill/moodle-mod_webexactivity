@@ -25,7 +25,6 @@
 define([], function() {
 
     var Downloader = {
-        url: false,
 
         init: function(url) {
             window.setTimeout(function() {

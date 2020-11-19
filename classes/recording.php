@@ -93,6 +93,8 @@ class recording {
 
     private $context = false;
 
+    private $file = null;
+
     /**
      * Builds the recording object.
      *
@@ -218,6 +220,10 @@ class recording {
      * @return stored_file|false    File on success, false on failure.
      */
     public function get_internal_file() {
+        if (!is_null($this->file)) {
+            return $this->file;
+        }
+
         $context = $this->get_context();
 
         $fs = get_file_storage();
@@ -227,6 +233,8 @@ class recording {
         if (empty($file)) {
             return false;
         }
+
+        $this->file = $file;
 
         return $file;
     }
@@ -278,14 +286,22 @@ class recording {
     }
 
     public function is_streamable() {
+        global $PAGE;
         if (!empty($this->streamurl)) {
+            return true;
+        }
+
+        $mediamanager = \core_media_manager::instance($PAGE);
+
+
+        if ($mediamanager->can_embed_url($this->get_true_fileurl(false, false))) {
             return true;
         }
 
         return false;
     }
 
-    public function get_true_fileurl($forcedownload = true) {
+    public function get_true_fileurl($forcedownload = true, $asstring = true) {
         global $CFG;
 
         if (!$this->has_internal_file(true)) {
@@ -297,9 +313,16 @@ class recording {
             $args .= '/download';
         }
 
+        $file = $this->get_internal_file();
+
         $url = new \moodle_url('/mod/webexactivity/rec.php');
-        $url->set_slashargument('/'.$this->uniqueid.$args.'/file');
-        return $url->out(false);
+        // We need to end it in the filename for certain things.
+        $url->set_slashargument('/'.$this->uniqueid.$args.'/file/'.$file->get_filename());
+        if ($asstring) {
+            return $url->out(false);
+        } else {
+            return $url;
+        }
     }
 
     public function get_stream_url() {
@@ -527,6 +550,7 @@ class recording {
                 if (strcmp($val, $this->recording->name) === 0) {
                     return;
                 }
+                $this->renamedrecording = 1;
                 $this->rename_internal_file($val);
                 $this->webexchange = true;
                 break;

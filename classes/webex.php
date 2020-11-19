@@ -465,10 +465,22 @@ class webex {
             if ($existing = $DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
                 $update = new \stdClass();
                 $update->id = $existing->id;
-                $update->name = $rec->name;
                 $update->streamurl = $rec->streamurl;
                 $update->fileurl = $rec->fileurl;
                 $update->timemodified = time();
+
+                if (strcasecmp($rec->name, $existing->name) !== 0) {
+                    if (!stripos($existing->additional, 'renamedrecording')) {
+                        $update->name = $rec->name;
+                    }
+                }
+
+                if ($existing->filestatus == recording::FILE_STATUS_INTERNAL) {
+                    $update->filestatus = recording::FILE_STATUS_INTERNAL_AND_WEBEX;
+                }
+                if ($existing->filestatus == recording::FILE_STATUS_NONE) {
+                    $update->filestatus = recording::FILE_STATUS_WEBEX;
+                }
 
                 $DB->update_record('webexactivity_recording', $update);
             } else {

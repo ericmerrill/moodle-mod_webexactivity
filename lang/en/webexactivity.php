@@ -179,6 +179,7 @@ $string['usereditauto'] = 'Your WebEx user is managed internally, and cannot be 
 $string['usereditbad'] = 'You should not have arrived at this page.';
 $string['usereditunabletoload'] = 'Unable to load your user from WebEx.';
 $string['userexistsexplanation'] = 'Your email address ({$a->email}) is already in user by the WebEx User <b>{$a->username}</b>. Please enter your WebEx password below.';
+$string['viewingfile'] = 'Viewing recording: {$a}';
 $string['webexactivity:addinstance'] = 'Add a new WebEx Meeting';
 $string['webexactivity:allavailabletypes'] = 'Create meetings of all installed types';
 $string['webexactivity:hostmeeting'] = 'Host and manage WebEx Meeting';
