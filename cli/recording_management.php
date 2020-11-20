@@ -31,6 +31,9 @@ require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->libdir.'/clilib.php');
 
 list($options, $unrecognized) = cli_get_params(['all' => false,
+                                                'cmid' => false,
+                                                'courseid' => false,
+                                                'catid' => false,
                                                 'delete-remote' => false,
                                                 'delete-remote-force' => false,
                                                 'download' => false,
@@ -46,7 +49,10 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'limit' => 0,
                                                 'offset' => 0,
                                                 'recordingid' => false,
+                                                'remove-extra-recordings' => false,
                                                 'starttime' => false,
+                                                'uniqueid' => false,
+                                                'webexid' => false,
                                                 'help' => false],
                                                ['a' => 'all',
                                                 'd' => 'download',
@@ -55,6 +61,7 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'o' => 'offset',
                                                 'r' => 'recordingid',
                                                 's' => 'starttime',
+                                                'u' => 'uniqueid',
                                                 'h' => 'help']);
 
 if ($unrecognized) {
@@ -68,6 +75,11 @@ Lists recordings found if no action options included.
 
 Selection options:
 -r, --recordingid
+-u, --uniqueid
+--webexid
+--cmid
+--courseid
+--catid
 -s, --starttime
 -e, --endtime
 -l, --limit
@@ -87,6 +99,7 @@ Actions:
 --make-public
 --make-private
 --generate-missing-ids
+--remove-extra-recordings
 
 --force
 -h, --help              Print out this help
@@ -120,9 +133,32 @@ if (is_numeric($starttime) && is_numeric($endtime) && ($starttime >= $endtime)) 
 
 if ($recordingid) {
     $records = $DB->get_recordset('webexactivity_recording', ['id' => $recordingid]);
+} else if ($options['uniqueid']) {
+    $records = $DB->get_recordset('webexactivity_recording', ['uniqueid' => $options['uniqueid']]);
 } else {
     $select = '1 = 1';
     $params = [];
+
+    if ($options['webexid']) {
+        $select .= ' AND webexid >= ?';
+        $params[] = $options['webexid'];
+    }
+
+    if ($options['cmid']) {
+        $select .= ' AND webexid IN (SELECT instance FROM {course_modules} WHERE id = ?)';
+        $params[] = $options['cmid'];
+    }
+
+    if ($options['courseid']) {
+        $select .= ' AND webexid IN (SELECT id FROM {webexactivity} WHERE course = ?)';
+        $params[] = $options['courseid'];
+    }
+
+    if ($options['catid']) {
+        $select .= ' AND webexid IN (SELECT id FROM {webexactivity} WHERE course IN (SELECT id FROM {course} WHERE category = ?))';
+        $params[] = $options['catid'];
+    }
+
     if (is_numeric($starttime)) {
         $select .= ' AND timecreated >= ?';
         $params[] = $starttime;
@@ -172,6 +208,13 @@ foreach ($records as $rec) {
     $recording = new recording($rec);
 
     render_recording($recording);
+
+    if ($options['remove-extra-recordings'] && is_null($recording->webexid)) {
+        // Delete the local copy only.
+        $recording->true_delete(false);
+        mtrace("Deleted as extra recording.");
+        continue();
+    }
 
     if ($options['make-public']) {
         $recording->publicview = 1;

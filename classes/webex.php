@@ -460,7 +460,6 @@ class webex {
             $rec->deleted = 0;
             $rec->filestatus = recording::FILE_STATUS_WEBEX;
             $rec->additional = null;
-            $rec->uniqueid = null;//recording::generate_unique_id();
 
             if ($existing = $DB->get_record('webexactivity_recording', array('recordingid' => $rec->recordingid))) {
                 $update = new \stdClass();
@@ -484,6 +483,7 @@ class webex {
 
                 $DB->update_record('webexactivity_recording', $update);
             } else {
+                $rec->uniqueid = recording::generate_unique_id();
                 $rec->id = $DB->insert_record('webexactivity_recording', $rec);
 
                 if ($meeting) {

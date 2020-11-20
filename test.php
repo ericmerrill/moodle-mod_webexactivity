@@ -4,6 +4,7 @@ use mod_webexactivity\webex;
 use mod_webexactivity\local\type;
 use mod_webexactivity\recording;
 use mod_webexactivity\recording_downloader;
+use mod_webexactivity\recording_notifier;
 
 define('CLI_SCRIPT', true);
 
@@ -78,3 +79,6 @@ $recording = new recording(1);
 //var_dump($res);
 
 // var_dump(pathinfo('seomthing.asdf.mp4', PATHINFO_EXTENSION));
+$not = new recording_notifier($recording);
+
+var_dump($not->get_email_addresses());

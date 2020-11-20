@@ -179,13 +179,18 @@ class recording {
     /**
      * Delete this recording from WebEx.
      *
-     * @return bool    True on success, false on failure.
+     * @param bool      $remote Delete the remote file as well.
+     * @return bool     True on success, false on failure.
      * @throws webexactivity_exception on error.
      */
-    public function true_delete() {
+    public function true_delete($remote = true) {
         global $DB;
 
-        $this->delete_remote_recording();
+        if ($remote) {
+            $this->delete_remote_recording();
+        }
+
+        $this->delete_internal_recording();
 
         $DB->delete_records('webexactivity_recording', array('id' => $this->__get('id')));
 
