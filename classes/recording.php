@@ -340,6 +340,7 @@ class recording {
      * @return bool    True on success
      */
     public function delete_internal_recording() {
+        $fs = get_file_storage();
         return $fs->delete_area_files($this->get_context()->id, 'mod_webexactivity', 'recordings', $this->id);
     }
 

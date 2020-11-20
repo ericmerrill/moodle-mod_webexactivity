@@ -467,6 +467,7 @@ class webex {
                 $update->streamurl = $rec->streamurl;
                 $update->fileurl = $rec->fileurl;
                 $update->timemodified = time();
+                $update->filesize = $rec->filesize;
 
                 if (strcasecmp($rec->name, $existing->name) !== 0) {
                     if (!stripos($existing->additional, 'renamedrecording')) {

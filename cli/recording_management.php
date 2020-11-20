@@ -37,6 +37,7 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'delete-remote' => false,
                                                 'delete-remote-force' => false,
                                                 'download' => false,
+                                                'download-force' => false,
                                                 'endtime' => false,
                                                 'file-external' => false,
                                                 'file-internal' => false,
@@ -94,6 +95,7 @@ Selection options:
 
 Actions:
 -d, --download
+--download-force
 --delete-remote
 --delete-remote-force
 --make-public
@@ -201,6 +203,7 @@ if ($recordingid) {
 $delete = (bool)$options['delete-remote'];
 $deleteforce = (bool)$options['delete-remote-force'];
 $download = (bool)$options['download'];
+$downloadforce = (bool)$options['download-force'];
 
 $count = 0;
 foreach ($records as $rec) {
@@ -213,7 +216,7 @@ foreach ($records as $rec) {
         // Delete the local copy only.
         $recording->true_delete(false);
         mtrace("Deleted as extra recording.");
-        continue();
+        continue;
     }
 
     if ($options['make-public']) {
@@ -240,8 +243,10 @@ foreach ($records as $rec) {
 
     }
 
-
-    if ($download) {
+    if ($downloadforce) {
+        mtrace("Creating download (with force) adhoc task " . ($delete ? "with" : "without") . " delete");
+        $recording->create_download_task(true, $delete);
+    } else if ($download) {
         mtrace("Creating download adhoc task " . ($delete ? "with" : "without") . " delete");
         $recording->create_download_task(null, $delete);
     } else if ($deleteforce) {

@@ -79,6 +79,6 @@ $recording = new recording(1);
 //var_dump($res);
 
 // var_dump(pathinfo('seomthing.asdf.mp4', PATHINFO_EXTENSION));
-$not = new recording_notifier($recording);
-
-var_dump($not->get_email_addresses());
+// $not = new recording_notifier($recording);
+//
+// var_dump($not->get_email_addresses());

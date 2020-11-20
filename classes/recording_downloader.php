@@ -82,11 +82,31 @@ class recording_downloader {
 
 
     public function download_recording($force = null, $deleteremote = null) {
+        global $DB;
+
         \core_php_time_limit::raise();
 
         if (is_null($force)) {
             // TODO - setting;
-            $force = true;
+            $force = false;
+        }
+
+        $this->log("Starting recording download task.");
+
+        if (!empty($this->recording->deleted) && !$force) {
+            $this->log("Recording is in trash bin. Skipping download.");
+            return false;
+        }
+
+        if (!empty($this->recording->webexid)) {
+            // Check if the Webex meeting really exists. Sometimes it is missing.
+            if (!$DB->record_exists('webexactivity', ['id' => $this->recording->webexid])) {
+                $this->recording->webexid = null;
+                $this->recording->save_to_db();
+
+                $this->log("Recording's webexid no longer exists. Updating record and skipping.");
+                return false;
+            }
         }
 
         $lock = $this->get_lock();
@@ -99,18 +119,28 @@ class recording_downloader {
         // Now that we have a lock, get an updated copy of the recording.
         $this->recording = new recording($this->recording->id);
 
-        if ($this->get_status() == self::DOWNLOAD_STATUS_COMPLETE && !$force) {
-            if (!$fs->is_area_empty($context->id, 'mod_webexactivity', 'recordings', $this->recording->id)) {
-                $this->log("This recording was already downloaded. Skipping.");
-                $lock->release();
-                return true;
-            }
+        if (!$force && $this->recording->has_internal_file(true)) {
+            $this->log("This recording was already downloaded. Skipping.");
+            $lock->release();
+            return true;
         }
 
         if ($this->get_status() == self::DOWNLOAD_STATUS_INPROGRESS) {
-            $this->log("Download is already in progress.");
-            $lock->release();
-            return false;
+            $timeout = false;
+            if (!empty($this->recording->downloadstatustime)) {
+                $diff = time() - $this->recording->downloadstatustime;
+                if ($diff > 3600) {
+                    // After an hour, we are going to assume this was in error, and allow a new attempt.
+                    $timeout = true;
+                    $this->log("In progress, but {$diff} sec old. Allowing new attempt.");
+                }
+            }
+
+            if (!$timeout) {
+                $this->log("Download is already in progress.");
+                $lock->release();
+                return false;
+            }
         }
 
         // Now show that we are in progress, and release the lock.
@@ -118,7 +148,7 @@ class recording_downloader {
         $lock->release();
 
         if (is_null($deleteremote)) {
-            $deleteremote = get_config('webexactivity', 'deletedownloadrecordings');;
+            $deleteremote = get_config('webexactivity', 'deletedownloadrecordings');
         }
 
         // Get the context for this recording.
@@ -195,7 +225,10 @@ class recording_downloader {
         $this->log('Downloaded ~' . display_size($downloadedsize));
         $this->log('Difference ' . $diff . ' bytes');
 
-        if ($diff < -20000) {
+        // Sometimes Webex reports a file *way* larger than reality.
+        // But we will check the header size later.
+        $limit = 0.8 * $this->recording->filesize;
+        if ($diff < -$limit ) {
             $this->set_status(self::DOWNLOAD_STATUS_ERROR);
             $this->set_error("File downloaded was too small.");
             $this->log(var_export($response, false));
@@ -207,12 +240,34 @@ class recording_downloader {
         // Lets find the filename.
         $matches = [];
         $filename = false;
+        $headersize = false;
         foreach ($response->headers as $header) {
             if (preg_match('/Content-Disposition:.*?filename="(.*?)"/im', $header, $matches)) {
                 $filename = basename($matches[1]);
                 $filename = clean_param($filename, PARAM_FILE);
-                break;
             }
+            if (preg_match('/Content-Length:[\s]?([0-9]*)/im', $header, $matches)) {
+                $headersize = basename($matches[1]);
+            }
+        }
+
+        if (empty($headersize)) {
+            $this->set_status(self::DOWNLOAD_STATUS_ERROR);
+            $this->set_error("Couldn't not find header Content-Length.");
+            $this->log(var_export($response, false));
+
+            @unlink($tmpfile);
+            return false;
+        }
+
+        // Make sure the header we got, is the size we expected from the header response.
+        if ($downloadedsize < $headersize) {
+            $this->set_status(self::DOWNLOAD_STATUS_ERROR);
+            $this->set_error("File ({$downloadedsize} b) was smaller than header size ({$headersize} b).");
+            $this->log(var_export($response, false));
+
+            @unlink($tmpfile);
+            return false;
         }
 
         if (empty($filename)) {
@@ -505,6 +560,7 @@ class recording_downloader {
 
     public function set_status($status) {
         $this->recording->downloadstatus = $status;
+        $this->recording->downloadstatustime = time();
         $this->recording->save_to_db();
     }
 
