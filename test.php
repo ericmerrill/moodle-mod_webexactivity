@@ -82,3 +82,6 @@ $recording = new recording(1);
 // $not = new recording_notifier($recording);
 //
 // var_dump($not->get_email_addresses());
+
+$w = new webex();
+var_dump(webex::meeting_key_remote_server(1786950687));

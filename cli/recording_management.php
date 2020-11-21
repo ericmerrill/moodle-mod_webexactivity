@@ -24,6 +24,7 @@
  */
 
 use mod_webexactivity\recording;
+use mod_webexactivity\webex;
 
 define('CLI_SCRIPT', true);
 
@@ -34,6 +35,7 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'cmid' => false,
                                                 'courseid' => false,
                                                 'catid' => false,
+                                                'check-download-status' => false,
                                                 'delete-remote' => false,
                                                 'delete-remote-force' => false,
                                                 'download' => false,
@@ -51,8 +53,10 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'offset' => 0,
                                                 'recordingid' => false,
                                                 'remove-extra-recordings' => false,
+                                                'short' => false,
                                                 'starttime' => false,
                                                 'uniqueid' => false,
+                                                'update-remote-server' => false,
                                                 'webexid' => false,
                                                 'help' => false],
                                                ['a' => 'all',
@@ -73,6 +77,8 @@ if ($unrecognized) {
 if ($options['help']) {
     $help = "Script to manage Webex recordings.
 Lists recordings found if no action options included.
+
+--short
 
 Selection options:
 -r, --recordingid
@@ -102,6 +108,8 @@ Actions:
 --make-private
 --generate-missing-ids
 --remove-extra-recordings
+--update-remote-server
+--check-remote-server
 
 --force
 -h, --help              Print out this help
@@ -132,6 +140,7 @@ if (is_numeric($starttime) && is_numeric($endtime) && ($starttime >= $endtime)) 
     exit(1);
 }
 
+$shortlog = (bool)$options['short'];
 
 if ($recordingid) {
     $records = $DB->get_recordset('webexactivity_recording', ['id' => $recordingid]);
@@ -205,12 +214,14 @@ $deleteforce = (bool)$options['delete-remote-force'];
 $download = (bool)$options['download'];
 $downloadforce = (bool)$options['download-force'];
 
+$webex = new webex();
+
 $count = 0;
 foreach ($records as $rec) {
     $count++;
     $recording = new recording($rec);
 
-    render_recording($recording);
+    render_recording($recording, $shortlog);
 
     if ($options['remove-extra-recordings'] && is_null($recording->webexid)) {
         // Delete the local copy only.
@@ -243,6 +254,24 @@ foreach ($records as $rec) {
 
     }
 
+    if ($options['check-download-status']) {
+        if ($recording->should_be_downloaded()) {
+            mtrace('This recording should be downloaded');
+        } else {
+            mtrace('This recording should not be downloaded');
+        }
+    }
+    if ($options['update-remote-server']) {
+        $recording->update_remote_server();
+        if (isset($recording->remoteserver) && $recording->remoteserver === false) {
+            mtrace('Recording belongs to this server.');
+        } else if (isset($recording->remoteserver)) {
+            mtrace('Recording belongs to the server '.$recording->remoteserver);
+        } else {
+            mtrace('Recording doesn\'t belong to a meeting on any known server.');
+        }
+    }
+
     if ($downloadforce) {
         mtrace("Creating download (with force) adhoc task " . ($delete ? "with" : "without") . " delete");
         $recording->create_download_task(true, $delete);
@@ -264,7 +293,35 @@ foreach ($records as $rec) {
 mtrace('--------------------------------------------');
 mtrace($count.' matching records found.');
 
-function render_recording($recording) {
+function render_recording($recording, $shortlog) {
+    if ($shortlog) {
+        $keys = ['id',
+                 'uniqueid',
+                 'webexid',
+                 'meetingkey',
+                 'recordingid',
+                 'hostid',
+                 'name',
+                 'timecreated',
+                 'timemodified',
+                 'filesize',
+                 'filestatus'];
+
+        $values = [];
+        foreach ($keys as $key) {
+            $val = $recording->$key;
+            if (is_null($val)) {
+                $val = '*NULL*';
+            }
+            if (strlen($val) > 20) {
+                $val = substr($val, 0, 20) . '...';
+            }
+            $values[] = $val;
+        }
+        mtrace(implode(", ", $values));
+        return;
+    }
+
     $keys = ['id',
              'uniqueid',
              'webexid',

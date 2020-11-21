@@ -121,13 +121,22 @@ if ($ADMIN->fulltree) {
             get_string('manageallrecordings', 'mod_webexactivity'),
             get_string('manageallrecordings_help', 'mod_webexactivity'), 0));
 
-    $settings->add(new admin_setting_configcheckbox('webexactivity/downloadnewrecordings',
+    $opts = [\mod_webexactivity\recording_downloader::DOWNLOAD_NONE => get_string('downloadnone', 'mod_webexactivity'),
+             \mod_webexactivity\recording_downloader::DOWNLOAD_ASSOCIATED => get_string('downloadassociated', 'mod_webexactivity'),
+             \mod_webexactivity\recording_downloader::DOWNLOAD_ALL => get_string('downloadall', 'mod_webexactivity')];
+
+    $settings->add(new admin_setting_configselect('webexactivity/downloadnewrecordings',
             get_string('downloadnewrecordings', 'mod_webexactivity'),
-            get_string('downloadnewrecordings_help', 'mod_webexactivity'), 0));
+            get_string('downloadnewrecordings_help', 'mod_webexactivity'),
+            \mod_webexactivity\recording_downloader::DOWNLOAD_NONE, $opts));
 
     $settings->add(new admin_setting_configcheckbox('webexactivity/deletedownloadrecordings',
             get_string('deletedownloadrecordings', 'mod_webexactivity'),
             get_string('deletedownloadrecordings_help', 'mod_webexactivity'), 0));
+
+    $settings->add(new admin_setting_configtextarea('webexactivity/remoteservers',
+            get_string('remoteservers', 'mod_webexactivity'),
+            get_string('remoteservers_help', 'mod_webexactivity'), ''));
 }
 
 // Add reports.

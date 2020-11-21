@@ -67,10 +67,18 @@ $string['directlinkstext'] = '<p>These links provide direct access to the record
 Streaming: <a target="_blank" href="{$a->streamurl}" alt="Streaming link">{$a->streamurl}</a><br />
 Download: <a target="_blank" href="{$a->fileurl}" alt="Streaming link">{$a->fileurl}</a><br />
 ';
+$string['downloadall'] = 'All';
+$string['downloadassociated'] = 'Meeting Associated';
+$string['downloadnone'] = 'None';
 $string['downloadalt'] = 'If the download doesn\'t, you can <a href="{$a}">click here</a>';
 $string['downloadingfile'] = 'Downloading file: {$a}';
 $string['downloadnewrecordings'] = 'Auto download new recordings';
-$string['downloadnewrecordings_help'] = 'When new recordings are detected that are associated with an activity in Moodle, download into Moodle';
+$string['downloadnewrecordings_help'] = 'When new recordings are detected, download into Moodle. The options are as follows:<br />
+<ul>
+<li><b>None</b>: Do not download any recordings.</li>
+<li><b>Meeting Associated</b>: Download recordings that are associated with a meeting in this instance of Moodle.</li>
+<li><b>All</b>: Only makes sense with "Manage all Webex Recordings" enabled. Download all recordings into Moodle when found.</li>
+</ul>';
 $string['duration'] = 'Expected duration';
 $string['duration_help'] = 'The anticipated duration of the meeting. It is just for informational purposes, and does not effect how long the meeting can run for.';
 $string['enablecallin'] = 'Enable Telephone Callin';
@@ -148,6 +156,14 @@ $string['recordingsettings'] = 'Recordings Settings';
 $string['recordingstreamurl'] = 'Play';
 $string['recordingtrashtime'] = 'Recording trash time';
 $string['recordingtrashtime_help'] = 'Number of hours a recording will be held before being deleted permanently.';
+$string['remoteservers'] = 'Remote servers';
+$string['remoteservers_help'] = 'This setting must follow this format, one server per line:<br />
+<pre>"Server Name" => "https://moodle.myschool.net/"
+"Another Name" => "https://classes.somewhere.edu/moodle/"</pre>
+If "Auto download new recordings" is set to All, and this is set, the plugin will check with the additional remote servers running the Moodle Webex  plugin before downloading (and possibly deleting) it.<br />
+The idea behind this setting is that if you have multiple Moodle instances running the Webex plugin, each downloading their own recordings, but you want one to also be in charge of downloading recordings not associated with any Moodle instance - such as those made directly on your Webex site.<br />
+You would then set each Moodle instance to download Meeting Associated recordings, except the "main" Moodle server, which will be set to download All (and have "Manage all Webex recording" enabled). You then place the information of each remote server in these settings.
+';
 $string['requiremeetingpassword'] = 'Require meeting passwords';
 $string['requiremeetingpassword_help'] = 'Require a user to enter a meeting password. If unchecked, and the meeting type is marked as requiring a password above, a password will be randomly generated.';
 $string['search:activity'] = 'WebEx Meeting - activity information';

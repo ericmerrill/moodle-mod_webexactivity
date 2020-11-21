@@ -67,6 +67,9 @@ class recording_downloader {
      */
     const DOWNLOAD_STATUS_ERROR = -1;
 
+    const DOWNLOAD_NONE = 0;
+    const DOWNLOAD_ASSOCIATED = 1;
+    const DOWNLOAD_ALL = 2;
     /** @var recording The recording object we are downloading. */
     private $recording = null;
 

@@ -534,6 +534,58 @@ class recording {
         }
     }
 
+    public function should_be_downloaded() {
+        global $DB;
+
+        $download = get_config('webexactivity', 'downloadnewrecordings');
+
+        if ($download == recording_downloader::DOWNLOAD_NONE) {
+            return false;
+        }
+
+        if (!isset($this->remoteserver)) {
+            $this->update_remote_server();
+        }
+
+        if (isset($this->remoteserver) && ($this->remoteserver === false)) {
+            // This means we have a local meeting.
+            // If we have a local meeting, the answer is yes for all remaining options.
+            return true;
+        }
+
+        if ($download == recording_downloader::DOWNLOAD_ASSOCIATED) {
+            // This means we don't have a locally associated meeting.
+            return false;
+        }
+
+        if ($download == recording_downloader::DOWNLOAD_ALL) {
+            // We didn't have a local meeting, so check for a remote one.
+            if (isset($this->remoteserver) && $this->remoteserver !== false) {
+                // This means that it was detected on a remote server.
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function update_remote_server() {
+        global $DB;
+        if (!empty($this->meetingkey) && $DB->record_exists('webexactivity', ['meetingkey' => $this->meetingkey])) {
+            $this->remoteserver = false;
+            return;
+        }
+
+        $server = webex::meeting_key_remote_server($this->meetingkey);
+        if (!is_null($server)) {
+            $this->remoteserver = $server;
+            $this->save_to_db();
+            return;
+        }
+    }
+
     // ---------------------------------------------------
     // Magic Methods.
     // ---------------------------------------------------

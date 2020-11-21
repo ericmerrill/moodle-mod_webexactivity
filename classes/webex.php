@@ -118,6 +118,12 @@ class webex {
     /** @var mixed Storage for the latest errors from a connection. */
     private $latesterrors = null;
 
+    /** @var mixed An array of the remove servers to check for meetings. */
+    private static $remoteurls = null;
+
+    /** @var curl An curl object used to check remote servers. */
+    private static $curl = null;
+
     // ---------------------------------------------------
     // User Functions.
     // ---------------------------------------------------
@@ -487,29 +493,83 @@ class webex {
                 $rec->uniqueid = recording::generate_unique_id();
                 $rec->id = $DB->insert_record('webexactivity_recording', $rec);
 
-                if ($meeting) {
-                    $cm = get_coursemodule_from_instance('webexactivity', $meeting->id);
-                    $context = \context_module::instance($cm->id);
-                    $params = array(
-                        'context' => $context,
-                        'objectid' => $rec->id
-                    );
-                    $event = \mod_webexactivity\event\recording_created::create($params);
-                    $event->add_record_snapshot('webexactivity_recording', $rec);
-                    $event->add_record_snapshot('webexactivity', $meeting);
-                    $event->trigger();
+                $recobj = new recording($rec);
 
-                    if ($download) {
-                        // Make task for download.
-                        $recobj = new recording($rec);
-                        $recobj->create_download_task();
-                    }
+                $params = array(
+                    'context' => $recobj->get_context(),
+                    'objectid' => $rec->id
+                );
+                $event = \mod_webexactivity\event\recording_created::create($params);
+                $event->add_record_snapshot('webexactivity_recording', $rec);
+                $event->trigger();
+
+                if ($recobj->should_be_downloaded()) {
+                    // Make task for download.
+                    $recobj->create_download_task();
                 }
-
             }
         }
 
         return true;
+    }
+
+    public static function meeting_key_remote_server($key) {
+        global $CFG;
+
+        $urls = self::get_remote_urls();
+        if (empty($urls)) {
+            return null;
+        }
+
+        if (is_null(self::$curl)) {
+            require_once($CFG->libdir.'/filelib.php');
+            self::$curl = new \curl();
+        }
+
+        foreach ($urls as $name => $url) {
+            $url->params(['meetingkeyisassociated' => $key]);
+            $response = self::$curl->get($url);
+
+            if (empty($response)) {
+                return null;
+            }
+            $data = json_decode($response);
+            if (empty($data)) {
+                return null;
+            }
+            if (isset($data->result) && $data->result) {
+                return $name;
+            }
+        }
+
+        return null;
+    }
+
+    protected static function get_remote_urls() {
+        if (!is_null(self::$remoteurls)) {
+            return self::$remoteurls;
+        }
+
+        self::$remoteurls = [];
+
+        $config = get_config('webexactivity', 'remoteservers');
+
+        if (empty(trim($config))) {
+            return self::$remoteurls;
+        }
+
+        $matches = [];
+        $pattern = '/([\'"]?)(.*?)\g1\s*=>?\s*([\'"]?)(.*?)\g3/m';
+        if (!preg_match_all($pattern, $config, $matches)) {
+            return self::$remoteurls;
+        }
+
+        foreach ($matches[2] as $key => $name) {
+            $url = rtrim($matches[4][$key], '/');
+            self::$remoteurls[$name] = new \moodle_url($url.'/mod/webexactivity/ajax.php');
+        }
+
+        return self::$remoteurls;
     }
 
     /**
