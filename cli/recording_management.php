@@ -51,6 +51,7 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'no-moodle-meeting' => false,
                                                 'limit' => 0,
                                                 'offset' => 0,
+                                                'recordid' => false,
                                                 'recordingid' => false,
                                                 'remove-extra-recordings' => false,
                                                 'short' => false,
@@ -64,7 +65,7 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'e' => 'endtime',
                                                 'l' => 'limit',
                                                 'o' => 'offset',
-                                                'r' => 'recordingid',
+                                                'r' => 'recordid',
                                                 's' => 'starttime',
                                                 'u' => 'uniqueid',
                                                 'h' => 'help']);
@@ -81,8 +82,9 @@ Lists recordings found if no action options included.
 --short
 
 Selection options:
--r, --recordingid
+-r, --recordid
 -u, --uniqueid
+--recordingid
 --webexid
 --cmid
 --courseid
@@ -109,7 +111,7 @@ Actions:
 --generate-missing-ids
 --remove-extra-recordings
 --update-remote-server
---check-remote-server
+--check-download-status
 
 --force
 -h, --help              Print out this help
@@ -124,6 +126,7 @@ Example:
 }
 
 $recordingid = $options['recordingid'];
+$recordid = $options['recordid'];
 
 $starttime = $options['starttime'];
 if (!is_numeric($starttime)) {
@@ -142,8 +145,10 @@ if (is_numeric($starttime) && is_numeric($endtime) && ($starttime >= $endtime)) 
 
 $shortlog = (bool)$options['short'];
 
-if ($recordingid) {
-    $records = $DB->get_recordset('webexactivity_recording', ['id' => $recordingid]);
+if ($recordid) {
+    $records = $DB->get_recordset('webexactivity_recording', ['id' => $recordid]);
+} else if ($recordingid) {
+    $records = $DB->get_recordset('webexactivity_recording', ['recordingid' => $recordingid]);
 } else if ($options['uniqueid']) {
     $records = $DB->get_recordset('webexactivity_recording', ['uniqueid' => $options['uniqueid']]);
 } else {

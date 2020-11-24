@@ -70,7 +70,7 @@ Download: <a target="_blank" href="{$a->fileurl}" alt="Streaming link">{$a->file
 $string['downloadall'] = 'All';
 $string['downloadassociated'] = 'Meeting Associated';
 $string['downloadnone'] = 'None';
-$string['downloadalt'] = 'If the download doesn\'t, you can <a href="{$a}">click here</a>';
+$string['downloadalt'] = 'If the download doesn\'t start, you can <a href="{$a}">click here</a>';
 $string['downloadingfile'] = 'Downloading file: {$a}';
 $string['downloadnewrecordings'] = 'Auto download new recordings';
 $string['downloadnewrecordings_help'] = 'When new recordings are detected, download into Moodle. The options are as follows:<br />
