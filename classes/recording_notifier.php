@@ -104,4 +104,31 @@ class recording_notifier {
 
 
 
+    private function get_from_user() {
+        return \core_user::get_noreply_user();
+    }
+
+    private function get_fake_user($email) {
+        $user = new \stdClass();
+        $user->id = mt_rand(99999800, 99999999); // we have to pass an id
+        $user->email = $email;
+        $user->username = $email;
+        $user->mailformat = 1;
+
+        return $user;
+    }
+
+    public function send($subject, $body, $touser) {
+        $success = email_to_user(
+            $touser,
+            $this->get_from_user(),
+            $subject,
+            format_text_email($body, 1),
+            purify_html($body),
+        );
+
+        return $success;
+    }
+
+
 }
