@@ -124,6 +124,9 @@ class webex {
     /** @var curl An curl object used to check remote servers. */
     private static $curl = null;
 
+    /** @var mixed An array of usersnames to be excluded from auto-deletes. */
+    private static $deleteexcludeusers = null;
+
     // ---------------------------------------------------
     // User Functions.
     // ---------------------------------------------------
@@ -513,7 +516,7 @@ class webex {
         return true;
     }
 
-    public static function meeting_key_remote_server($key) {
+    public static function get_remote_server_for_meeting_key($key) {
         global $CFG;
 
         $urls = self::get_remote_urls();
@@ -558,6 +561,8 @@ class webex {
             return self::$remoteurls;
         }
 
+        $config = trim($config);
+
         $matches = [];
         $pattern = '/([\'"]?)(.*?)\g1\s*=>?\s*([\'"]?)(.*?)\g3/m';
         if (!preg_match_all($pattern, $config, $matches)) {
@@ -571,6 +576,30 @@ class webex {
 
         return self::$remoteurls;
     }
+
+    public static function username_excluded_from_delete($username) {
+        // Setup the array of usernames for the first time.
+        if (is_null(self::$deleteexcludeusers)) {
+            $config = get_config('webexactivity', 'deleteexcludeusers');
+
+            self::$deleteexcludeusers = false;
+
+            if (empty(trim($config))) {
+                return false;
+            }
+            $config = trim($config);
+
+            self::$deleteexcludeusers = array_map('trim', explode("\n", $config));
+        }
+
+        if (empty(self::$deleteexcludeusers)) {
+            return false;
+        }
+
+        return in_array($username, self::$deleteexcludeusers, true);
+    }
+
+
 
     /**
      * Delete 'deleted' recordings from the WebEx server.

@@ -57,6 +57,9 @@ $string['defaultmeetingtype'] = 'Default meeting type';
 $string['defaultmeetingtype_help'] = 'The meeting type that will be preselected when creating a new meeting.';
 $string['deletedownloadrecordings'] = 'Delete downloaded recordings from Webex';
 $string['deletedownloadrecordings_help'] = 'When a recording is downloaded into Moodle, if successful, delete the recording from the Webex server.';
+$string['deleteexcludeusers'] = 'Auto delete exclude users';
+$string['deleteexcludeusers_help'] = 'A list of Webex host usernames who\'s recordings won\'t be deleted automatically after a download when "Delete downloaded recordings from Webex" is enabled.<br />
+This is a list of <i>Webex</i> usernames, one per line. Note that the Webex username may be different from the user\'s Moodle username, particular if you have the "Username Prefix" setting set above.';
 $string['deletelink'] = '<a href="{$a->url}">Delete</a>';
 $string['deletionin'] = '<div>{$a->time} until deletion.</div>';
 $string['deletionsoon'] = '<div>Will be deleted soon.</div>';

@@ -83,5 +83,18 @@ $recording = new recording(1);
 //
 // var_dump($not->get_email_addresses());
 
-$w = new webex();
-var_dump(webex::meeting_key_remote_server(1786950687));
+// $w = new webex();
+// var_dump(webex::get_remote_server_for_meeting_key(1786950687));
+
+
+$setting = "asdf
+ asdfasdf
+asdfasdf
+ asdf
+\"asdfa\"";
+
+$parts = explode("\n", $setting);
+var_dump($parts);
+
+$done = array_map('trim', $parts);
+var_dump($done);

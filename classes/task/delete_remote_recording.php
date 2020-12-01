@@ -27,6 +27,7 @@ namespace mod_webexactivity\task;
 
 use mod_webexactivity\recording;
 use mod_webexactivity\recording_downloader;
+use mod_webexactivity\webex;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -57,10 +58,24 @@ class delete_remote_recording extends \core\task\adhoc_task {
 
         $recording = new recording($data->recordingid);
 
-        // We are only using this if there is an internally stored recording.
-        if ($data->forcedelete || $recording->has_internal_file(true)) {
-            $recording->delete_remote_recording();
+        if (empty($data->forcedelete)) {
+            // Check if the user is one of the excluded delete users.
+            if (webex::username_excluded_from_delete($recording->hostid)) {
+                mtrace("User {$recording->hostid} is excluded from recording deletes. Skipping.");
+                return;
+            }
+
+            // We are only using this if there is an internally stored recording.
+            if (!$recording->has_internal_file(true)) {
+                mtrace("Recording has no internal file. Skipping.");
+                return;
+            }
+        } else {
+            mtrace("Force delete, skipping checks.");
         }
+
+        mtrace("Deleting remote Webex recording \"{$recording->name}\" {$recording->recordingid}, internal id {$recording->id}");
+        $recording->delete_remote_recording();
 
     }
 }

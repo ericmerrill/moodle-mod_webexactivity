@@ -47,6 +47,11 @@ defined('MOODLE_INTERNAL') || die();
  */
 class recording_notifier {
 
+    const NOTIFY_NONE = 0;
+    const NOTIFY_ASSOCIATED = 1;
+    const NOTIFY_UNASSOCIATED = 2;
+    const NOTIFY_ALL = 3;
+
     /** @var recording The recording object we are downloading. */
     private $recording = null;
 

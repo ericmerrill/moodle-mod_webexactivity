@@ -578,7 +578,7 @@ class recording {
             return;
         }
 
-        $server = webex::meeting_key_remote_server($this->meetingkey);
+        $server = webex::get_remote_server_for_meeting_key($this->meetingkey);
         if (!is_null($server)) {
             $this->remoteserver = $server;
             $this->save_to_db();

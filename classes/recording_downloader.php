@@ -326,6 +326,12 @@ class recording_downloader {
         $event->trigger();
 
         if ($deleteremote) {
+            if (webex::username_excluded_from_delete($this->recording->hostid)) {
+                $this->log("User {$this->recording->hostid} is excluded from recording deletes. Skipping.");
+                return;
+            }
+
+            $this->log("Deleting remote recording.")
             $this->recording->delete_remote_recording();
         }
     }

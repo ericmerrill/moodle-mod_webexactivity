@@ -45,6 +45,7 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'file-internal' => false,
                                                 'file-both' => false,
                                                 'generate-missing-ids' => false,
+                                                'hostid' => false,
                                                 'moodle-meeting' => false,
                                                 'make-public' => false,
                                                 'make-private' => false,
@@ -89,6 +90,7 @@ Selection options:
 --cmid
 --courseid
 --catid
+--hostid
 -s, --starttime
 -e, --endtime
 -l, --limit
@@ -173,6 +175,11 @@ if ($recordid) {
     if ($options['catid']) {
         $select .= ' AND webexid IN (SELECT id FROM {webexactivity} WHERE course IN (SELECT id FROM {course} WHERE category = ?))';
         $params[] = $options['catid'];
+    }
+
+    if ($options['hostid']) {
+        $select .= ' AND hostid = ?';
+        $params[] = $options['hostid'];
     }
 
     if (is_numeric($starttime)) {
