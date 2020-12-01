@@ -137,6 +137,33 @@ $string['meetingtype'] = 'Meeting type';
 $string['meetingtypes'] = 'Meeting Types';
 $string['meetingtypes_desc'] = 'These are WebEx meeting types supported by this module. For each type, you can select if it is "Available" (you have a license for it in WebEx, and you want it to be able for use it from Moodle), and if you want it to be "Available to all users". Types that are "Available", but not "Available to all users" will only be selectable by people with the mod/webexactivity:allavailabletypes permission. "Meeting password required" is to tell the plugin if WebEx requires a password. Use the "Generate required passwords" below to allows a user to not supply a password.';
 $string['meetingupcoming'] = 'This meeting is not yet available to join.';
+$string['notifyall'] = 'All';
+$string['notifyassociated'] = 'Meeting Associated';
+$string['notifydownload'] = 'Notify recording downloaded';
+$string['notifydownload_help'] = 'If a user should be notified (via email) when their recording is downloaded into Moodle. This is determined by a recordings reported host. The options are as follows:<br />
+<ul>
+<li><b>None</b>: Do not notify any users of downloaded recordings.</li>
+<li><b>Meeting Associated</b>: Notify users when a recording associated with a meeting in Moodle is downloaded into Moodle.</li>
+<li><b>Meeting Unassociated</b>: Notify users when a recording not associated with a meeting in Moodle is downloaded into Moodle.</li>
+<li><b>All</b>: Notify all users when a meeting is downloaded into Moodle.</li>
+</ul>';
+$string['notifyemail'] = 'Notify email';
+$string['notifyemail_default'] = '<p>The Webex recording "%%RECORDINGNAME%%" is now available at the following URL.</p>
+<p><a href="%%NEWURL%%">%%NEWURL%%</a></p>';
+$string['notifyemail_help'] = 'The body of the notification email. Can be HTML formatted.<br />
+Can have the following subsitutions:
+<ul>
+<li>%%RECORDINGNAME%% - </li>
+<li>%%NEWURL%% - </li>
+<li>%%NEWDOWNLOADURL%% - No?</li>
+<li>%%NEWSTREAMURL%% - No?</li>
+<li>%%RECORDINGDATETIME%% - </li>
+</ul>';
+$string['notifynone'] = 'None';
+$string['notifysubject'] = 'Notify subject';
+$string['notifysubject_default'] = 'Webex recording "%%RECORDINGNAME%%" ready';
+$string['notifysubject_help'] = 'The subject of the notification email.';
+$string['notifyunassociated'] = 'Meeting Unassociated';
 $string['page_managerecordings'] = 'Manage Recordings';
 $string['page_manageusers'] = 'Manage Users';
 $string['playerinfo'] = '<B>Note:</B> The Webex {$a} player is required to playback the recording.

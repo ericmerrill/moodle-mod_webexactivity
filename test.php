@@ -79,7 +79,9 @@ $recording = new recording(1);
 //var_dump($res);
 
 // var_dump(pathinfo('seomthing.asdf.mp4', PATHINFO_EXTENSION));
-// $not = new recording_notifier($recording);
+$not = new recording_notifier($recording);
+var_dump($not->get_email_subject());
+var_dump($not->get_email_body());
 //
 // var_dump($not->get_email_addresses());
 
@@ -87,14 +89,14 @@ $recording = new recording(1);
 // var_dump(webex::get_remote_server_for_meeting_key(1786950687));
 
 
-$setting = "asdf
- asdfasdf
-asdfasdf
- asdf
-\"asdfa\"";
-
-$parts = explode("\n", $setting);
-var_dump($parts);
-
-$done = array_map('trim', $parts);
-var_dump($done);
+// $setting = "asdf
+//  asdfasdf
+// asdfasdf
+//  asdf
+// \"asdfa\"";
+//
+// $parts = explode("\n", $setting);
+// var_dump($parts);
+//
+// $done = array_map('trim', $parts);
+// var_dump($done);

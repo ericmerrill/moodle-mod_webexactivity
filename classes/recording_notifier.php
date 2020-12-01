@@ -95,8 +95,39 @@ class recording_notifier {
         return false;
     }
 
-    public function create_message() {
+    public function get_email_subject() {
+        return $this->subsitute_text(get_config('webexactivity', 'notifysubject'));
+    }
 
+    public function get_email_body() {
+        return $this->subsitute_text(get_config('webexactivity', 'notifyemail'));
+    }
+
+    protected function subsitute_text($input) {
+        if (empty($input)) {
+            return '';
+        }
+
+        return preg_replace_callback(
+                '/%%([A-Z]*?)%%/',
+                function($matches) {
+                    switch ($matches[1]) {
+                        case 'RECORDINGNAME':
+                            return $this->recording->name;
+                            break;
+                        case 'NEWURL':
+                            return $this->recording->get_recording_url();
+                            break;
+                        case 'RECORDINGDATETIME':
+                            // TODO use recording time if present.
+                            return userdate($this->recording->timecreated);
+                            break;
+                        default:
+                            return $matches[1];
+                    }
+                },
+                $input
+        );
     }
 
 
@@ -129,7 +160,7 @@ class recording_notifier {
             $this->get_from_user(),
             $subject,
             format_text_email($body, 1),
-            purify_html($body),
+            purify_html($body)
         );
 
         return $success;

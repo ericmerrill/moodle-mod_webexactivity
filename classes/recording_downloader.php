@@ -331,7 +331,7 @@ class recording_downloader {
                 return;
             }
 
-            $this->log("Deleting remote recording.")
+            $this->log("Deleting remote recording.");
             $this->recording->delete_remote_recording();
         }
     }

@@ -142,7 +142,23 @@ if ($ADMIN->fulltree) {
             get_string('deleteexcludeusers', 'mod_webexactivity'),
             get_string('deleteexcludeusers_help', 'mod_webexactivity'), ''));
 
+    $opts = [\mod_webexactivity\recording_notifier::NOTIFY_NONE => get_string('notifynone', 'mod_webexactivity'),
+             \mod_webexactivity\recording_notifier::NOTIFY_ASSOCIATED => get_string('notifyassociated', 'mod_webexactivity'),
+             \mod_webexactivity\recording_notifier::NOTIFY_UNASSOCIATED => get_string('notifyunassociated', 'mod_webexactivity'),
+             \mod_webexactivity\recording_notifier::NOTIFY_ALL => get_string('notifyall', 'mod_webexactivity')];
 
+    $settings->add(new admin_setting_configselect('webexactivity/notifydownload',
+            get_string('notifydownload', 'mod_webexactivity'),
+            get_string('notifydownload_help', 'mod_webexactivity'),
+            \mod_webexactivity\recording_notifier::NOTIFY_NONE, $opts));
+
+    $settings->add(new admin_setting_configtext('webexactivity/notifysubject',
+            get_string('notifysubject', 'mod_webexactivity'),
+            get_string('notifysubject_help', 'mod_webexactivity'), get_string('notifysubject_default', 'mod_webexactivity')));
+
+    $settings->add(new admin_setting_configtextarea('webexactivity/notifyemail',
+            get_string('notifyemail', 'mod_webexactivity'),
+            get_string('notifyemail_help', 'mod_webexactivity'), get_string('notifyemail_default', 'mod_webexactivity')));
 }
 
 // Add reports.
