@@ -119,7 +119,6 @@ class recording_notifier {
                             return $this->recording->get_recording_url();
                             break;
                         case 'RECORDINGDATETIME':
-                            // TODO use recording time if present.
                             return userdate($this->recording->timecreated);
                             break;
                         default:
