@@ -63,6 +63,10 @@ class recording {
      */
     const FILE_STATUS_NONE = 3;
 
+    const ASSOC_NONE = 0;
+    const ASSOC_LOCAL = 1;
+    const ASSOC_REMOTE = 2;
+
     /** @var array Array of keys that go in the database object */
     protected $dbkeys = ['id',
                          'webexid',
@@ -534,34 +538,50 @@ class recording {
         }
     }
 
-    public function should_be_downloaded() {
+    public function get_association() {
         global $DB;
 
-        $download = get_config('webexactivity', 'downloadnewrecordings');
-
-        if ($download == recording_downloader::DOWNLOAD_NONE) {
-            return false;
+        if (!empty($this->meetingkey) && $DB->record_exists('webexactivity', ['meetingkey' => $this->meetingkey])) {
+            return self::ASSOC_LOCAL;
         }
 
         if (!isset($this->remoteserver)) {
             $this->update_remote_server();
         }
 
-        if (isset($this->remoteserver) && ($this->remoteserver === false)) {
+        if (empty($this->remoteserver)) {
+            return self::ASSOC_NONE;
+        }
+
+        return self::ASSOC_REMOTE;
+    }
+
+    public function should_be_downloaded() {
+        global $DB;
+
+        $setting = get_config('webexactivity', 'downloadnewrecordings');
+
+        if ($setting == recording_downloader::DOWNLOAD_NONE) {
+            return false;
+        }
+
+        $associaton = $this->get_association();
+
+        if ($associaton == self::ASSOC_LOCAL) {
             // This means we have a local meeting.
             // If we have a local meeting, the answer is yes for all remaining options.
             return true;
         }
 
-        if ($download == recording_downloader::DOWNLOAD_ASSOCIATED) {
+        if ($setting == recording_downloader::DOWNLOAD_ASSOCIATED) {
             // This means we don't have a locally associated meeting.
             return false;
         }
 
-        if ($download == recording_downloader::DOWNLOAD_ALL) {
+        if ($setting == recording_downloader::DOWNLOAD_ALL) {
             // We didn't have a local meeting, so check for a remote one.
-            if (isset($this->remoteserver) && $this->remoteserver !== false) {
-                // This means that it was detected on a remote server.
+            if ($associaton == self::ASSOC_REMOTE) {
+                // This means that it was detected on a remote server. Skip it.
                 return false;
             }
 
@@ -574,7 +594,8 @@ class recording {
     public function update_remote_server() {
         global $DB;
         if (!empty($this->meetingkey) && $DB->record_exists('webexactivity', ['meetingkey' => $this->meetingkey])) {
-            $this->remoteserver = false;
+            unset($this->remoteserver);
+            $this->save_to_db();
             return;
         }
 
@@ -584,6 +605,9 @@ class recording {
             $this->save_to_db();
             return;
         }
+
+        $this->remoteserver = false;
+        $this->save_to_db();
     }
 
     // ---------------------------------------------------

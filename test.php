@@ -100,3 +100,17 @@ var_dump($not->get_email_body());
 //
 // $done = array_map('trim', $parts);
 // var_dump($done);
+
+$source = 'Some {{var1}} : {{{var2}}} : {{#var3}}Yes{{/var3}} {{^var3}}No{{/var3}} : {{#var4}}Yes{{/var4}} {{^var4}}No{{/var4}} : {{#var5}}Yes{{/var5}} {{^var5}}No{{/var5}}
+{{#arr}}
+    {{.}}
+{{/arr}}
+';
+$context = ['var1' => 'var&1', 'var2' => 'var&2', 'var3' => 1, 'var4' => 0,
+'arr' => ['1', '2']];
+
+$eng = new Mustache_Engine();
+$template = $eng->loadLambda($source);
+
+$out = trim($template->render($context));
+var_dump($out);

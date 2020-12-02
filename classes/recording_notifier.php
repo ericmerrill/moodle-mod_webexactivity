@@ -33,6 +33,7 @@ use curl;
 use stdClass;
 use core\lock\lock_config;
 use mod_webexactivity\local\exception;
+use Mustache_Engine;
 
 
 defined('MOODLE_INTERNAL') || die();
@@ -96,11 +97,64 @@ class recording_notifier {
     }
 
     public function get_email_subject() {
-        return $this->subsitute_text(get_config('webexactivity', 'notifysubject'));
+        return $this->process_template_source(get_config('webexactivity', 'notifysubject'));
     }
 
     public function get_email_body() {
-        return $this->subsitute_text(get_config('webexactivity', 'notifyemail'));
+        return $this->process_template_source(get_config('webexactivity', 'notifyemail'));
+    }
+
+    protected function process_template_source($source) {
+        if (!empty($this->recording->fileurl)) {
+            $oldfileurl = $this->recording->fileurl;
+        } else if (!empty($this->recording->oldfileurl)) {
+            $oldfileurl = $this->recording->oldfileurl;
+        } else {
+            $oldfileurl = false;
+        }
+
+        if (!empty($this->recording->streamurl)) {
+            $oldstreamurl = $this->recording->streamurl;
+        } else if (!empty($this->recording->oldstreamurl)) {
+            $oldstreamurl = $this->recording->oldstreamurl;
+        } else {
+            $oldstreamurl = false;
+        }
+
+        $context = ['RECORDINGNAME' => $this->recording->name,
+                    'NEWURL' => $this->recording->get_recording_url(),
+                    'NEWSTREAMURL' => $this->recording->get_recording_url(false, true),
+                    'NEWDOWNLOADURL' => $this->recording->get_recording_url(true),
+                    'OLDSTREAMURL' => $oldstreamurl,
+                    'OLDDOWNLOADURL' => $oldfileurl,
+                    'RECORDINGDATETIME' => userdate($this->recording->timecreated),
+                    'MEETINGNAME' => FALSE]; // TODO.
+
+        // Copied and modified from renderer_base::render_from_template().
+        $mustache = new Mustache_Engine();
+
+        try {
+            // Grab a copy of the existing helper to be restored later.
+            $uniqidhelper = $mustache->getHelper('uniqid');
+        } catch (\Mustache_Exception_UnknownHelperException $e) {
+            // Helper doesn't exist.
+            $uniqidhelper = null;
+        }
+
+        $mustache->addHelper('uniqid', new \core\output\mustache_uniqid_helper());
+
+
+        $template = $mustache->loadLambda($source);
+
+        $renderedtemplate = trim($template->render($context));
+
+        // If we had an existing uniqid helper then we need to restore it to allow
+        // handle nested calls of render_from_template.
+        if ($uniqidhelper) {
+            $mustache->addHelper('uniqid', $uniqidhelper);
+        }
+
+        return $renderedtemplate;
     }
 
     protected function subsitute_text($input) {

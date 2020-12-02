@@ -45,6 +45,7 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'file-internal' => false,
                                                 'file-both' => false,
                                                 'generate-missing-ids' => false,
+                                                'get-association' => false,
                                                 'hostid' => false,
                                                 'moodle-meeting' => false,
                                                 'make-public' => false,
@@ -114,6 +115,7 @@ Actions:
 --remove-extra-recordings
 --update-remote-server
 --check-download-status
+--get-association
 
 --force
 -h, --help              Print out this help
@@ -266,6 +268,23 @@ foreach ($records as $rec) {
 
     }
 
+    if ($options['update-remote-server']) {
+        $recording->update_remote_server();
+    }
+
+    if ($options['get-association'] || $options['update-remote-server']) {
+        $association = $recording->get_association();
+        if ($association == recording::ASSOC_NONE) {
+            mtrace('Recording doesn\'t belong to a meeting on any known server.');
+        } else if ($association == recording::ASSOC_LOCAL) {
+            mtrace('Recording belongs to this server.');
+        } else if ($association == recording::ASSOC_REMOTE) {
+            mtrace('Recording belongs to the server '.$recording->remoteserver);
+        } else {
+            mtrace("Unknown association error.");
+        }
+    }
+
     if ($options['check-download-status']) {
         if ($recording->should_be_downloaded()) {
             mtrace('This recording should be downloaded');
@@ -273,16 +292,7 @@ foreach ($records as $rec) {
             mtrace('This recording should not be downloaded');
         }
     }
-    if ($options['update-remote-server']) {
-        $recording->update_remote_server();
-        if (isset($recording->remoteserver) && $recording->remoteserver === false) {
-            mtrace('Recording belongs to this server.');
-        } else if (isset($recording->remoteserver)) {
-            mtrace('Recording belongs to the server '.$recording->remoteserver);
-        } else {
-            mtrace('Recording doesn\'t belong to a meeting on any known server.');
-        }
-    }
+
 
     if ($downloadforce) {
         mtrace("Creating download (with force) adhoc task " . ($delete ? "with" : "without") . " delete");
