@@ -148,8 +148,10 @@ $string['notifydownload_help'] = 'If a user should be notified (via email) when 
 <li><b>All</b>: Notify all users when a meeting is downloaded into Moodle.</li>
 </ul>';
 $string['notifyemail'] = 'Notify email';
-$string['notifyemail_default'] = '<p>The Webex recording "{{RECORDINGNAME}}" is now available at the following URL.</p>
-<p><a href="{{NEWURL}}">{{NEWURL}}</a></p>';
+$string['notifyemail_default'] = '<p>The Webex recording "{{RECORDINGNAME}}"  from {{RECORDINGDATE}} has been moved, and is now available at the following URL.</p>
+<p><a href="{{NEWURL}}">{{NEWURL}}</a></p>
+<br />
+<p>The previous URLs of {{OLDSTREAMURL}} and {{OLDFILEURL}} for this recording will no longer work.</p>';
 $string['notifyemail_help'] = 'The body of the notification email. Can be HTML formatted.<br />
 Can have the following subsitutions:
 <ul>
@@ -163,7 +165,7 @@ Can have the following subsitutions:
 </ul>';
 $string['notifynone'] = 'None';
 $string['notifysubject'] = 'Notify subject';
-$string['notifysubject_default'] = 'Webex recording "{{RECORDINGNAME}}" ready';
+$string['notifysubject_default'] = 'Your Webex recording has moved and is available for download: {{RECORDINGNAME}}';
 $string['notifysubject_help'] = 'The subject of the notification email.';
 $string['notifyunassociated'] = 'Meeting Unassociated';
 $string['page_managerecordings'] = 'Manage Recordings';
