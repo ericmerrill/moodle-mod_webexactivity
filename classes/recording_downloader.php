@@ -326,6 +326,8 @@ class recording_downloader {
         $event->trigger();
 
         if ($deleteremote) {
+            $recording->notify_if_needed();
+
             if (webex::username_excluded_from_delete($this->recording->hostid)) {
                 $this->log("User {$this->recording->hostid} is excluded from recording deletes. Skipping.");
                 return;

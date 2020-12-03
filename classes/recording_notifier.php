@@ -66,7 +66,84 @@ class recording_notifier {
         $this->recording = $recording;
     }
 
-    public function get_email_addresses() {
+    public function notify_if_needed($force = false) {
+        if ($force) {
+            $this->notify();
+            return;
+        }
+
+        $recording = $this->recording;
+
+        $config = get_config('webexactivity', 'notifydownload');
+
+        // Notify none.
+        if ($config == self::NOTIFY_NONE) {
+            return;
+        }
+
+        // We only send this email once. TODO - force.
+        if (!empty($recording->notified)) {
+            return;
+        }
+
+        // Notify all.
+        if ($config == self::NOTIFY_ALL) {
+            $this->notify();
+            return;
+        }
+
+        $assoc = $recording->get_association();
+
+        // Send for locally associated recordings.
+        if (($config == self::NOTIFY_ASSOCIATED) && ($assoc == recording::ASSOC_LOCAL)) {
+            $this->notify();
+            return;
+        }
+
+        // Send for recordings with no association.
+        if (($config == self::NOTIFY_UNASSOCIATED) && ($assoc == recording::ASSOC_NONE)) {
+            $this->notify();
+            return;
+        }
+
+        return;
+    }
+
+    public function notify() {
+        $recording = $this->recording;
+
+        $users = $this->get_email_users();
+        if (empty($users)) {
+            $this->log('No email addresses found to send to.');
+            return;
+        }
+
+        $subject = $this->get_email_subject();
+        $body = $this->get_email_body();
+
+        foreach ($users as $user) {
+            $this->send($subject, $body, $user);
+        }
+
+        $recording->notified = true;
+        $recording->save_to_db();
+    }
+
+    protected function send($subject, $body, $touser) {
+        $this->log('Emailing '.$touser->email);
+
+        $success = email_to_user(
+            $touser,
+            $this->get_from_user(),
+            $subject,
+            format_text_email($body, 1),
+            purify_html($body)
+        );
+
+        return $success;
+    }
+
+    public function get_email_users() {
         global $DB;
 
         $hostid = $this->recording->hostid;
@@ -77,30 +154,47 @@ class recording_notifier {
             if (!empty($webexuser->moodleuserid)) {
                 // Use the Moodle email address if it exists.
                 if ($user = $DB->get_record('user', ['id' => $webexuser->moodleuserid])) {
-                    return [$user->email];
+                    return [$user];
                 }
             }
 
             // Now use the Webex user email address if we have it.
             if (!empty($webexuser->email)) {
-                return [$webexuser->email];
+                return [$this->get_user_for_email($webexuser->email)];
             }
         }
 
         // We don't have the user's object or email address. Now we ask Webex directly.
         $user = user::search_webex_for_webexid($hostid);
         if (!empty($user) && !empty($user->email)) {
-            return [$user->email];
+            return [$this->get_user_for_email($user->email)];
         }
 
         return false;
     }
 
-    public function get_email_subject() {
+    protected function get_user_for_email($email) {
+        global $DB;
+
+        if ($user->get_record('user', ['email' => $email])) {
+            return $email;
+        }
+
+        // Make a fake user for emails that don't have a matching user.
+        $user = new \stdClass();
+        $user->id = mt_rand(99999800, 99999999); // we have to pass an id
+        $user->email = $email;
+        $user->username = $email;
+        $user->mailformat = 1;
+
+        return $user;
+    }
+
+    protected function get_email_subject() {
         return $this->process_template_source(get_config('webexactivity', 'notifysubject'));
     }
 
-    public function get_email_body() {
+    protected function get_email_body() {
         return $this->process_template_source(get_config('webexactivity', 'notifyemail'));
     }
 
@@ -129,7 +223,7 @@ class recording_notifier {
                     'OLDDOWNLOADURL' => $oldfileurl,
                     'RECORDINGDATETIME' => userdate($this->recording->timecreated),
                     'MEETINGNAME' => FALSE]; // TODO.
-
+error_log(var_export($context, true));
         // Copied and modified from renderer_base::render_from_template().
         $mustache = new Mustache_Engine();
 
@@ -157,67 +251,28 @@ class recording_notifier {
         return $renderedtemplate;
     }
 
-    protected function subsitute_text($input) {
-        if (empty($input)) {
-            return '';
-        }
-
-        return preg_replace_callback(
-                '/%%([A-Z]*?)%%/',
-                function($matches) {
-                    switch ($matches[1]) {
-                        case 'RECORDINGNAME':
-                            return $this->recording->name;
-                            break;
-                        case 'NEWURL':
-                            return $this->recording->get_recording_url();
-                            break;
-                        case 'RECORDINGDATETIME':
-                            return userdate($this->recording->timecreated);
-                            break;
-                        default:
-                            return $matches[1];
-                    }
-                },
-                $input
-        );
-    }
-
-
-    public function log($msg) {
+    protected function log($msg) {
         if (defined('CLI_SCRIPT')) {
             mtrace('Recording ' . $this->recording->id . ': ' . $msg);
         }
     }
 
-
-
-
-    private function get_from_user() {
+    protected function get_from_user() {
         return \core_user::get_noreply_user();
     }
 
-    private function get_fake_user($email) {
-        $user = new \stdClass();
-        $user->id = mt_rand(99999800, 99999999); // we have to pass an id
-        $user->email = $email;
-        $user->username = $email;
-        $user->mailformat = 1;
+    // Make a fake user for emails that don't have a matching user.
+//     protected function get_fake_user($email) {
+//         $user = new \stdClass();
+//         $user->id = mt_rand(99999800, 99999999); // we have to pass an id
+//         $user->email = $email;
+//         $user->username = $email;
+//         $user->mailformat = 1;
+//
+//         return $user;
+//     }
 
-        return $user;
-    }
 
-    public function send($subject, $body, $touser) {
-        $success = email_to_user(
-            $touser,
-            $this->get_from_user(),
-            $subject,
-            format_text_email($body, 1),
-            purify_html($body)
-        );
-
-        return $success;
-    }
 
 
 }

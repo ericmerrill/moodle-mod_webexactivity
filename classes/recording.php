@@ -501,6 +501,11 @@ class recording {
         $downloader->download_recording($force, $deleteremote);
     }
 
+    public function notify_if_needed($force = false) {
+        $notifier = new recording_notifier($this);
+        return $notifier->notify_if_needed($force);
+    }
+
     protected function rename_internal_file($newname) {
         if (!$file = $this->get_internal_file()) {
             return;

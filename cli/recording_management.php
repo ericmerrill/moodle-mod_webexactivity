@@ -24,6 +24,7 @@
  */
 
 use mod_webexactivity\recording;
+use mod_webexactivity\recording_notifier;
 use mod_webexactivity\webex;
 
 define('CLI_SCRIPT', true);
@@ -56,6 +57,8 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'recordid' => false,
                                                 'recordingid' => false,
                                                 'remove-extra-recordings' => false,
+                                                'send-notification' => false,
+                                                'send-notification-force' => false,
                                                 'short' => false,
                                                 'starttime' => false,
                                                 'uniqueid' => false,
@@ -116,6 +119,8 @@ Actions:
 --update-remote-server
 --check-download-status
 --get-association
+--send-notification
+--send-notification-force
 
 --force
 -h, --help              Print out this help
@@ -291,6 +296,14 @@ foreach ($records as $rec) {
         } else {
             mtrace('This recording should not be downloaded');
         }
+    }
+
+    if ($options['send-notification-force']) {
+        $notifier = new recording_notifier($recording);
+        $notifier->notify_if_needed(true);
+    } else if ($options['send-notification']) {
+        $notifier = new recording_notifier($recording);
+        $notifier->notify_if_needed();
     }
 
 
