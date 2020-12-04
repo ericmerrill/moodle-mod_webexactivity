@@ -33,6 +33,9 @@ require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->libdir.'/clilib.php');
 
 list($options, $unrecognized) = cli_get_params(['all' => false,
+                                                'assoc-local' => false,
+                                                'assoc-none' => false,
+                                                'assoc-remote' => false,
                                                 'cmid' => false,
                                                 'courseid' => false,
                                                 'catid' => false,
@@ -102,6 +105,9 @@ Selection options:
 --file-external
 --file-internal
 --file-both
+--assoc-local
+--assoc-remote
+--assoc-none
 --moodle-meeting
 --no-moodle-meeting
 -a, --all               If set, include all recordings in DB, even those not associated with a
@@ -237,15 +243,25 @@ $webex = new webex();
 
 $count = 0;
 foreach ($records as $rec) {
-    $count++;
     $recording = new recording($rec);
 
+    if ($options['assoc-local'] && $recording->get_association() !== recording::ASSOC_LOCAL) {
+        continue;
+    }
+    if ($options['assoc-none'] && $recording->get_association() !== recording::ASSOC_NONE) {
+        continue;
+    }
+    if ($options['assoc-remote'] && $recording->get_association() !== recording::ASSOC_REMOTE) {
+        continue;
+    }
+
+    $count++;
     render_recording($recording, $shortlog);
 
     if ($options['remove-extra-recordings'] && is_null($recording->webexid)) {
         // Delete the local copy only.
         $recording->true_delete(false);
-        mtrace("Deleted as extra recording.");
+        mtrace("Removed extra recording from Moodle only.");
         continue;
     }
 
