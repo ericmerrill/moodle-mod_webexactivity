@@ -56,6 +56,8 @@ class recording_notifier {
     /** @var recording The recording object we are downloading. */
     private $recording = null;
 
+    private $templatedata = null;
+
     /**
      * Builds the recording object.
      *
@@ -176,8 +178,8 @@ class recording_notifier {
     protected function get_user_for_email($email) {
         global $DB;
 
-        if ($user->get_record('user', ['email' => $email])) {
-            return $email;
+        if ($user = $DB->get_record('user', ['email' => $email])) {
+            return $user;
         }
 
         // Make a fake user for emails that don't have a matching user.
@@ -199,6 +201,38 @@ class recording_notifier {
     }
 
     protected function process_template_source($source) {
+        // Copied and modified from renderer_base::render_from_template().
+        $mustache = new Mustache_Engine();
+
+        try {
+            // Grab a copy of the existing helper to be restored later.
+            $uniqidhelper = $mustache->getHelper('uniqid');
+        } catch (\Mustache_Exception_UnknownHelperException $e) {
+            // Helper doesn't exist.
+            $uniqidhelper = null;
+        }
+
+        $mustache->addHelper('uniqid', new \core\output\mustache_uniqid_helper());
+
+
+        $template = $mustache->loadLambda($source);
+
+        $renderedtemplate = trim($template->render($this->get_recording_template_data()));
+
+        // If we had an existing uniqid helper then we need to restore it to allow
+        // handle nested calls of render_from_template.
+        if ($uniqidhelper) {
+            $mustache->addHelper('uniqid', $uniqidhelper);
+        }
+
+        return $renderedtemplate;
+    }
+
+    protected function get_recording_template_data() {
+        if (!is_null($this->templatedata)) {
+            return $this->templatedata;
+        }
+
         if (!empty($this->recording->fileurl)) {
             $oldfileurl = $this->recording->fileurl;
         } else if (!empty($this->recording->oldfileurl)) {
@@ -223,32 +257,9 @@ class recording_notifier {
                     'OLDDOWNLOADURL' => $oldfileurl,
                     'RECORDINGDATETIME' => userdate($this->recording->timecreated),
                     'MEETINGNAME' => FALSE]; // TODO.
-error_log(var_export($context, true));
-        // Copied and modified from renderer_base::render_from_template().
-        $mustache = new Mustache_Engine();
+        $this->templatedata = $context;
 
-        try {
-            // Grab a copy of the existing helper to be restored later.
-            $uniqidhelper = $mustache->getHelper('uniqid');
-        } catch (\Mustache_Exception_UnknownHelperException $e) {
-            // Helper doesn't exist.
-            $uniqidhelper = null;
-        }
-
-        $mustache->addHelper('uniqid', new \core\output\mustache_uniqid_helper());
-
-
-        $template = $mustache->loadLambda($source);
-
-        $renderedtemplate = trim($template->render($context));
-
-        // If we had an existing uniqid helper then we need to restore it to allow
-        // handle nested calls of render_from_template.
-        if ($uniqidhelper) {
-            $mustache->addHelper('uniqid', $uniqidhelper);
-        }
-
-        return $renderedtemplate;
+        return $this->templatedata;
     }
 
     protected function log($msg) {

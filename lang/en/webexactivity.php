@@ -139,14 +139,17 @@ $string['meetingtypes_desc'] = 'These are WebEx meeting types supported by this 
 $string['meetingupcoming'] = 'This meeting is not yet available to join.';
 $string['notifyall'] = 'All';
 $string['notifyassociated'] = 'Meeting Associated';
-$string['notifydownload'] = 'Notify recording downloaded';
-$string['notifydownload_help'] = 'If a user should be notified (via email) when their recording is downloaded into Moodle. This is determined by a recordings reported host. The options are as follows:<br />
+$string['notifydownload'] = 'Notify recording deleted';
+$string['notifydownload_help'] = 'If a user should be notified (via email) when their recording is downloaded into Moodle and then deleted. This is determined by a recordings reported host. The options are as follows:<br />
 <ul>
 <li><b>None</b>: Do not notify any users of downloaded recordings.</li>
 <li><b>Meeting Associated</b>: Notify users when a recording associated with a meeting in Moodle is downloaded into Moodle.</li>
 <li><b>Meeting Unassociated</b>: Notify users when a recording not associated with a meeting in Moodle is downloaded into Moodle.</li>
 <li><b>All</b>: Notify all users when a meeting is downloaded into Moodle.</li>
 </ul>';
+$string['unassociatedpublic'] = 'Make unassociated recordings public';
+$string['unassociatedpublic_help'] = 'When enabled, when an associated recording is downloaded into Moodle, the recording will be made public.<br />
+This is best used when deleting unassociated recordings from Webex and sending a notification email. Otherwise noone will be able to access the new recording link.';
 $string['notifyemail'] = 'Notify email';
 $string['notifyemail_default'] = '<p>The Webex recording "{{RECORDINGNAME}}" from {{RECORDINGDATE}} has been moved, and is now available at the following URL.</p>
 <p><a href="{{NEWURL}}">{{NEWURL}}</a></p>

@@ -309,6 +309,10 @@ class recording_downloader {
             $this->recording->filestatus = recording::FILE_STATUS_INTERNAL_AND_WEBEX;
         }
 
+        if (get_config('webexactivity', 'unassociatedpublic') && ($this->recording->get_association() == recording::ASSOC_NONE)) {
+            $this->recording->publicview = 1;
+        }
+
         $this->recording->truefilesize = $downloadedsize;
 
         unset($this->recording->downloaderror);
@@ -326,7 +330,7 @@ class recording_downloader {
         $event->trigger();
 
         if ($deleteremote) {
-            $recording->notify_if_needed();
+            $this->recording->notify_if_needed();
 
             if (webex::username_excluded_from_delete($this->recording->hostid)) {
                 $this->log("User {$this->recording->hostid} is excluded from recording deletes. Skipping.");

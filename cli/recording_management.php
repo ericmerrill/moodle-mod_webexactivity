@@ -37,7 +37,7 @@ list($options, $unrecognized) = cli_get_params(['all' => false,
                                                 'courseid' => false,
                                                 'catid' => false,
                                                 'check-download-status' => false,
-                                                'delete-remote' => false,
+                                                'delete-remote' => null,
                                                 'delete-remote-force' => false,
                                                 'download' => false,
                                                 'download-force' => false,
@@ -228,7 +228,7 @@ if ($recordid) {
     $records = $DB->get_recordset_select('webexactivity_recording', $select, $params, 'id ASC', '*', $start, $limit);
 }
 
-$delete = (bool)$options['delete-remote'];
+$delete = is_null($options['delete-remote']) ? null : (bool)$options['delete-remote'];
 $deleteforce = (bool)$options['delete-remote-force'];
 $download = (bool)$options['download'];
 $downloadforce = (bool)$options['download-force'];
@@ -306,12 +306,18 @@ foreach ($records as $rec) {
         $notifier->notify_if_needed();
     }
 
+    $word = 'without';
+    if (!empty($delete)) {
+        $word = 'with';
+    } else if (is_null($delete)) {
+        $word = 'default';
+    }
 
     if ($downloadforce) {
-        mtrace("Creating download (with force) adhoc task " . ($delete ? "with" : "without") . " delete");
+        mtrace("Creating download (with force) adhoc task " . $word . " delete");
         $recording->create_download_task(true, $delete);
     } else if ($download) {
-        mtrace("Creating download adhoc task " . ($delete ? "with" : "without") . " delete");
+        mtrace("Creating download adhoc task " . $word . " delete");
         $recording->create_download_task(null, $delete);
     } else if ($deleteforce) {
         mtrace("Creating a delete adhoc task with force");

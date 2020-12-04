@@ -130,6 +130,10 @@ if ($ADMIN->fulltree) {
             get_string('downloadnewrecordings_help', 'mod_webexactivity'),
             \mod_webexactivity\recording_downloader::DOWNLOAD_NONE, $opts));
 
+    $settings->add(new admin_setting_configcheckbox('webexactivity/unassociatedpublic',
+            get_string('unassociatedpublic', 'mod_webexactivity'),
+            get_string('unassociatedpublic_help', 'mod_webexactivity'), 0));
+
     $settings->add(new admin_setting_configtextarea('webexactivity/remoteservers',
             get_string('remoteservers', 'mod_webexactivity'),
             get_string('remoteservers_help', 'mod_webexactivity'), ''));
